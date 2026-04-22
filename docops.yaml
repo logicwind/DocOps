@@ -1,0 +1,53 @@
+# DocOps project configuration.
+# Loaded by every `docops` command. See docs/decisions/ for the ADRs that
+# define what each section means.
+
+version: 1
+
+# Where each doc type lives. Defaults shown. A project can change these if it
+# must, but most shouldn't — tooling and agents assume these paths.
+paths:
+  context: docs/context
+  decisions: docs/decisions
+  tasks: docs/tasks
+  index: docs/.index.json           # computed graph, committed
+  state: docs/STATE.md              # human/LLM-readable snapshot, committed
+  counters: docs/.docops/counters.json
+  schema: docs/.docops/schema       # JSON Schema for in-editor validation
+  reviews: docs/decisions/.reviews  # semantic-coverage review sidecars
+
+# Project-configurable `type:` enum for CTX documents.
+# Add your own; tooling does not hardcode these.
+context_types:
+  - prd
+  - design
+  - research
+  - notes
+  - memo
+  - spec
+  - brief
+
+# Rules used by `docops audit` and the STATE.md "Needs attention" section.
+# Tune thresholds to taste. See ADR-0008.
+gaps:
+  # Structural rules
+  adr_accepted_no_tasks_after_days: 7
+  adr_draft_stale_days: 14
+  task_active_no_commits_days: 5
+  ctx_with_no_derived_links_after_days: 10
+
+  # Citation integrity
+  task_requires_superseded_adr: warn   # warn | error | ignore
+  task_requires_superseded_ctx: warn
+
+  # Semantic review
+  adr_semantic_review_stale_days: 60
+
+# Window for STATE.md "Recent activity" section.
+recent_activity_window_days: 7
+
+# Auto-emit AGENTS.md block on init and on schema change.
+agents_md:
+  enabled: true
+  block_start: "<!-- docops:start -->"
+  block_end: "<!-- docops:end -->"

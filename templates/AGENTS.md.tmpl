@@ -1,0 +1,77 @@
+# Agents working in this repo
+
+This repository is managed with **DocOps** — a typed project-state substrate.
+If you are an AI coding agent (Claude Code, Cursor, Aider, Codex, Copilot,
+Windsurf, Zed, etc.), read this file before doing any work.
+
+<!-- docops:start -->
+
+## Orientation
+
+- **Why we're building this:** `docs/context/CTX-*` (look for documents of `type: brief` or `type: prd`).
+- **What's been decided:** `docs/decisions/ADR-*.md`. Frontmatter is load-bearing — read it.
+- **What to do next:** `docs/STATE.md` for counts, needs-attention, and active work.
+- **Hard guardrails:** any CTX of `type: memo` or `type: notes` that describes constraints.
+
+## Folder layout
+
+| Folder | Contents |
+|---|---|
+| `docs/context/` | Stakeholder inputs: PRDs, design docs, memos, research, notes. File prefix `CTX-`. |
+| `docs/decisions/` | ADRs. File prefix `ADR-`. |
+| `docs/tasks/` | Work units. File prefix `TP-`. Every task cites ≥1 ADR or CTX. |
+| `docs/STATE.md` | Auto-generated state snapshot. Do not edit by hand. |
+| `docs/.index.json` | Auto-generated graph with computed reverse edges. Prefer querying via the CLI. |
+
+## Invariants you MUST respect
+
+1. **Every task must cite at least one ADR or CTX** in its `requires:` frontmatter. The validator refuses tasks without it.
+2. **References must resolve.** No citing non-existent docs; no citing superseded docs without good reason.
+3. **Do not edit `docs/STATE.md` or `docs/.index.json`** — both are regenerated from source.
+4. **Do not edit reverse-edge fields** in source frontmatter. They are computed in the index.
+5. **Filename is the ID.** `ADR-0020-whatever.md` is `ADR-0020`. Don't add an `id:` field.
+
+## CLI commands
+
+All commands support `--json` for structured output.
+
+```
+docops init                       # scaffold DocOps in this repo
+docops validate                   # schema + graph invariants
+docops index                      # rebuild docs/.index.json
+docops state                      # regenerate docs/STATE.md
+docops audit                      # structural coverage gaps
+docops next [--assignee <name>]   # next actionable task
+docops get <id>                   # doc + computed fields
+docops graph <id>                 # typed reference tree
+docops new ctx "title" --type memo
+docops new adr "title" [--related ADR-xxxx]
+docops new task "title" --requires ADR-xxxx,CTX-xxx
+docops status <id> <new-status>   # atomic status change
+docops review <ADR-id>            # semantic coverage review (writes sidecar)
+```
+
+The binary is language-agnostic — install via direct download, Homebrew, Scoop, or Docker. No Node/Bun/Python dependency.
+
+## Recommended agent workflow
+
+1. Read `docs/STATE.md`.
+2. Run `docops audit` to see open gaps.
+3. Run `docops next` to pick a task (or open a specific `TP-*` file).
+4. Before coding: read every doc in the task's `requires:` and `depends_on:`.
+5. Work in your native plan/execute mode. DocOps does not prescribe how you code.
+6. When finished: `docops status TP-xxx done`. The index and STATE.md regenerate.
+7. If your work revealed a new decision, `docops new adr`. If a new gap, `docops new task` with citations.
+
+## Pairs well with
+
+- **GStack** role skills — they apply perspective; DocOps provides the typed state they read.
+- **Native plan mode** of your IDE — DocOps explicitly does not try to replace it.
+
+<!-- docops:end -->
+
+## Notes for humans
+
+The block above is auto-maintained by `docops init` and `docops refresh-agents-md`.
+Edit content outside the `<!-- docops:* -->` delimiters freely; DocOps will
+preserve it. Edits inside the delimiters will be overwritten.

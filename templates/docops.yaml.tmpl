@@ -1,0 +1,42 @@
+# DocOps project configuration.
+# Emitted by `docops init` into user repositories. Tunable per project.
+
+version: 1
+
+paths:
+  context: docs/context
+  decisions: docs/decisions
+  tasks: docs/tasks
+  index: docs/.index.json
+  state: docs/STATE.md
+  counters: docs/.docops/counters.json
+  schema: docs/.docops/schema
+  reviews: docs/decisions/.reviews
+
+# Project-configurable `type:` enum for CTX documents.
+# Add or remove types as your project needs; tooling does not hardcode these.
+context_types:
+  - prd
+  - design
+  - research
+  - notes
+  - memo
+  - spec
+  - brief
+
+# Rules used by `docops audit` and STATE.md's "Needs attention" section.
+gaps:
+  adr_accepted_no_tasks_after_days: 7
+  adr_draft_stale_days: 14
+  task_active_no_commits_days: 5
+  ctx_with_no_derived_links_after_days: 10
+  task_requires_superseded_adr: warn
+  task_requires_superseded_ctx: warn
+  adr_semantic_review_stale_days: 60
+
+recent_activity_window_days: 7
+
+agents_md:
+  enabled: true
+  block_start: "<!-- docops:start -->"
+  block_end: "<!-- docops:end -->"
