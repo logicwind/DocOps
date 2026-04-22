@@ -1,0 +1,10 @@
+bin/
+dist/
+*.test
+*.out
+coverage.*
+.DS_Store
+
+# Local agent caches / logs — not part of the project.
+.a5c/
+.pi/

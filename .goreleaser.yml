@@ -1,0 +1,82 @@
+version: 2
+
+project_name: docops
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: docops
+    main: ./cmd/docops
+    binary: docops
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X github.com/nachiket/docops/internal/version.Version={{.Version}}
+      - -X github.com/nachiket/docops/internal/version.Commit={{.Commit}}
+      - -X github.com/nachiket/docops/internal/version.Date={{.Date}}
+
+archives:
+  - id: docops
+    ids: [docops]
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
+
+checksum:
+  name_template: checksums.txt
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+
+# Homebrew tap — stub. Activate once `homebrew-docops` repo exists.
+brews:
+  - name: docops
+    ids: [docops]
+    repository:
+      owner: nachiket
+      name: homebrew-docops
+    description: "Typed project-state substrate for LLM-first software development"
+    homepage: "https://github.com/nachiket/docops"
+    license: MIT
+    skip_upload: auto
+    test: |
+      system "#{bin}/docops --version"
+
+# Scoop bucket — stub. Activate once `scoop-docops` repo exists.
+scoops:
+  - name: docops
+    ids: [docops]
+    repository:
+      owner: nachiket
+      name: scoop-docops
+    description: "Typed project-state substrate for LLM-first software development"
+    homepage: "https://github.com/nachiket/docops"
+    license: MIT
+    skip_upload: auto
