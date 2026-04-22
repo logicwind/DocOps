@@ -5,8 +5,8 @@
 ## Counts
 
 - Context: 4 active · 0 superseded
-- ADRs: 19 accepted · 0 draft · 0 superseded (18 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 2 backlog · 0 active · 0 blocked · 12 done
+- ADRs: 20 accepted · 0 draft · 0 superseded (19 `coverage: required`, 1 `coverage: not-needed`)
+- Tasks: 5 backlog · 0 active · 0 blocked · 12 done
 
 ## Needs attention
 
@@ -24,6 +24,7 @@
 - 2026-04-22 e94040f TP-005: docops state — regenerate STATE.md from the index
 - 2026-04-22 e22e6c6 planning: ADR-0019 + TP-013/TP-014 for v0.1.0 release
 - 2026-04-22 dafd8eb TP-006: docops audit — structural gap punch list
+- 2026-04-22 8a175ae TP-014: close task, refresh committed artifacts
 - 2026-04-22 73cd5db TP-010/TP-013: finalize skill-pack scope — --no-skills + skills lint
 - 2026-04-22 6b41ceb TP-008: docops new — scaffold CTX/ADR/Task with atomic ID allocation
 - 2026-04-22 56f6d7c TP-003: docops validate — schema + graph invariants over docs/

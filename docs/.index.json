@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22T12:38:56Z",
+  "generated_at": "2026-04-22T17:31:12Z",
   "version": 1,
   "docs": [
     {
@@ -153,6 +153,10 @@
         },
         {
           "id": "ADR-0009",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0020",
           "edge": "related"
         },
         {
@@ -496,6 +500,10 @@
           "edge": "related"
         },
         {
+          "id": "ADR-0020",
+          "edge": "related"
+        },
+        {
           "id": "TP-001",
           "edge": "requires"
         },
@@ -582,6 +590,10 @@
         },
         {
           "id": "ADR-0019",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0020",
           "edge": "related"
         },
         {
@@ -673,6 +685,10 @@
         },
         {
           "id": "ADR-0016",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0020",
           "edge": "related"
         },
         {
@@ -783,6 +799,10 @@
           "edge": "related"
         },
         {
+          "id": "ADR-0020",
+          "edge": "related"
+        },
+        {
           "id": "TP-012",
           "edge": "requires"
         }
@@ -826,6 +846,49 @@
         }
       ],
       "implementation": "done",
+      "stale": false
+    },
+    {
+      "id": "ADR-0020",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0020-first-touch-and-edit-cycle-ergonomics-for-v0-1-1.md",
+      "title": "First-touch and edit-cycle ergonomics for v0.1.1",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0004",
+        "ADR-0011",
+        "ADR-0013",
+        "ADR-0015",
+        "ADR-0018"
+      ],
+      "tags": [
+        "cli",
+        "ergonomics",
+        "agent-interface",
+        "v0.1.1"
+      ],
+      "summary": "First-user testing of v0.1.0 on a real project (`lw-website-nextjs-web`) surfaced three distinct friction points that are not bugs but are design regressions relative to what a polished CLI would do:",
+      "word_count": 1119,
+      "last_touched": "2026-04-22T17:29:35Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-015",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-016",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-017",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "not-started",
       "stale": false
     },
     {
@@ -998,10 +1061,20 @@
         {
           "id": "TP-004",
           "edge": "depends_on"
+        },
+        {
+          "id": "TP-016",
+          "edge": "depends_on"
+        },
+        {
+          "id": "TP-017",
+          "edge": "depends_on"
         }
       ],
       "blocks": [
-        "TP-004"
+        "TP-004",
+        "TP-016",
+        "TP-017"
       ],
       "stale": false
     },
@@ -1043,13 +1116,18 @@
         {
           "id": "TP-012",
           "edge": "depends_on"
+        },
+        {
+          "id": "TP-016",
+          "edge": "depends_on"
         }
       ],
       "blocks": [
         "TP-005",
         "TP-006",
         "TP-011",
-        "TP-012"
+        "TP-012",
+        "TP-016"
       ],
       "stale": false
     },
@@ -1077,10 +1155,15 @@
         {
           "id": "TP-010",
           "edge": "depends_on"
+        },
+        {
+          "id": "TP-016",
+          "edge": "depends_on"
         }
       ],
       "blocks": [
-        "TP-010"
+        "TP-010",
+        "TP-016"
       ],
       "stale": false
     },
@@ -1145,11 +1228,16 @@
         {
           "id": "TP-013",
           "edge": "depends_on"
+        },
+        {
+          "id": "TP-015",
+          "edge": "depends_on"
         }
       ],
       "blocks": [
         "TP-010",
-        "TP-013"
+        "TP-013",
+        "TP-015"
       ],
       "stale": false
     },
@@ -1178,10 +1266,15 @@
         {
           "id": "TP-010",
           "edge": "depends_on"
+        },
+        {
+          "id": "TP-017",
+          "edge": "depends_on"
         }
       ],
       "blocks": [
-        "TP-010"
+        "TP-010",
+        "TP-017"
       ],
       "stale": false
     },
@@ -1327,7 +1420,73 @@
       ],
       "summary": "Migrate the module path, add the license, tidy the release pipeline, and cut the first public tag. End state: `github.com/logicwind/DocOps` exists with `v0.1.0` tagged and goreleaser-produced archives…",
       "word_count": 324,
-      "last_touched": "2026-04-22T12:30:23Z",
+      "last_touched": "2026-04-22T12:39:07Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-015",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-015-docops-init-positional-dir-action-announcement-and.md",
+      "title": "docops init — positional [dir], action announcement, and TTY-interactive confirm",
+      "task_status": "backlog",
+      "priority": "p1",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0020"
+      ],
+      "depends_on": [
+        "TP-007"
+      ],
+      "summary": "Fix the three ergonomic gaps in `docops init` surfaced by v0.1.0 first-user testing: no way to target a different folder, no explanation of what init will do, no confirmation before writing.",
+      "word_count": 402,
+      "last_touched": "2026-04-22T17:30:04Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-016",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-016-docops-refresh-composite-validate-index-state-for.md",
+      "title": "docops refresh — composite validate+index+state for the edit loop",
+      "task_status": "backlog",
+      "priority": "p1",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0020"
+      ],
+      "depends_on": [
+        "TP-003",
+        "TP-004",
+        "TP-005"
+      ],
+      "summary": "Collapse the three-command chain agents and humans run after every doc edit (`validate \u0026\u0026 index \u0026\u0026 state`) into a single `docops refresh` subcommand. `audit` stays separate — it is advisory, not a ref…",
+      "word_count": 382,
+      "last_touched": "2026-04-22T17:30:32Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-017",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-017-docops-new-body-flags-plus-validator-enum-hints.md",
+      "title": "docops new --body flags plus validator enum hints",
+      "task_status": "backlog",
+      "priority": "p1",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0020"
+      ],
+      "depends_on": [
+        "TP-008",
+        "TP-003"
+      ],
+      "summary": "Let `docops new` create a doc with real content in one CLI call, so agents (and scripts) never have to write-after-create to replace the stub. Also: make validator enum errors self-diagnosing by listi…",
+      "word_count": 563,
+      "last_touched": "2026-04-22T17:31:04Z",
       "age_days": 0,
       "stale": false
     }
