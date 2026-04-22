@@ -5,8 +5,8 @@
 ## Counts
 
 - Context: 4 active · 0 superseded
-- ADRs: 18 accepted · 0 draft · 0 superseded (17 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 3 backlog · 0 active · 0 blocked · 9 done
+- ADRs: 19 accepted · 0 draft · 0 superseded (18 `coverage: required`, 1 `coverage: not-needed`)
+- Tasks: 5 backlog · 0 active · 0 blocked · 9 done
 
 ## Needs attention
 
@@ -27,6 +27,7 @@
 - 2026-04-22 56f6d7c TP-003: docops validate — schema + graph invariants over docs/
 - 2026-04-22 5255483 planning: search + CLI-as-query-layer ADRs plus two tasks
 - 2026-04-22 50eeb7a initial docs & idea
+- 2026-04-22 2a99403 TP-009: docops schema — JSON Schema for editor tooling
 - 2026-04-22 1a3de5c dog-food the DocOps convention (CTX, ADR, TP, meta/product split)
 - 2026-04-22 13514b1 removed reference implementation
 

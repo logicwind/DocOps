@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22T09:50:46Z",
+  "generated_at": "2026-04-22T12:30:04Z",
   "version": 1,
   "docs": [
     {
@@ -492,11 +492,19 @@
           "edge": "related"
         },
         {
+          "id": "ADR-0019",
+          "edge": "related"
+        },
+        {
           "id": "TP-001",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-014",
           "edge": "requires"
         }
       ],
-      "implementation": "done",
+      "implementation": "partial",
       "stale": false
     },
     {
@@ -521,11 +529,19 @@
       "age_days": 0,
       "referenced_by": [
         {
+          "id": "ADR-0019",
+          "edge": "related"
+        },
+        {
           "id": "TP-001",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-014",
           "edge": "requires"
         }
       ],
-      "implementation": "done",
+      "implementation": "partial",
       "stale": false
     },
     {
@@ -565,11 +581,19 @@
           "edge": "related"
         },
         {
+          "id": "ADR-0019",
+          "edge": "related"
+        },
+        {
           "id": "TP-007",
           "edge": "requires"
         },
         {
           "id": "TP-010",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-013",
           "edge": "requires"
         }
       ],
@@ -610,6 +634,10 @@
         },
         {
           "id": "ADR-0016",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0019",
           "edge": "related"
         }
       ],
@@ -756,6 +784,44 @@
         },
         {
           "id": "TP-012",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "not-started",
+      "stale": false
+    },
+    {
+      "id": "ADR-0019",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0019-ship-v0-1-0-from-logicwind-docops.md",
+      "title": "Ship v0.1.0 from logicwind/DocOps",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0011",
+        "ADR-0012",
+        "ADR-0013",
+        "ADR-0014"
+      ],
+      "tags": [
+        "release",
+        "distribution",
+        "org",
+        "scope"
+      ],
+      "summary": "The phase-1 CLI surface (`init`, `validate`, `index`, `state`, `audit`, `new`, `schema`) has landed across TP-001…TP-009. The project has so far been developed under the placeholder module path `githu…",
+      "word_count": 815,
+      "last_touched": "2026-04-22T12:28:46Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-013",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-014",
           "edge": "requires"
         }
       ],
@@ -1075,10 +1141,15 @@
         {
           "id": "TP-010",
           "edge": "depends_on"
+        },
+        {
+          "id": "TP-013",
+          "edge": "depends_on"
         }
       ],
       "blocks": [
-        "TP-010"
+        "TP-010",
+        "TP-013"
       ],
       "stale": false
     },
@@ -1131,7 +1202,7 @@
       ],
       "summary": "Emit the frontmatter schemas as JSON Schema so editors (VS Code YAML plugin, JetBrains, Zed) can validate in-editor without running the CLI.",
       "word_count": 124,
-      "last_touched": "2026-04-22T06:03:04Z",
+      "last_touched": "2026-04-22T09:51:55Z",
       "age_days": 0,
       "stale": false
     },
@@ -1203,6 +1274,60 @@
       "summary": "Close the query-surface gap identified in ADR-0018 so agents never need to `cat docs/.index.json` to answer routine questions. Each command returns a focused slice of the index, not the whole graph.",
       "word_count": 494,
       "last_touched": "2026-04-22T08:19:55Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-013",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-013-finalize-skill-pack-scope.md",
+      "title": "Finalize skill-pack scope for v0.1.0 — close TP-010 gap",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0019",
+        "ADR-0013"
+      ],
+      "depends_on": [
+        "TP-007"
+      ],
+      "summary": "ADR-0019 rescopes the skill-pack work: init-based distribution is the single path for v0.1.0; the `packages/` standalone bundles are deferred. This task closes the remaining gap items from TP-010 that…",
+      "word_count": 301,
+      "last_touched": "2026-04-22T12:29:15Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-014",
+          "edge": "depends_on"
+        }
+      ],
+      "blocks": [
+        "TP-014"
+      ],
+      "stale": false
+    },
+    {
+      "id": "TP-014",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-014-release-v0-1-0-under-logicwind-docops.md",
+      "title": "Release v0.1.0 under logicwind/DocOps",
+      "task_status": "backlog",
+      "priority": "p1",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0019",
+        "ADR-0012",
+        "ADR-0011"
+      ],
+      "depends_on": [
+        "TP-013"
+      ],
+      "summary": "Migrate the module path, add the license, tidy the release pipeline, and cut the first public tag. End state: `github.com/logicwind/DocOps` exists with `v0.1.0` tagged and goreleaser-produced archives…",
+      "word_count": 324,
+      "last_touched": "2026-04-22T12:29:41Z",
       "age_days": 0,
       "stale": false
     }
