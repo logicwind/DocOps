@@ -97,7 +97,7 @@ bin/docops                     ← product: built binary (gitignored)
 | `docs/decisions/` | ADRs. File prefix `ADR-`. |
 | `docs/tasks/` | Work units. File prefix `TP-`. Every task cites ≥1 ADR or CTX. |
 | `docs/STATE.md` | Auto-generated state snapshot. Do not edit by hand. |
-| `docs/.index.json` | Auto-generated graph with computed reverse edges. Do not cat it into your context — use the read commands below (ADR-0018). |
+| `docs/.index.json` | Auto-generated graph with computed reverse edges. Do not cat it into your context — use `docops state` or read individual doc files instead. |
 
 ## Invariants you MUST respect
 
@@ -109,7 +109,7 @@ bin/docops                     ← product: built binary (gitignored)
 
 ## CLI commands — this is the query API
 
-All commands support `--json` for structured output.
+### Shipped (all support `--json` for structured output)
 
 ```
 docops init                       # scaffold DocOps in this repo
@@ -117,22 +117,23 @@ docops validate                   # schema + graph invariants
 docops index                      # rebuild docs/.index.json
 docops state                      # regenerate docs/STATE.md
 docops audit                      # structural coverage gaps
-docops search <query> [filters]   # content + frontmatter search
-docops next [--assignee <name>]   # next actionable task
-docops get <id>                   # doc + computed fields
-docops list [--kind …]            # trimmed listing
-docops graph <id> [--depth N]     # typed reference tree
+docops refresh                    # validate + index + state in one pass
 docops new ctx "title" --type memo
 docops new adr "title" [--related ADR-xxxx]
 docops new task "title" --requires ADR-xxxx,CTX-xxx
-docops status <id> <new-status>   # atomic status change
-docops review <ADR-id>            # semantic coverage review (writes sidecar)
+docops schema                     # (re)write schema JSON from docops.yaml
 ```
 
-**Prefer these commands over reading `docs/.index.json` directly.** Each
-read command returns a focused slice; the whole index is for
-bootstrap / CI consumers, not routine agent queries. Loading the full
-index into context burns tokens on docs you will not use. See
+### Not yet built — do not call these
+
+`status`, `get`, `list`, `graph`, `next`, `search`, `review` do not exist
+yet. If your workflow needs one, propose a task first rather than inventing
+flags or behaviour.
+
+**For now, instead of `list`/`get`/`search`:** read `docs/STATE.md` for
+counts and needs-attention, or read individual `docs/{context,decisions,tasks}/`
+files directly. Avoid loading `docs/.index.json` wholesale — it is for
+bootstrap / CI consumers, not routine agent queries. See
 `docs/decisions/ADR-0018-cli-as-query-layer.md` for the rationale.
 
 The binary is language-agnostic — install via direct download, Homebrew, Scoop, or Docker. No Node/Bun/Python dependency.
@@ -141,10 +142,10 @@ The binary is language-agnostic — install via direct download, Homebrew, Scoop
 
 1. Read `docs/STATE.md`.
 2. Run `docops audit` to see open gaps.
-3. Run `docops next` to pick a task (or open a specific `TP-*` file).
+3. Read `docs/tasks/` to pick a task (check `depends_on` before starting).
 4. Before coding: read every doc in the task's `requires:` and `depends_on:`.
 5. Work in your native plan/execute mode. DocOps does not prescribe how you code.
-6. When finished: `docops status TP-xxx done`. The index and STATE.md regenerate.
+6. After finishing, update the task's frontmatter `status:` field and run `docops refresh` to regenerate index and STATE.md.
 7. If your work revealed a new decision, `docops new adr`. If a new gap, `docops new task` with citations.
 
 ## Pairs well with

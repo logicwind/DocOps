@@ -5,8 +5,8 @@
 ## Counts
 
 - Context: 4 active · 0 superseded
-- ADRs: 21 accepted · 0 draft · 0 superseded (20 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 3 backlog · 0 active · 0 blocked · 15 done
+- ADRs: 22 accepted · 0 draft · 0 superseded (21 `coverage: required`, 1 `coverage: not-needed`)
+- Tasks: 4 backlog · 0 active · 0 blocked · 15 done
 
 ## Needs attention
 
@@ -34,6 +34,7 @@
 - 2026-04-22 5255483 planning: search + CLI-as-query-layer ADRs plus two tasks
 - 2026-04-22 50eeb7a initial docs & idea
 - 2026-04-22 4631e43 TP-017: docops new --body + validator enum hints
+- 2026-04-22 2b1a7ee planning: ADR-0021 + TP-018 — docops upgrade for in-place bumps
 - 2026-04-22 2a99403 TP-009: docops schema — JSON Schema for editor tooling
 - 2026-04-22 1a3de5c dog-food the DocOps convention (CTX, ADR, TP, meta/product split)
 - 2026-04-22 13514b1 removed reference implementation
