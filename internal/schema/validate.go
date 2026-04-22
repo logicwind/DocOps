@@ -52,7 +52,7 @@ func ValidateContext(c Context, cfg Config) error {
 	} else if len(cfg.ContextTypes) > 0 && !slices.Contains(cfg.ContextTypes, c.Type) {
 		errs = append(errs, FieldError{
 			Field:   "type",
-			Message: fmt.Sprintf("%q not in docops.yaml context_types %v", c.Type, cfg.ContextTypes),
+			Message: fmt.Sprintf("type %q is not one of: %s", c.Type, strings.Join(cfg.ContextTypes, ", ")),
 		})
 	}
 	errs = append(errs, validateRefList("supersedes", c.Supersedes, KindContext)...)
@@ -145,13 +145,15 @@ func containsNonTaskRef(refs []string) bool {
 }
 
 // appendEnumCheck validates a string against a closed enum. When required
-// is true, an empty value also produces an error.
+// is true, an empty value also produces an error. The allowed values are
+// always included in the Message so agents can fix the value on first read.
 func appendEnumCheck(errs ValidationErrors, field, value string, allowed []string, required bool) ValidationErrors {
+	hint := strings.Join(allowed, ", ")
 	if value == "" {
 		if required {
 			errs = append(errs, FieldError{
 				Field:   field,
-				Message: fmt.Sprintf("required (one of %v)", allowed),
+				Message: fmt.Sprintf("required; must be one of: %s", hint),
 			})
 		}
 		return errs
@@ -159,7 +161,7 @@ func appendEnumCheck(errs ValidationErrors, field, value string, allowed []strin
 	if !slices.Contains(allowed, value) {
 		errs = append(errs, FieldError{
 			Field:   field,
-			Message: fmt.Sprintf("%q not in %v", value, allowed),
+			Message: fmt.Sprintf("%s %q is not one of: %s", field, value, hint),
 		})
 	}
 	return errs

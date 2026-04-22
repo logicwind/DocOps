@@ -432,6 +432,114 @@ func TestADRFourDigitID(t *testing.T) {
 	}
 }
 
+// ----- BodyReader (--body / --body-file) -------------------------------------
+
+func TestNewTask_BodyReader_ReplacesStub(t *testing.T) {
+	root := makeRoot(t)
+	const customBody = "## Goal\n\nCustom goal.\n\n## Acceptance\n\n- Done.\n"
+	opts := Options{
+		Root:       root,
+		Type:       DocTypeTask,
+		Title:      "body test",
+		Requires:   []string{"ADR-0001"},
+		NoOpen:     true,
+		BodyReader: strings.NewReader(customBody),
+	}
+	res, err := Run(opts)
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	raw, _ := os.ReadFile(res.Path)
+	_, body, err := schema.SplitFrontmatter(raw)
+	if err != nil {
+		t.Fatalf("SplitFrontmatter: %v", err)
+	}
+	if strings.TrimSpace(string(body)) != strings.TrimSpace(customBody) {
+		t.Errorf("body mismatch\ngot:  %q\nwant: %q", string(body), customBody)
+	}
+}
+
+func TestNewADR_BodyReader_ReplacesStub(t *testing.T) {
+	root := makeRoot(t)
+	const customBody = "## Context\n\nSome context.\n"
+	opts := Options{
+		Root:       root,
+		Type:       DocTypeADR,
+		Title:      "body adr test",
+		NoOpen:     true,
+		BodyReader: strings.NewReader(customBody),
+	}
+	res, err := Run(opts)
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	raw, _ := os.ReadFile(res.Path)
+	_, body, err := schema.SplitFrontmatter(raw)
+	if err != nil {
+		t.Fatalf("SplitFrontmatter: %v", err)
+	}
+	if strings.TrimSpace(string(body)) != strings.TrimSpace(customBody) {
+		t.Errorf("body mismatch\ngot:  %q\nwant: %q", string(body), customBody)
+	}
+}
+
+func TestNewTask_BodyReader_ImpliesNoOpen(t *testing.T) {
+	root := makeRoot(t)
+	// NoOpen is intentionally left false; BodyReader should force it.
+	opts := Options{
+		Root:       root,
+		Type:       DocTypeTask,
+		Title:      "no-open via body",
+		Requires:   []string{"ADR-0001"},
+		NoOpen:     false,
+		BodyReader: strings.NewReader("## Goal\n\nTest.\n"),
+	}
+	// If BodyReader does not set NoOpen, the editor would launch — which
+	// would block in a test environment. The fact that this returns at all
+	// confirms NoOpen was forced.
+	res, err := Run(opts)
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	if res.ID == "" {
+		t.Error("expected non-empty ID")
+	}
+}
+
+func TestNewTask_BodyFileRoundTrip(t *testing.T) {
+	root := makeRoot(t)
+	const bodyContent = "## Goal\n\nFrom file.\n"
+	bodyPath := filepath.Join(t.TempDir(), "body.md")
+	if err := os.WriteFile(bodyPath, []byte(bodyContent), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Simulate --body-file by opening the file and passing as BodyReader.
+	f, err := os.Open(bodyPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	opts := Options{
+		Root:       root,
+		Type:       DocTypeTask,
+		Title:      "file body test",
+		Requires:   []string{"ADR-0001"},
+		NoOpen:     true,
+		BodyReader: f,
+	}
+	res, err := Run(opts)
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	raw, _ := os.ReadFile(res.Path)
+	_, body, _ := schema.SplitFrontmatter(raw)
+	if strings.TrimSpace(string(body)) != strings.TrimSpace(bodyContent) {
+		t.Errorf("body mismatch\ngot:  %q\nwant: %q", string(body), bodyContent)
+	}
+}
+
 // fmt is used in the test — avoid unused import by aliasing.
 var _ = fmt.Sprintf
 

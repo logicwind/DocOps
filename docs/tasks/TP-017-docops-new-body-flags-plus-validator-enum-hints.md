@@ -1,6 +1,6 @@
 ---
 title: docops new --body flags plus validator enum hints
-status: backlog
+status: done
 priority: p1
 assignee: unassigned
 requires: [ADR-0020]

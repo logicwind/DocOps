@@ -7,6 +7,7 @@ package newdoc
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -71,6 +72,11 @@ type Options struct {
 	// JSON causes Run to emit {"id","path"} to stdout instead of the human message.
 	JSON bool
 
+	// BodyReader, when non-nil, supplies the document body (everything after
+	// the frontmatter fence). The stub body is replaced entirely. Setting
+	// BodyReader implies NoOpen=true — the file is already populated.
+	BodyReader io.Reader
+
 	// cfg is loaded internally; exposed only for seeding tests.
 	cfg config.Config
 }
@@ -103,6 +109,11 @@ func Run(opts Options) (*Result, error) {
 		return nil, err
 	}
 
+	// BodyReader implies NoOpen — no reason to open an editor on a pre-populated file.
+	if opts.BodyReader != nil {
+		opts.NoOpen = true
+	}
+
 	id, err := allocateID(opts)
 	if err != nil {
 		return nil, err
@@ -111,7 +122,10 @@ func Run(opts Options) (*Result, error) {
 	slug := slugify(opts.Title)
 	rel, absPath := docPath(opts, id, slug)
 
-	body := buildDoc(opts, id)
+	body, err := buildDoc(opts, id)
+	if err != nil {
+		return nil, err
+	}
 
 	if err := os.MkdirAll(filepath.Dir(absPath), 0o755); err != nil {
 		return nil, fmt.Errorf("newdoc: mkdir: %w", err)
@@ -163,10 +177,11 @@ func docPath(opts Options, id, slug string) (string, string) {
 	return rel, filepath.Join(opts.Root, rel)
 }
 
-// buildDoc constructs the complete markdown document bytes.
-func buildDoc(opts Options, id string) []byte {
+// buildDoc constructs the complete markdown document bytes. When
+// opts.BodyReader is non-nil its content replaces the default stub body.
+func buildDoc(opts Options, id string) ([]byte, error) {
 	var fm []byte
-	var bodySection string
+	var stubBody string
 
 	switch opts.Type {
 	case DocTypeCtx:
@@ -180,7 +195,7 @@ func buildDoc(opts Options, id string) []byte {
 			Supersedes: []string{},
 		}
 		fm = marshalFrontmatter(c)
-		bodySection = fmt.Sprintf("# %s\n\n<!-- Add content here -->\n", opts.Title)
+		stubBody = fmt.Sprintf("# %s\n\n<!-- Add content here -->\n", opts.Title)
 
 	case DocTypeADR:
 		related := opts.Related
@@ -197,7 +212,7 @@ func buildDoc(opts Options, id string) []byte {
 			Tags:       []string{},
 		}
 		fm = marshalFrontmatter(a)
-		bodySection = fmt.Sprintf("# %s\n\n<!-- Add content here -->\n", opts.Title)
+		stubBody = fmt.Sprintf("# %s\n\n<!-- Add content here -->\n", opts.Title)
 
 	case DocTypeTask:
 		priority := opts.Priority
@@ -217,10 +232,19 @@ func buildDoc(opts Options, id string) []byte {
 			DependsOn: []string{},
 		}
 		fm = marshalFrontmatter(t)
-		bodySection = fmt.Sprintf("# %s\n\n## Goal\n\n## Acceptance\n\n## Notes\n", opts.Title)
+		stubBody = fmt.Sprintf("# %s\n\n## Goal\n\n## Acceptance\n\n## Notes\n", opts.Title)
 	}
 
-	return []byte("---\n" + string(fm) + "---\n\n" + bodySection)
+	bodySection := stubBody
+	if opts.BodyReader != nil {
+		supplied, err := io.ReadAll(opts.BodyReader)
+		if err != nil {
+			return nil, fmt.Errorf("newdoc: read body: %w", err)
+		}
+		bodySection = string(supplied)
+	}
+
+	return []byte("---\n" + string(fm) + "---\n\n" + bodySection), nil
 }
 
 // marshalFrontmatter serialises a struct to YAML. Uses yaml.v3 so field order

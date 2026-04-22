@@ -21,6 +21,10 @@ func TestValidateContext_UnknownType(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "type:") {
 		t.Fatalf("expected type error, got %v", err)
 	}
+	// Allowed values must appear in the message.
+	if !strings.Contains(err.Error(), "memo") {
+		t.Errorf("expected allowed values in message, got %v", err)
+	}
 }
 
 func TestValidateContext_SkipEnumWhenNoConfig(t *testing.T) {
@@ -43,6 +47,10 @@ func TestValidateADR_BadEnum(t *testing.T) {
 	err := ValidateADR(a)
 	if err == nil || !strings.Contains(err.Error(), "status:") {
 		t.Fatalf("expected status enum error, got %v", err)
+	}
+	// Allowed values must appear in the message.
+	if !strings.Contains(err.Error(), "draft") || !strings.Contains(err.Error(), "accepted") {
+		t.Errorf("expected allowed values in enum error message, got %v", err)
 	}
 }
 
@@ -91,6 +99,77 @@ func TestValidateTask_BadStatus(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "status:") {
 		t.Fatalf("expected status error, got %v", err)
 	}
+}
+
+// TestEnumError_IncludesAllowedValues asserts that every invalid-enum finding
+// includes the full allowed-values list in its message — so agents can fix the
+// value on first read without a follow-up round-trip (ADR-0020).
+func TestEnumError_IncludesAllowedValues(t *testing.T) {
+	t.Run("ADR status", func(t *testing.T) {
+		a := ADR{Title: "x", Status: "proposed", Coverage: "required", Date: "2026-04-22"}
+		err := ValidateADR(a)
+		if err == nil {
+			t.Fatal("expected error")
+		}
+		for _, v := range ADRStatuses {
+			if !strings.Contains(err.Error(), v) {
+				t.Errorf("allowed value %q missing from message: %v", v, err)
+			}
+		}
+	})
+
+	t.Run("ADR coverage", func(t *testing.T) {
+		a := ADR{Title: "x", Status: "draft", Coverage: "optional", Date: "2026-04-22"}
+		err := ValidateADR(a)
+		if err == nil {
+			t.Fatal("expected error")
+		}
+		for _, v := range ADRCoverages {
+			if !strings.Contains(err.Error(), v) {
+				t.Errorf("allowed value %q missing from message: %v", v, err)
+			}
+		}
+	})
+
+	t.Run("Task status", func(t *testing.T) {
+		task := Task{Title: "x", Status: "in-progress", Priority: "p1", Requires: []string{"ADR-0001"}}
+		err := ValidateTask(task)
+		if err == nil {
+			t.Fatal("expected error")
+		}
+		for _, v := range TaskStatuses {
+			if !strings.Contains(err.Error(), v) {
+				t.Errorf("allowed value %q missing from message: %v", v, err)
+			}
+		}
+	})
+
+	t.Run("Task priority", func(t *testing.T) {
+		task := Task{Title: "x", Status: "backlog", Priority: "high", Requires: []string{"ADR-0001"}}
+		err := ValidateTask(task)
+		if err == nil {
+			t.Fatal("expected error")
+		}
+		for _, v := range TaskPriorities {
+			if !strings.Contains(err.Error(), v) {
+				t.Errorf("allowed value %q missing from message: %v", v, err)
+			}
+		}
+	})
+
+	t.Run("CTX type with config", func(t *testing.T) {
+		cfg := Config{ContextTypes: []string{"prd", "memo", "brief"}}
+		c := Context{Title: "x", Type: "unknown"}
+		err := ValidateContext(c, cfg)
+		if err == nil {
+			t.Fatal("expected error")
+		}
+		for _, v := range cfg.ContextTypes {
+			if !strings.Contains(err.Error(), v) {
+				t.Errorf("allowed value %q missing from message: %v", v, err)
+			}
+		}
+	})
 }
 
 func TestValidationErrors_ReportsAll(t *testing.T) {

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -55,8 +57,10 @@ func cmdNewCtx(args []string) int {
 	ctxType := fs.String("type", "memo", "context type (prd, design, research, notes, memo, spec, brief)")
 	noOpen := fs.Bool("no-open", false, "skip opening $EDITOR after creation")
 	asJSON := fs.Bool("json", false, "emit {id, path} JSON instead of human output")
+	body := fs.String("body", "", "read the document body from stdin (-) or literal string; replaces the default stub")
+	bodyFile := fs.String("body-file", "", "read the document body from <path>; replaces the default stub")
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: docops new ctx \"title\" [--type <type>] [--no-open] [--json]")
+		fmt.Fprintln(os.Stderr, "usage: docops new ctx \"title\" [--type <type>] [--no-open] [--json] [--body -|text] [--body-file <path>]")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(flagArgs); err != nil {
@@ -74,12 +78,18 @@ func cmdNewCtx(args []string) int {
 		}
 	}
 
+	bodyReader, code := resolveBody(*body, *bodyFile)
+	if code != 0 {
+		return code
+	}
+
 	return runNewDoc(newdoc.Options{
-		Type:    newdoc.DocTypeCtx,
-		Title:   title,
-		CtxType: *ctxType,
-		NoOpen:  *noOpen,
-		JSON:    *asJSON,
+		Type:       newdoc.DocTypeCtx,
+		Title:      title,
+		CtxType:    *ctxType,
+		NoOpen:     *noOpen,
+		JSON:       *asJSON,
+		BodyReader: bodyReader,
 	}, *asJSON)
 }
 
@@ -91,8 +101,10 @@ func cmdNewADR(args []string) int {
 	related := fs.String("related", "", "comma-separated related ADR IDs (e.g. ADR-0010,ADR-0004)")
 	noOpen := fs.Bool("no-open", false, "skip opening $EDITOR after creation")
 	asJSON := fs.Bool("json", false, "emit {id, path} JSON instead of human output")
+	body := fs.String("body", "", "read the document body from stdin (-) or literal string; replaces the default stub")
+	bodyFile := fs.String("body-file", "", "read the document body from <path>; replaces the default stub")
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: docops new adr \"title\" [--related ADR-0010,ADR-0004] [--no-open] [--json]")
+		fmt.Fprintln(os.Stderr, "usage: docops new adr \"title\" [--related ADR-0010,ADR-0004] [--no-open] [--json] [--body -|text] [--body-file <path>]")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(flagArgs); err != nil {
@@ -118,12 +130,18 @@ func cmdNewADR(args []string) int {
 		}
 	}
 
+	bodyReader, code := resolveBody(*body, *bodyFile)
+	if code != 0 {
+		return code
+	}
+
 	return runNewDoc(newdoc.Options{
-		Type:    newdoc.DocTypeADR,
-		Title:   title,
-		Related: relatedIDs,
-		NoOpen:  *noOpen,
-		JSON:    *asJSON,
+		Type:       newdoc.DocTypeADR,
+		Title:      title,
+		Related:    relatedIDs,
+		NoOpen:     *noOpen,
+		JSON:       *asJSON,
+		BodyReader: bodyReader,
 	}, *asJSON)
 }
 
@@ -137,8 +155,10 @@ func cmdNewTask(args []string) int {
 	assignee := fs.String("assignee", "unassigned", "task assignee")
 	noOpen := fs.Bool("no-open", false, "skip opening $EDITOR after creation")
 	asJSON := fs.Bool("json", false, "emit {id, path} JSON instead of human output")
+	body := fs.String("body", "", "read the document body from stdin (-) or literal string; replaces the default stub")
+	bodyFile := fs.String("body-file", "", "read the document body from <path>; replaces the default stub")
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: docops new task \"title\" --requires ADR-0020,CTX-003 [--priority p1] [--assignee claude] [--no-open] [--json]")
+		fmt.Fprintln(os.Stderr, "usage: docops new task \"title\" --requires ADR-0020,CTX-003 [--priority p1] [--assignee claude] [--no-open] [--json] [--body -|text] [--body-file <path>]")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(flagArgs); err != nil {
@@ -164,15 +184,68 @@ func cmdNewTask(args []string) int {
 		}
 	}
 
+	bodyReader, code := resolveBody(*body, *bodyFile)
+	if code != 0 {
+		return code
+	}
+
 	return runNewDoc(newdoc.Options{
-		Type:     newdoc.DocTypeTask,
-		Title:    title,
-		Requires: requiresIDs,
-		Priority: *priority,
-		Assignee: *assignee,
-		NoOpen:   *noOpen,
-		JSON:     *asJSON,
+		Type:       newdoc.DocTypeTask,
+		Title:      title,
+		Requires:   requiresIDs,
+		Priority:   *priority,
+		Assignee:   *assignee,
+		NoOpen:     *noOpen,
+		JSON:       *asJSON,
+		BodyReader: bodyReader,
 	}, *asJSON)
+}
+
+// resolveBody resolves the --body / --body-file flag pair into an io.Reader.
+// Returns (nil, 0) when neither flag is set (stub body will be used).
+// Returns (reader, 0) on success, or (nil, 2) on usage/IO error.
+func resolveBody(body, bodyFile string) (io.Reader, int) {
+	if body != "" && bodyFile != "" {
+		fmt.Fprintln(os.Stderr, "docops new: --body and --body-file are mutually exclusive")
+		return nil, 2
+	}
+	if body == "-" {
+		// Read from stdin. On a terminal with no piped content this would
+		// block, so we detect that and exit cleanly.
+		if isTerminalStdin() {
+			fmt.Fprintln(os.Stderr, "docops new: no body on stdin; pipe content or use --body-file")
+			return nil, 2
+		}
+		data, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "docops new: read stdin: %v\n", err)
+			return nil, 2
+		}
+		return bytes.NewReader(data), 0
+	}
+	if body != "" {
+		return strings.NewReader(body), 0
+	}
+	if bodyFile != "" {
+		data, err := os.ReadFile(bodyFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "docops new: --body-file %s: %v\n", bodyFile, err)
+			return nil, 2
+		}
+		return bytes.NewReader(data), 0
+	}
+	return nil, 0
+}
+
+// isTerminalStdin reports whether stdin is an interactive terminal.
+// Inlined here to avoid importing golang.org/x/term into newdoc package.
+func isTerminalStdin() bool {
+	fi, err := os.Stdin.Stat()
+	if err != nil {
+		return false
+	}
+	// ModeCharDevice is set for a real terminal; pipes and files are not.
+	return (fi.Mode() & os.ModeCharDevice) != 0
 }
 
 // extractTitle pulls the first non-flag argument out of args so flag.Parse

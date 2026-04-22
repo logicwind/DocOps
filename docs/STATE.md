@@ -6,7 +6,7 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 20 accepted · 0 draft · 0 superseded (19 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 3 backlog · 0 active · 0 blocked · 14 done
+- Tasks: 2 backlog · 0 active · 0 blocked · 15 done
 
 ## Needs attention
 
@@ -24,6 +24,7 @@
 - 2026-04-22 e94040f TP-005: docops state — regenerate STATE.md from the index
 - 2026-04-22 e22e6c6 planning: ADR-0019 + TP-013/TP-014 for v0.1.0 release
 - 2026-04-22 dafd8eb TP-006: docops audit — structural gap punch list
+- 2026-04-22 d2ba125 TP-016: docops refresh — composite validate+index+state
 - 2026-04-22 ca20529 TP-015: docops init — [dir], announcement, TTY-interactive confirm
 - 2026-04-22 8a175ae TP-014: close task, refresh committed artifacts
 - 2026-04-22 84fb540 planning: ADR-0020 + TP-015/TP-016/TP-017 for v0.1.1 ergonomics
