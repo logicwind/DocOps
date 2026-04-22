@@ -10,25 +10,27 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 16 accepted · 0 draft · 0 superseded (15 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 9 backlog · 0 active · 0 blocked · 1 done
+- Tasks: 8 backlog · 0 active · 0 blocked · 2 done
 
 ## Needs attention
 
-- **TP-001 done** — CLI scaffold landed in Go. Binary is 1.8 MB (darwin-arm64), well under the 30 MB budget. TP-002 (schemas) is now the next unblocked task.
-- **Structural gaps:** 15 `coverage: required` ADRs still lack at least one completed citing task — this clears as TP-002..TP-010 ship.
+- **TP-002 done** — frontmatter types, validators, JSON Schema emitters, and a `docops.yaml` loader all landed in `internal/schema` + `internal/config`. The dog-food self-validation test exercises every CTX/ADR/TP in this repo on each `go test`. TP-003 (validate CLI), TP-007 (init), TP-008 (new), and TP-009 (publish JSON Schema) are now all unblocked.
+- **Structural gaps:** 14 `coverage: required` ADRs still lack at least one completed citing task — this clears as TP-003..TP-010 ship. (15 → 14 because TP-002 ships with ADR-0002 / ADR-0003 / ADR-0006 citations.)
 - **Semantic coverage: never reviewed** for any ADR. Run `docops review <ADR-id>` once that command exists (TP-003+).
 - **Assignees on remaining tasks** are `unassigned` — decide who (Claude / Cursor / human) picks up each.
 - **Meta/product layer formalized** (ADR-0016). Root `AGENTS.md` orients source-side agents; `templates/` holds user-facing artifacts. TP-007 consumes these templates verbatim.
+- **Small convention clarified** during TP-002: `related:` on ADRs accepts any doc kind (CTX/ADR/TP), not only ADR. Validator comment has the rationale.
 
 ## Active work
 
-(none — TP-001 just shipped; pick TP-002 next)
+(none — TP-002 just shipped; TP-003 is the next natural step)
 
 ## Recent activity
 
 - 2026-04-22 Bootstrap: 4 CTX, 15 ADRs, 10 tasks, `docops.yaml`, `AGENTS.md` created.
 - 2026-04-22 Added ADR-0016 (meta vs. product separation). Moved user-facing `AGENTS.md` content to `templates/AGENTS.md.tmpl`; rewrote root `AGENTS.md` for source-side agents. Updated TP-007 to read from `templates/`.
 - 2026-04-22 **TP-001 done.** Go scaffold (`cmd/docops`, `internal/version`, `Makefile`, `.goreleaser.yml`, CI + release workflows, README). `docops --version` works. Language choice (Go) and npm `optionalDependencies` plan appended to ADR-0012.
+- 2026-04-22 **TP-002 done.** `internal/schema` (types/parse/validate/jsonschema) and `internal/config` (docops.yaml loader). Strict YAML decoding, multi-error validation, JSON Schema emission. Dog-food self-validation test passes against all 30 live docs. 22 tests green.
 
 ## Pointers
 
@@ -37,4 +39,4 @@
 - **Why we're building it:** `docs/context/CTX-001-docops-vision.md`.
 - **What to avoid:** `docs/context/CTX-004-user-constraints.md`.
 - **Repo layers:** `docs/decisions/ADR-0016-meta-vs-product-separation.md`.
-- **Next work:** `docs/tasks/TP-001-scaffold-cli-project.md`.
+- **Next work:** `docs/tasks/TP-003-implement-validate-command.md`.
