@@ -18,10 +18,11 @@ const DefaultFilename = "docops.yaml"
 // Config is the in-memory representation of docops.yaml. Fields are added
 // as commands need them; keep the struct minimal.
 type Config struct {
-	Version      int      `yaml:"version"`
-	Paths        Paths    `yaml:"paths"`
-	ContextTypes []string `yaml:"context_types"`
-	Gaps         Gaps     `yaml:"gaps"`
+	Version                  int      `yaml:"version"`
+	Paths                    Paths    `yaml:"paths"`
+	ContextTypes             []string `yaml:"context_types"`
+	Gaps                     Gaps     `yaml:"gaps"`
+	RecentActivityWindowDays int      `yaml:"recent_activity_window_days"`
 }
 
 // Gaps mirrors the `gaps:` block of docops.yaml. Most entries are
@@ -94,6 +95,7 @@ func Default() Config {
 			TaskRequiresSupersededCtx:      SeverityWarn,
 			AdrSemanticReviewStaleDays:     60,
 		},
+		RecentActivityWindowDays: 7,
 	}
 }
 
@@ -150,6 +152,9 @@ func (c *Config) ApplyDefaults() {
 	}
 	if c.Gaps.AdrSemanticReviewStaleDays == 0 {
 		c.Gaps.AdrSemanticReviewStaleDays = def.Gaps.AdrSemanticReviewStaleDays
+	}
+	if c.RecentActivityWindowDays == 0 {
+		c.RecentActivityWindowDays = def.RecentActivityWindowDays
 	}
 }
 
