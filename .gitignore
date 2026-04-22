@@ -8,3 +8,6 @@ coverage.*
 # Local agent caches / logs — not part of the project.
 .a5c/
 .pi/
+
+# flock artifact from `docops new` ID allocation (transient, zero-byte).
+docs/.docops/*.lock
