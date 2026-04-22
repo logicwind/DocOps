@@ -43,6 +43,7 @@ var flagAllowlist = map[string]map[string]bool{
 		"--dry-run":   true,
 		"--force":     true,
 		"--no-skills": true,
+		"--yes":       true,
 	},
 	"validate": {
 		"--json": true,

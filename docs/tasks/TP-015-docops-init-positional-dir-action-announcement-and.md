@@ -1,6 +1,6 @@
 ---
 title: docops init — positional [dir], action announcement, and TTY-interactive confirm
-status: backlog
+status: done
 priority: p1
 assignee: unassigned
 requires: [ADR-0020]

@@ -5,11 +5,13 @@ description: Scaffold DocOps into a bare repository — creates docs/ folders, d
 
 # /docops:init
 
-Scaffold DocOps into this repository.
+Scaffold DocOps into this repository (or a specific directory).
 
 ```
-docops init [--dry-run] [--force] [--no-skills]
+docops init [dir] [--dry-run] [--force] [--no-skills] [--yes]
 ```
+
+`[dir]` is optional. When given, init targets that directory (creating it if absent) instead of cwd.
 
 What it does:
 
@@ -25,5 +27,8 @@ Flags:
 - `--dry-run` — print what would change, write nothing.
 - `--force` — overwrite files that have drifted from the shipped templates.
 - `--no-skills` — skip scaffolding the agent skill files.
+- `--yes` / `-y` — skip the interactive confirm prompt (required in CI and scripts).
+
+On a TTY, init prints the plan and prompts `Proceed? [y/N]` before writing. Non-TTY stdin (CI, pipes) and `--yes` both skip the prompt. `--dry-run` also skips the prompt.
 
 After init, run `docops validate` to confirm everything parses, then `/docops:new-ctx` / `/docops:new-adr` to start capturing the project's state.

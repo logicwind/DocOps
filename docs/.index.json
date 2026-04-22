@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22T17:31:12Z",
+  "generated_at": "2026-04-22T17:38:10Z",
   "version": 1,
   "docs": [
     {
@@ -872,7 +872,7 @@
       ],
       "summary": "First-user testing of v0.1.0 on a real project (`lw-website-nextjs-web`) surfaced three distinct friction points that are not bugs but are design regressions relative to what a polished CLI would do:",
       "word_count": 1119,
-      "last_touched": "2026-04-22T17:29:35Z",
+      "last_touched": "2026-04-22T17:31:24Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -888,7 +888,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "not-started",
+      "implementation": "partial",
       "stale": false
     },
     {
@@ -1430,7 +1430,7 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-015-docops-init-positional-dir-action-announcement-and.md",
       "title": "docops init — positional [dir], action announcement, and TTY-interactive confirm",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p1",
       "assignee": "unassigned",
       "requires": [
@@ -1441,7 +1441,7 @@
       ],
       "summary": "Fix the three ergonomic gaps in `docops init` surfaced by v0.1.0 first-user testing: no way to target a different folder, no explanation of what init will do, no confirmation before writing.",
       "word_count": 402,
-      "last_touched": "2026-04-22T17:30:04Z",
+      "last_touched": "2026-04-22T17:31:24Z",
       "age_days": 0,
       "stale": false
     },
@@ -1464,7 +1464,7 @@
       ],
       "summary": "Collapse the three-command chain agents and humans run after every doc edit (`validate \u0026\u0026 index \u0026\u0026 state`) into a single `docops refresh` subcommand. `audit` stays separate — it is advisory, not a ref…",
       "word_count": 382,
-      "last_touched": "2026-04-22T17:30:32Z",
+      "last_touched": "2026-04-22T17:31:24Z",
       "age_days": 0,
       "stale": false
     },
@@ -1486,7 +1486,7 @@
       ],
       "summary": "Let `docops new` create a doc with real content in one CLI call, so agents (and scripts) never have to write-after-create to replace the stub. Also: make validator enum errors self-diagnosing by listi…",
       "word_count": 563,
-      "last_touched": "2026-04-22T17:31:04Z",
+      "last_touched": "2026-04-22T17:31:24Z",
       "age_days": 0,
       "stale": false
     }
