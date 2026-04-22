@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"unicode"
 
@@ -22,6 +23,12 @@ import (
 	"github.com/logicwind/docops/internal/schema"
 	"gopkg.in/yaml.v3"
 )
+
+// allocMu serializes ID allocation within a process. The advisory flock
+// covers cross-process safety on unix; on Windows flock is a no-op, so
+// this mutex is what prevents goroutines from racing in parallel tests
+// and from the rare in-process concurrent CLI invocation.
+var allocMu sync.Mutex
 
 // DocType is the doc kind the caller wants to create.
 type DocType string
@@ -311,9 +318,14 @@ type counters struct {
 	Next    map[string]int `json:"next"`
 }
 
-// allocateID claims the next ID for the chosen kind using OS file locking to
-// prevent collisions when multiple processes run concurrently.
+// allocateID claims the next ID for the chosen kind using OS file locking
+// across processes (unix flock; no-op on Windows) plus a process-level
+// mutex that covers goroutines within the same binary — the flock alone
+// cannot serialize threads of one process on all platforms.
 func allocateID(opts Options) (string, error) {
+	allocMu.Lock()
+	defer allocMu.Unlock()
+
 	counterPath := filepath.Join(opts.Root, opts.cfg.Paths.Counters)
 	lockPath := counterPath + ".lock"
 

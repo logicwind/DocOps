@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -48,12 +49,13 @@ func TestRun_BareRepo_CreatesAllArtifacts(t *testing.T) {
 		}
 	}
 
-	// Pre-commit hook should be executable.
+	// Pre-commit hook should be executable on unix. Windows does not
+	// expose a POSIX executable bit, so skip the permission assertion.
 	info, err := os.Stat(filepath.Join(root, ".git/hooks/pre-commit"))
 	if err != nil {
 		t.Fatalf("stat hook: %v", err)
 	}
-	if info.Mode().Perm()&0o100 == 0 {
+	if runtime.GOOS != "windows" && info.Mode().Perm()&0o100 == 0 {
 		t.Errorf("pre-commit hook not executable: mode=%v", info.Mode())
 	}
 
