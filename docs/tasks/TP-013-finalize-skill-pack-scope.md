@@ -1,6 +1,6 @@
 ---
 title: Finalize skill-pack scope for v0.1.0 — close TP-010 gap
-status: backlog
+status: done
 priority: p2
 assignee: unassigned
 requires: [ADR-0019, ADR-0013]

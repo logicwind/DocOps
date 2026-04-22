@@ -22,11 +22,12 @@ import (
 // Options configures an init run. Root is the destination repository
 // (typically cwd); the other flags mirror the CLI surface.
 type Options struct {
-	Root    string
-	DryRun  bool
-	Force   bool
-	Out     io.Writer // human-readable progress; defaults to os.Stdout
-	Verbose bool
+	Root     string
+	DryRun   bool
+	Force    bool
+	NoSkills bool // skip scaffolding .claude/skills/docops/ and .cursor/commands/docops/
+	Out      io.Writer // human-readable progress; defaults to os.Stdout
+	Verbose  bool
 }
 
 // Action is a single filesystem change proposed by the planner. Init
@@ -160,20 +161,23 @@ func plan(opts Options) ([]Action, error) {
 	actions = append(actions, hookAction)
 
 	// 6. Agent skills — .claude/skills/docops/ and .cursor/commands/docops/.
-	skills, err := templates.Skills()
-	if err != nil {
-		return nil, fmt.Errorf("read skills: %w", err)
-	}
-	skillNames := make([]string, 0, len(skills))
-	for name := range skills {
-		skillNames = append(skillNames, name)
-	}
-	sort.Strings(skillNames)
-	for _, dir := range []string{".claude/skills/docops", ".cursor/commands/docops"} {
-		actions = append(actions, dirAction(opts, dir))
-		for _, name := range skillNames {
-			rel := filepath.Join(dir, name)
-			actions = append(actions, fileAction(opts, rel, skills[name], 0o644))
+	// Skipped entirely when --no-skills is set; existing files are not touched.
+	if !opts.NoSkills {
+		skills, err := templates.Skills()
+		if err != nil {
+			return nil, fmt.Errorf("read skills: %w", err)
+		}
+		skillNames := make([]string, 0, len(skills))
+		for name := range skills {
+			skillNames = append(skillNames, name)
+		}
+		sort.Strings(skillNames)
+		for _, dir := range []string{".claude/skills/docops", ".cursor/commands/docops"} {
+			actions = append(actions, dirAction(opts, dir))
+			for _, name := range skillNames {
+				rel := filepath.Join(dir, name)
+				actions = append(actions, fileAction(opts, rel, skills[name], 0o644))
+			}
 		}
 	}
 

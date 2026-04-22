@@ -8,7 +8,7 @@ description: Scaffold DocOps into a bare repository — creates docs/ folders, d
 Scaffold DocOps into this repository.
 
 ```
-docops init [--dry-run] [--force]
+docops init [--dry-run] [--force] [--no-skills]
 ```
 
 What it does:
@@ -24,5 +24,6 @@ Flags:
 
 - `--dry-run` — print what would change, write nothing.
 - `--force` — overwrite files that have drifted from the shipped templates.
+- `--no-skills` — skip scaffolding the agent skill files.
 
 After init, run `docops validate` to confirm everything parses, then `/docops:new-ctx` / `/docops:new-adr` to start capturing the project's state.

@@ -250,6 +250,39 @@ func TestRun_UsesProjectContextTypes(t *testing.T) {
 	}
 }
 
+// TestRun_NoSkills_SkipsSkillDirs verifies that --no-skills prevents
+// creation of .claude/skills/docops/ and .cursor/commands/docops/.
+func TestRun_NoSkills_SkipsSkillDirs(t *testing.T) {
+	root := t.TempDir()
+	withGit(t, root)
+
+	res, err := Run(Options{Root: root, NoSkills: true, Out: io.Discard})
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	// Neither skill directory nor any skill file should be created.
+	for _, rel := range []string{
+		".claude/skills/docops",
+		".cursor/commands/docops",
+	} {
+		abs := filepath.Join(root, rel)
+		if _, statErr := os.Stat(abs); statErr == nil {
+			t.Errorf("--no-skills: %s was created but should not have been", rel)
+		}
+	}
+
+	// No action in the result should reference those paths.
+	for _, a := range res.Actions {
+		if len(a.Rel) >= len(".claude") && a.Rel[:len(".claude")] == ".claude" {
+			t.Errorf("--no-skills: action references .claude path: %s (kind=%s)", a.Rel, a.Kind)
+		}
+		if len(a.Rel) >= len(".cursor") && a.Rel[:len(".cursor")] == ".cursor" {
+			t.Errorf("--no-skills: action references .cursor path: %s (kind=%s)", a.Rel, a.Kind)
+		}
+	}
+}
+
 func findAction(actions []Action, rel string) *Action {
 	for i, a := range actions {
 		if a.Rel == rel {
