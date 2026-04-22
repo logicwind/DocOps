@@ -6,7 +6,7 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 18 accepted · 0 draft · 0 superseded (17 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 6 backlog · 0 active · 0 blocked · 6 done
+- Tasks: 5 backlog · 0 active · 0 blocked · 7 done
 
 ## Needs attention
 
@@ -23,6 +23,7 @@
 - 2026-04-22 e94040f TP-005: docops state — regenerate STATE.md from the index
 - 2026-04-22 dafd8eb TP-006: docops audit — structural gap punch list
 - 2026-04-22 56f6d7c TP-003: docops validate — schema + graph invariants over docs/
+- 2026-04-22 5255483 planning: search + CLI-as-query-layer ADRs plus two tasks
 - 2026-04-22 50eeb7a initial docs & idea
 - 2026-04-22 1a3de5c dog-food the DocOps convention (CTX, ADR, TP, meta/product split)
 - 2026-04-22 13514b1 removed reference implementation

@@ -19,6 +19,8 @@ func main() {
 		fmt.Println(version.String())
 	case "--help", "-h", "help":
 		topLevelUsage(os.Stdout)
+	case "init":
+		os.Exit(cmdInit(args[1:]))
 	case "validate":
 		os.Exit(cmdValidate(args[1:]))
 	case "index":
@@ -40,6 +42,7 @@ func topLevelUsage(w *os.File) {
 	fmt.Fprintln(w, "usage: docops <command> [flags]")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "commands:")
+	fmt.Fprintln(w, "  init        scaffold DocOps in this repository        (TP-007)")
 	fmt.Fprintln(w, "  validate    schema + graph invariants over docs/    (TP-003)")
 	fmt.Fprintln(w, "  index       build docs/.index.json enriched graph   (TP-004)")
 	fmt.Fprintln(w, "  state       regenerate docs/STATE.md snapshot       (TP-005)")
@@ -47,7 +50,7 @@ func topLevelUsage(w *os.File) {
 	fmt.Fprintln(w, "  version     print the build version")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "coming:")
-	fmt.Fprintln(w, "  init, new, status, get, graph, review")
+	fmt.Fprintln(w, "  new, status, get, graph, review")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "see `docops <command> --help` for per-command flags.")
 }

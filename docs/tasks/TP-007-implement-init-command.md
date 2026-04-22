@@ -1,6 +1,6 @@
 ---
 title: Implement `docops init` — scaffold DocOps in a repo
-status: backlog
+status: done
 priority: p1
 assignee: unassigned
 requires: [ADR-0001, ADR-0015, ADR-0013, ADR-0016]

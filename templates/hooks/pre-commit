@@ -1,0 +1,16 @@
+#!/bin/sh
+# DocOps pre-commit hook — runs `docops validate` on any commit that touches docs/.
+# Language-agnostic: no Node, Bun, or Python dependency — just the `docops` binary on PATH.
+# Managed by `docops init`. Delete this file to disable, or re-run `docops init --force` to restore.
+
+set -e
+
+if ! command -v docops >/dev/null 2>&1; then
+    echo "docops: pre-commit hook skipped (docops binary not on PATH)" >&2
+    exit 0
+fi
+
+# Only validate when docs/ files are part of the staged change.
+if git diff --cached --name-only --diff-filter=ACMR | grep -q '^docs/'; then
+    docops validate
+fi
