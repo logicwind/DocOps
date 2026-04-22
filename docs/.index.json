@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22T19:12:49Z",
+  "generated_at": "2026-04-22T19:23:52Z",
   "version": 1,
   "docs": [
     {
@@ -88,7 +88,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "partial",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -282,7 +282,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "partial",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -773,7 +773,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "not-started",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -1428,9 +1428,9 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-011-implement-search-command.md",
       "title": "Implement `docops search` — content + structured filter query",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p1",
-      "assignee": "unassigned",
+      "assignee": "nachiket",
       "requires": [
         "ADR-0017",
         "ADR-0002",
@@ -1465,7 +1465,7 @@
       ],
       "summary": "Close the query-surface gap identified in ADR-0018 so agents never need to `cat docs/.index.json` to answer routine questions. Each command returns a focused slice of the index, not the whole graph.",
       "word_count": 494,
-      "last_touched": "2026-04-22T08:19:55Z",
+      "last_touched": "2026-04-22T19:13:03Z",
       "age_days": 0,
       "stale": false
     },

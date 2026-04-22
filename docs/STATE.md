@@ -6,7 +6,7 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 22 accepted · 0 draft · 0 superseded (21 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 3 backlog · 0 active · 0 blocked · 16 done
+- Tasks: 2 backlog · 0 active · 0 blocked · 17 done
 
 ## Needs attention
 
@@ -18,6 +18,7 @@
 
 ## Recent activity
 
+- 2026-04-23 6f41758 TP-012: docops get/list/graph/next — focused read commands
 - 2026-04-23 1aa3e32 remove internal TP-xxx IDs from help output; fix AGENTS.md to not document unbuilt commands
 - 2026-04-22 f928497 TP-007: docops init — scaffold a DocOps-enabled repo
 - 2026-04-22 f5ab1e6 TP-004: docops index — enriched graph written to .index.json
@@ -37,5 +38,4 @@
 - 2026-04-22 4631e43 TP-017: docops new --body + validator enum hints
 - 2026-04-22 2b1a7ee planning: ADR-0021 + TP-018 — docops upgrade for in-place bumps
 - 2026-04-22 2a99403 TP-009: docops schema — JSON Schema for editor tooling
-- 2026-04-22 1a3de5c dog-food the DocOps convention (CTX, ADR, TP, meta/product split)
 

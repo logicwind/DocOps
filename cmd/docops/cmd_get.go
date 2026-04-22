@@ -38,7 +38,7 @@ func cmdGet(args []string) int {
 	}
 	id := fs.Arg(0)
 
-	idx, code := bootstrapIndex("get")
+	idx, _, code := bootstrapIndex("get")
 	if code != 0 {
 		return code
 	}

@@ -56,7 +56,7 @@ func cmdGraph(args []string) int {
 		*depth = 0
 	}
 
-	idx, code := bootstrapIndex("graph")
+	idx, _, code := bootstrapIndex("graph")
 	if code != 0 {
 		return code
 	}

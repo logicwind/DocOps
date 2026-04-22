@@ -14,38 +14,39 @@ import (
 
 // bootstrapIndex is the shared bootstrap sequence for read-only commands:
 // find config, load docs, validate, build in-memory index.
-// On any failure it prints a prefixed error to stderr and returns code 2.
-func bootstrapIndex(cmd string) (*index.Index, int) {
+// Returns the index, the project root, and an exit code (0 = success, 2 = error).
+// On any failure it prints a prefixed error to stderr.
+func bootstrapIndex(cmd string) (*index.Index, string, int) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "docops %s: %v\n", cmd, err)
-		return nil, 2
+		return nil, "", 2
 	}
 	cfg, root, err := config.FindAndLoad(cwd)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			fmt.Fprintf(os.Stderr, "docops %s: no docops.yaml found — run `docops init` first\n", cmd)
-			return nil, 2
+			return nil, "", 2
 		}
 		fmt.Fprintf(os.Stderr, "docops %s: %v\n", cmd, err)
-		return nil, 2
+		return nil, "", 2
 	}
 	set, err := loader.Load(root, cfg)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "docops %s: %v\n", cmd, err)
-		return nil, 2
+		return nil, "", 2
 	}
 	report := validator.Validate(set, cfg)
 	if !report.OK() {
 		fmt.Fprintf(os.Stderr, "docops %s: refusing: %d validation error(s); run 'docops validate'\n", cmd, len(report.Errors))
-		return nil, 2
+		return nil, "", 2
 	}
 	idx, err := index.Build(set, cfg, root, time.Now())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "docops %s: build index: %v\n", cmd, err)
-		return nil, 2
+		return nil, "", 2
 	}
-	return idx, 0
+	return idx, root, 0
 }
 
 // indexLookup finds a doc by ID.

@@ -45,7 +45,7 @@ func cmdNext(args []string) int {
 		return 2
 	}
 
-	idx, code := bootstrapIndex("next")
+	idx, _, code := bootstrapIndex("next")
 	if code != 0 {
 		return code
 	}

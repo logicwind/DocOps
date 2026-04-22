@@ -54,7 +54,7 @@ func cmdList(args []string) int {
 		return 2
 	}
 
-	idx, code := bootstrapIndex("list")
+	idx, _, code := bootstrapIndex("list")
 	if code != 0 {
 		return code
 	}
