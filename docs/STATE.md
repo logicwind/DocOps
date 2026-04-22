@@ -10,20 +10,21 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 16 accepted · 0 draft · 0 superseded (15 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 7 backlog · 0 active · 0 blocked · 3 done
+- Tasks: 6 backlog · 0 active · 0 blocked · 4 done
 
 ## Needs attention
 
-- **TP-003 done** — `docops validate` is now a working pre-commit gate. Runs against this repo clean: 30 docs, 0 errors, 0 warnings. TP-004 (`index`) and the remaining p1 commands are now the natural next steps.
-- **Structural gaps:** 13 `coverage: required` ADRs still lack at least one completed citing task. (TP-003 ships with ADR-0004 / ADR-0006 / ADR-0002 citations.) Clears as TP-004..TP-010 ship.
-- **Semantic coverage: never reviewed** for any ADR. Still deferred to after the review sidecar format ships (a TP-003+ command).
+- **TP-004 done** — `docops index` produces `docs/.index.json` with full derived graph (reverse edges, `implementation` per ADR-0010, `stale` flags, body summaries). 30-doc index builds in ~145 ms. TP-005 (`state`) and TP-006 (`audit`) are now both unblocked.
+- **Structural gaps:** 10 `coverage: required` ADRs still lack at least one completed citing task. (TP-004 ships with ADR-0005 / ADR-0006 / ADR-0010 citations — new coverage.) Clears as TP-005..TP-010 ship.
+- **Semantic coverage: never reviewed** for any ADR. Still deferred to after the review sidecar format ships.
 - **Assignees on remaining tasks** are `unassigned`.
 - **Meta/product layer formalized** (ADR-0016). Root `AGENTS.md` orients source-side agents; `templates/` holds user-facing artifacts. TP-007 consumes these templates verbatim.
-- **Small convention clarified** during TP-002: `related:` on ADRs accepts any doc kind (CTX/ADR/TP), not only ADR. Validator comment has the rationale.
+- **Small convention clarified** during TP-002: `related:` on ADRs accepts any doc kind (CTX/ADR/TP). Validator comment has the rationale.
+- **Index shape note:** tasks use `task_status` in `.index.json` to avoid a JSON-key collision with ADR `status`. Consumers branch on `kind:` when reading status fields.
 
 ## Active work
 
-(none — TP-003 just shipped; TP-004 is the next natural step)
+(none — TP-004 just shipped; TP-005 + TP-006 are running in parallel next)
 
 ## Recent activity
 
@@ -32,6 +33,7 @@
 - 2026-04-22 **TP-001 done.** Go scaffold (`cmd/docops`, `internal/version`, `Makefile`, `.goreleaser.yml`, CI + release workflows, README). `docops --version` works. Language choice (Go) and npm `optionalDependencies` plan appended to ADR-0012.
 - 2026-04-22 **TP-002 done.** `internal/schema` (types/parse/validate/jsonschema) and `internal/config` (docops.yaml loader). Strict YAML decoding, multi-error validation, JSON Schema emission. Dog-food self-validation test passes against all 30 live docs. 22 tests green.
 - 2026-04-22 **TP-003 done.** `docops validate` shipped. `internal/loader` walks `docs/`; `internal/validator` runs schema + graph checks (unresolved refs, supersedes/depends_on cycles, superseded-citation severity per `gaps:`). CLI has `--json` and `--only`. 30 docs in this repo validate clean; 35 tests green total. Binary size 2.58 MB.
+- 2026-04-22 **TP-004 done.** `docops index` shipped. `internal/index` emits deterministic `docs/.index.json` with reverse edges, `implementation` per ADR-0010 table, body summaries, git-sourced `last_touched`/`age_days`, and `stale` flags. 22 new tests; ~145 ms on 30 docs. Binary size 2.74 MB.
 
 ## Pointers
 
@@ -40,4 +42,4 @@
 - **Why we're building it:** `docs/context/CTX-001-docops-vision.md`.
 - **What to avoid:** `docs/context/CTX-004-user-constraints.md`.
 - **Repo layers:** `docs/decisions/ADR-0016-meta-vs-product-separation.md`.
-- **Next work:** `docs/tasks/TP-004-implement-index-command.md`.
+- **Next work:** `docs/tasks/TP-005-implement-state-command.md` and `docs/tasks/TP-006-implement-audit-command.md` (parallel).

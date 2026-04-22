@@ -1,0 +1,1033 @@
+{
+  "generated_at": "2026-04-22T07:29:46Z",
+  "version": 1,
+  "docs": [
+    {
+      "id": "ADR-0001",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0001-four-concept-model.md",
+      "title": "Four-concept model — CTX, ADR, Task, Index",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "tags": [
+        "schema",
+        "architecture",
+        "core"
+      ],
+      "summary": "DocOps needs a minimal vocabulary that maps cleanly to how software gets built with LLMs. Existing tools fall into two traps: - Blurring task / decision / requirement boundaries (Backlog.md, Markplane…",
+      "word_count": 296,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "ADR-0003",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0004",
+          "edge": "related"
+        },
+        {
+          "id": "TP-007",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "not-started",
+      "stale": false
+    },
+    {
+      "id": "ADR-0002",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0002-bare-minimum-frontmatter.md",
+      "title": "Bare-minimum frontmatter philosophy",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0005",
+        "ADR-0010"
+      ],
+      "tags": [
+        "schema",
+        "philosophy"
+      ],
+      "summary": "Over-specified frontmatter rots fast: fields go unfilled, authors skip the doc because the ceremony feels heavy, and LLMs waste context on fields that are rarely queried. Under-specified frontmatter f…",
+      "word_count": 379,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "ADR-0005",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0010",
+          "edge": "related"
+        },
+        {
+          "id": "TP-002",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-003",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-008",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-009",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "partial",
+      "stale": false
+    },
+    {
+      "id": "ADR-0003",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0003-filename-as-canonical-id.md",
+      "title": "Filename is the canonical document ID",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0001"
+      ],
+      "tags": [
+        "schema",
+        "identity"
+      ],
+      "summary": "Many doc systems carry an `id:` field in frontmatter separate from the filename. This creates two sources of truth and a rename-drift problem: the file moves, the ID stays, references break or are con…",
+      "word_count": 204,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-002",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-008",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "partial",
+      "stale": false
+    },
+    {
+      "id": "ADR-0004",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0004-task-alignment-rule.md",
+      "title": "Tasks must cite ≥1 ADR or CTX — the alignment contract",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0001",
+        "ADR-0008"
+      ],
+      "tags": [
+        "schema",
+        "invariant",
+        "wedge"
+      ],
+      "summary": "Existing task systems (Jira, Linear, Backlog.md, GSD plans, BMAD stories) permit tasks to be created without a structural link to the decision or stakeholder intent they advance. In practice this mean…",
+      "word_count": 296,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "ADR-0008",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0009",
+          "edge": "related"
+        },
+        {
+          "id": "TP-003",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-008",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "partial",
+      "stale": false
+    },
+    {
+      "id": "ADR-0005",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0005-two-layer-frontmatter.md",
+      "title": "Two-layer frontmatter — source vs. computed index",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0002",
+        "ADR-0006",
+        "ADR-0010"
+      ],
+      "tags": [
+        "schema",
+        "architecture",
+        "index"
+      ],
+      "summary": "Human-written frontmatter wants to be minimal (ADR-0002). Agents querying the repo want richer structure: reverse edges, resolved references, staleness, summaries, etc. Putting all of that into source…",
+      "word_count": 310,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "ADR-0002",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0006",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0007",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0010",
+          "edge": "related"
+        },
+        {
+          "id": "TP-004",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "done",
+      "stale": false
+    },
+    {
+      "id": "ADR-0006",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0006-typed-edges-computed-reverse.md",
+      "title": "Typed edges with computed reverse edges",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0005"
+      ],
+      "tags": [
+        "schema",
+        "graph",
+        "index"
+      ],
+      "summary": "ADR tools conventionally have one edge type: `supersedes`. That is not enough to express the relationships a real project has — tasks relate to decisions differently than decisions relate to each othe…",
+      "word_count": 346,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "ADR-0005",
+          "edge": "related"
+        },
+        {
+          "id": "TP-002",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-003",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-004",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "done",
+      "stale": false
+    },
+    {
+      "id": "ADR-0007",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0007-state-md-auto-generated.md",
+      "title": "STATE.md — auto-generated project snapshot",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0005",
+        "ADR-0008"
+      ],
+      "tags": [
+        "index",
+        "ui",
+        "dashboard"
+      ],
+      "summary": "Agents landing cold in a DocOps repo need a compact, high-signal summary of current state before they start loading individual docs. `.index.json` is machine-optimal; humans and LLMs both also want a …",
+      "word_count": 315,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "ADR-0008",
+          "edge": "related"
+        },
+        {
+          "id": "TP-005",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "not-started",
+      "stale": false
+    },
+    {
+      "id": "ADR-0008",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0008-coverage-structural-and-semantic.md",
+      "title": "Coverage model — structural gaps and semantic review",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0004",
+        "ADR-0007",
+        "ADR-0009"
+      ],
+      "tags": [
+        "coverage",
+        "audit",
+        "workflow"
+      ],
+      "summary": "Not every ADR will have tasks created for it promptly; not every CTX will translate into an ADR. Without a forcing function, gaps accumulate silently and \"implementation: accepted but nothing built\" b…",
+      "word_count": 375,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "ADR-0004",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0007",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0009",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0010",
+          "edge": "related"
+        },
+        {
+          "id": "TP-005",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-006",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "not-started",
+      "stale": false
+    },
+    {
+      "id": "ADR-0009",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0009-adr-coverage-field.md",
+      "title": "ADR `coverage` field — required vs. not-needed",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0004",
+        "ADR-0008"
+      ],
+      "tags": [
+        "schema",
+        "coverage"
+      ],
+      "summary": "Some ADRs genuinely need no implementation tasks. Examples: - Recording an external constraint (\"we are required by law to do X\"). - Documenting an already-finished decision retrospectively. - Recordi…",
+      "word_count": 244,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "ADR-0008",
+          "edge": "related"
+        },
+        {
+          "id": "TP-006",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "not-started",
+      "stale": false
+    },
+    {
+      "id": "ADR-0010",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0010-implementation-is-computed.md",
+      "title": "ADR `implementation` is computed, not source",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0002",
+        "ADR-0005",
+        "ADR-0008"
+      ],
+      "tags": [
+        "schema",
+        "index",
+        "drift-prevention"
+      ],
+      "summary": "The Zund project's existing ADRs carry an `implementation:` field (values: `done | partial | in-progress | not-started`). In practice this field drifts — people forget to update it after merging a tas…",
+      "word_count": 304,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "ADR-0002",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0005",
+          "edge": "related"
+        },
+        {
+          "id": "TP-004",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "done",
+      "stale": false
+    },
+    {
+      "id": "ADR-0011",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0011-cli-over-mcp-phase-1.md",
+      "title": "CLI with --json over MCP for phase 1",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0014"
+      ],
+      "tags": [
+        "distribution",
+        "agent-interface"
+      ],
+      "summary": "The natural instinct for an \"agent-native\" tool in 2026 is MCP (Model Context Protocol): structured types, discoverable tools, persistent connection. But for a monorepo where the agent is already runn…",
+      "word_count": 312,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "ADR-0012",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0013",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0014",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0015",
+          "edge": "related"
+        },
+        {
+          "id": "TP-001",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "done",
+      "stale": false
+    },
+    {
+      "id": "ADR-0012",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0012-language-agnostic-distribution.md",
+      "title": "Language-agnostic distribution — standalone binary first",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0011"
+      ],
+      "tags": [
+        "distribution",
+        "packaging"
+      ],
+      "summary": "DocOps must work in any codebase — Python, Go, Rust, Ruby, mixed, nothing-installed-yet. Requiring the user to install Bun, Node, or any ecosystem-specific runtime creates adoption friction and biases…",
+      "word_count": 588,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-001",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "done",
+      "stale": false
+    },
+    {
+      "id": "ADR-0013",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0013-ship-agent-skills.md",
+      "title": "Ship /docops-* skills for agent tooling",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0011",
+        "ADR-0014",
+        "ADR-0015"
+      ],
+      "tags": [
+        "distribution",
+        "agent-interface",
+        "skills"
+      ],
+      "summary": "Claude Code, Cursor, and similar agent tools have native concepts for \"skills\" or \"slash commands\" — markdown files that package a specific capability into a discoverable slash-command. GStack uses th…",
+      "word_count": 366,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "ADR-0014",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0015",
+          "edge": "related"
+        },
+        {
+          "id": "TP-007",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-010",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "not-started",
+      "stale": false
+    },
+    {
+      "id": "ADR-0014",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0014-positioning-substrate-not-harness.md",
+      "title": "Positioning — substrate for LLM-first dev, not harness or personas",
+      "status": "accepted",
+      "coverage": "not-needed",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0011",
+        "ADR-0013",
+        "CTX-004"
+      ],
+      "tags": [
+        "positioning",
+        "scope",
+        "philosophy"
+      ],
+      "summary": "The LLM-development tooling space in 2026 is crowded. Adjacent tools (GSD, GStack, BMAD, Spec Kit, Kiro, Agent OS, Backlog.md, Markplane) cover overlapping territory with different philosophies. DocOp…",
+      "word_count": 351,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "ADR-0011",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0013",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0016",
+          "edge": "related"
+        }
+      ],
+      "implementation": "n/a",
+      "stale": false
+    },
+    {
+      "id": "ADR-0015",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0015-auto-emit-agents-md.md",
+      "title": "Auto-emit AGENTS.md on init",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0011",
+        "ADR-0013"
+      ],
+      "tags": [
+        "agent-interface",
+        "standards",
+        "init"
+      ],
+      "summary": "AGENTS.md has become the de-facto standard in 2025–26 for \"agent instructions at repo root\" — adopted by Copilot, Codex, Cursor, Jules/Gemini, Factory, Amp, Windsurf, Zed, RooCode, and (via Linux Foun…",
+      "word_count": 312,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "ADR-0013",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0016",
+          "edge": "related"
+        },
+        {
+          "id": "TP-007",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "not-started",
+      "stale": false
+    },
+    {
+      "id": "ADR-0016",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0016-meta-vs-product-separation.md",
+      "title": "Meta vs. product layer separation during dog-food",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0014",
+        "ADR-0015"
+      ],
+      "tags": [
+        "repo-layout",
+        "dog-food",
+        "philosophy"
+      ],
+      "summary": "This repository is the DocOps source code AND a DocOps-managed project (dog-food). Both layers want to live in the same repo but must not be conflated. Without an explicit convention:",
+      "word_count": 385,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-007",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "not-started",
+      "stale": false
+    },
+    {
+      "id": "CTX-001",
+      "kind": "CTX",
+      "folder": "docs/context",
+      "path": "docs/context/CTX-001-docops-vision.md",
+      "title": "DocOps — Vision and North Star",
+      "type": "brief",
+      "summary": "DocOps is a **typed project-state substrate** for LLM-first software development. It lives inside `docs/` in a git repository and gives coding agents three things they need to plan and execute well:",
+      "word_count": 478,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "CTX-002",
+      "kind": "CTX",
+      "folder": "docs/context",
+      "path": "docs/context/CTX-002-conversation-notes.md",
+      "title": "Idea evolution — from ADR-only observation to DocOps",
+      "type": "notes",
+      "summary": "Captures the design dialogue that produced DocOps. Non-linear notes, preserved because the pushbacks are themselves design input.",
+      "word_count": 587,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "CTX-003",
+      "kind": "CTX",
+      "folder": "docs/context",
+      "path": "docs/context/CTX-003-landscape-research.md",
+      "title": "Landscape research — LLM-first PM tooling, April 2026",
+      "type": "research",
+      "summary": "Captured from web research during design. Keeps the \"why we are not rebuilding X\" reasoning available to future agents.",
+      "word_count": 660,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "derived_adrs": [
+        "ADR-0003",
+        "ADR-0014"
+      ],
+      "stale": false
+    },
+    {
+      "id": "CTX-004",
+      "kind": "CTX",
+      "folder": "docs/context",
+      "path": "docs/context/CTX-004-user-constraints.md",
+      "title": "Author constraints and philosophical guardrails",
+      "type": "memo",
+      "summary": "Explicit rules the author (Nachiket) placed on the design. These govern what DocOps will and will not do. Future agents should treat violations of these as red flags.",
+      "word_count": 515,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "ADR-0014",
+          "edge": "related"
+        }
+      ],
+      "derived_adrs": [
+        "ADR-0014"
+      ],
+      "stale": false
+    },
+    {
+      "id": "TP-001",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-001-scaffold-cli-project.md",
+      "title": "Scaffold the @docops/core CLI project",
+      "task_status": "done",
+      "priority": "p0",
+      "assignee": "claude",
+      "requires": [
+        "ADR-0012",
+        "ADR-0011"
+      ],
+      "summary": "Create the initial project structure for the DocOps CLI: source tree, build pipeline, cross-compile configuration, release automation. Produce a \"hello world\" binary that prints a version and exits.",
+      "word_count": 277,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-002",
+          "edge": "depends_on"
+        }
+      ],
+      "blocks": [
+        "TP-002"
+      ],
+      "stale": false
+    },
+    {
+      "id": "TP-002",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-002-define-frontmatter-schemas.md",
+      "title": "Define frontmatter schemas for CTX, ADR, and Task",
+      "task_status": "done",
+      "priority": "p0",
+      "assignee": "claude",
+      "requires": [
+        "ADR-0002",
+        "ADR-0006",
+        "ADR-0003"
+      ],
+      "depends_on": [
+        "TP-001"
+      ],
+      "summary": "Implement strict typed schemas matching the final bare-minimum spec in ADR-0002. Output: reusable validators used by every other command and exported as JSON Schema for editor tooling.",
+      "word_count": 333,
+      "last_touched": "2026-04-22T06:11:11Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-003",
+          "edge": "depends_on"
+        },
+        {
+          "id": "TP-004",
+          "edge": "depends_on"
+        },
+        {
+          "id": "TP-007",
+          "edge": "depends_on"
+        },
+        {
+          "id": "TP-008",
+          "edge": "depends_on"
+        },
+        {
+          "id": "TP-009",
+          "edge": "depends_on"
+        }
+      ],
+      "blocks": [
+        "TP-003",
+        "TP-004",
+        "TP-007",
+        "TP-008",
+        "TP-009"
+      ],
+      "stale": false
+    },
+    {
+      "id": "TP-003",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-003-implement-validate-command.md",
+      "title": "Implement `docops validate`",
+      "task_status": "done",
+      "priority": "p0",
+      "assignee": "claude",
+      "requires": [
+        "ADR-0004",
+        "ADR-0006",
+        "ADR-0002"
+      ],
+      "depends_on": [
+        "TP-002"
+      ],
+      "summary": "Command that validates all DocOps files in a repo against the schemas and the graph invariants. Exit code 0 on pass, non-zero on fail. Designed for pre-commit hooks and CI.",
+      "word_count": 445,
+      "last_touched": "2026-04-22T06:24:14Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-004",
+          "edge": "depends_on"
+        }
+      ],
+      "blocks": [
+        "TP-004"
+      ],
+      "stale": false
+    },
+    {
+      "id": "TP-004",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-004-implement-index-command.md",
+      "title": "Implement `docops index`",
+      "task_status": "done",
+      "priority": "p0",
+      "assignee": "claude",
+      "requires": [
+        "ADR-0005",
+        "ADR-0006",
+        "ADR-0010"
+      ],
+      "depends_on": [
+        "TP-002",
+        "TP-003"
+      ],
+      "summary": "...",
+      "word_count": 433,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-005",
+          "edge": "depends_on"
+        },
+        {
+          "id": "TP-006",
+          "edge": "depends_on"
+        }
+      ],
+      "blocks": [
+        "TP-005",
+        "TP-006"
+      ],
+      "stale": false
+    },
+    {
+      "id": "TP-005",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-005-implement-state-command.md",
+      "title": "Implement `docops state` — generate STATE.md",
+      "task_status": "backlog",
+      "priority": "p1",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0007",
+        "ADR-0008"
+      ],
+      "depends_on": [
+        "TP-004"
+      ],
+      "summary": "Command that reads `.index.json` and writes `docs/STATE.md` — the human- and LLM-readable snapshot described in ADR-0007.",
+      "word_count": 153,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-010",
+          "edge": "depends_on"
+        }
+      ],
+      "blocks": [
+        "TP-010"
+      ],
+      "stale": false
+    },
+    {
+      "id": "TP-006",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-006-implement-audit-command.md",
+      "title": "Implement `docops audit` — structural gap detection",
+      "task_status": "backlog",
+      "priority": "p1",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0008",
+        "ADR-0009"
+      ],
+      "depends_on": [
+        "TP-004"
+      ],
+      "summary": "Command that reports structural coverage gaps computed from `.index.json`. Separate from STATE.md: this is the actionable punch list, not a passive snapshot.",
+      "word_count": 191,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-010",
+          "edge": "depends_on"
+        }
+      ],
+      "blocks": [
+        "TP-010"
+      ],
+      "stale": false
+    },
+    {
+      "id": "TP-007",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-007-implement-init-command.md",
+      "title": "Implement `docops init` — scaffold DocOps in a repo",
+      "task_status": "backlog",
+      "priority": "p1",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0001",
+        "ADR-0015",
+        "ADR-0013",
+        "ADR-0016"
+      ],
+      "depends_on": [
+        "TP-002"
+      ],
+      "summary": "Command that turns a bare repository into a DocOps-enabled one. Idempotent — safe to run twice.",
+      "word_count": 222,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-010",
+          "edge": "depends_on"
+        }
+      ],
+      "blocks": [
+        "TP-010"
+      ],
+      "stale": false
+    },
+    {
+      "id": "TP-008",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-008-implement-new-command.md",
+      "title": "Implement `docops new \u003ctype\u003e` — scaffold documents with ID allocation",
+      "task_status": "backlog",
+      "priority": "p1",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0003",
+        "ADR-0002",
+        "ADR-0004"
+      ],
+      "depends_on": [
+        "TP-002"
+      ],
+      "summary": "Commands that create new CTX, ADR, or Task documents with valid frontmatter, atomic ID allocation, and correct file naming.",
+      "word_count": 180,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-010",
+          "edge": "depends_on"
+        }
+      ],
+      "blocks": [
+        "TP-010"
+      ],
+      "stale": false
+    },
+    {
+      "id": "TP-009",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-009-publish-json-schema.md",
+      "title": "Publish JSON Schema for editor tooling",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0002"
+      ],
+      "depends_on": [
+        "TP-002"
+      ],
+      "summary": "Emit the frontmatter schemas as JSON Schema so editors (VS Code YAML plugin, JetBrains, Zed) can validate in-editor without running the CLI.",
+      "word_count": 124,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-010",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-010-ship-docops-skills.md",
+      "title": "Ship /docops-* skill pack for agent tools",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0013"
+      ],
+      "depends_on": [
+        "TP-005",
+        "TP-006",
+        "TP-007",
+        "TP-008"
+      ],
+      "summary": "Produce the first version of the DocOps skill pack — markdown files that wrap CLI commands for Claude Code and Cursor so agents get discoverable slash-commands.",
+      "word_count": 198,
+      "last_touched": "2026-04-22T06:03:04Z",
+      "age_days": 0,
+      "stale": false
+    }
+  ]
+}

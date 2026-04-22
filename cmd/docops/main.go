@@ -21,6 +21,8 @@ func main() {
 		topLevelUsage(os.Stdout)
 	case "validate":
 		os.Exit(cmdValidate(args[1:]))
+	case "index":
+		os.Exit(cmdIndex(args[1:]))
 	default:
 		fmt.Fprintf(os.Stderr, "docops: unknown command %q\n\n", args[0])
 		topLevelUsage(os.Stderr)
@@ -35,10 +37,11 @@ func topLevelUsage(w *os.File) {
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "commands:")
 	fmt.Fprintln(w, "  validate    schema + graph invariants over docs/  (TP-003)")
+	fmt.Fprintln(w, "  index       build docs/.index.json enriched graph   (TP-004)")
 	fmt.Fprintln(w, "  version     print the build version")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "coming:")
-	fmt.Fprintln(w, "  init, index, state, audit, new, status, get, graph, review")
+	fmt.Fprintln(w, "  init, state, audit, new, status, get, graph, review")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "see `docops <command> --help` for per-command flags.")
 }
