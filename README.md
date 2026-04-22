@@ -2,7 +2,7 @@
 
 Typed project-state substrate for LLM-first software development. Three doc types (Context, Decision, Task) in markdown + YAML frontmatter, a computed index, a small CLI, and a coverage audit — designed so any coding agent can load a repo and know what's been decided, what's pending, and what to do next.
 
-**Status:** phase 1. Only the CLI scaffold is in place (TP-001). Schemas, commands, and docs land in TP-002 onward. See `docs/STATE.md` for the current backlog.
+**Status:** v0.1.0 — `init`, `validate`, `index`, `state`, `audit`, `new`, `schema` are shipped. `next`, `get`, `list`, `graph`, `status`, `search`, `review` are on the roadmap. See `docs/STATE.md` for the current backlog.
 
 ## Install
 
@@ -12,8 +12,6 @@ Typed project-state substrate for LLM-first software development. Three doc type
 brew install logicwind/docops/docops
 ```
 
-> Tap publishes once the `logicwind/homebrew-docops` repo is created (post-v0.1.0).
-
 ### Windows (Scoop)
 
 ```sh
@@ -21,31 +19,41 @@ scoop bucket add docops https://github.com/logicwind/scoop-docops
 scoop install docops
 ```
 
-> Bucket publishes once the `logicwind/scoop-docops` repo is created (post-v0.1.0).
-
 ### Direct download
 
 Grab the archive for your platform from [GitHub Releases](https://github.com/logicwind/DocOps/releases), extract, put `docops` on your PATH.
 
-### Docker
+### Docker (planned)
 
-```sh
-docker run --rm -v "$PWD:/repo" ghcr.io/logicwind/docops:latest --version
-```
-
-> Image publishes once `v0.1.0` ships.
+A GHCR image lands in a follow-up release. Until then, use Homebrew, Scoop, or direct download.
 
 ### npm shim (planned)
 
-Per-platform packages (`@docops/cli-darwin-arm64`, `@docops/cli-linux-x64`, ...) will publish alongside each release. `npm i -g @docops/cli` resolves the matching native binary via `optionalDependencies` — no postinstall network fetch. See ADR-0012 for distribution rationale.
+Per-platform packages (`@docops/cli-darwin-arm64`, `@docops/cli-linux-x64`, ...) will publish alongside a future release. `npm i -g @docops/cli` resolves the matching native binary via `optionalDependencies` — no postinstall network fetch. See ADR-0012 for distribution rationale.
 
 ## Smoke test
 
 ```sh
 docops --version
+docops --help
 ```
 
-Everything else is pending — read `docs/tasks/` for the phase-1 backlog.
+## Quickstart — use DocOps in your own repo
+
+From the root of any git repo (empty or existing):
+
+```sh
+docops init                                        # scaffolds docs/, docops.yaml, schemas, skills, pre-commit hook
+docops new ctx "Vision" --type brief --no-open     # first CTX
+docops new adr "Pick a database"                   # first decision
+docops new task "Wire up SQLite" --requires ADR-0001
+docops validate                                    # schema + graph invariants
+docops index                                       # writes docs/.index.json
+docops state                                       # writes docs/STATE.md
+docops audit                                       # structural gap report
+```
+
+`docops init --dry-run` previews; `docops init --force` re-syncs drifted scaffolded files; `docops init --no-skills` skips the agent-skill scaffolding.
 
 ## Editor integration
 
