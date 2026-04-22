@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22T17:50:17Z",
+  "generated_at": "2026-04-22T18:02:13Z",
   "version": 1,
   "docs": [
     {
@@ -692,6 +692,10 @@
           "edge": "related"
         },
         {
+          "id": "ADR-0021",
+          "edge": "related"
+        },
+        {
           "id": "TP-007",
           "edge": "requires"
         }
@@ -722,6 +726,10 @@
       "last_touched": "2026-04-22T06:03:04Z",
       "age_days": 0,
       "referenced_by": [
+        {
+          "id": "ADR-0021",
+          "edge": "related"
+        },
         {
           "id": "TP-007",
           "edge": "requires"
@@ -876,6 +884,10 @@
       "age_days": 0,
       "referenced_by": [
         {
+          "id": "ADR-0021",
+          "edge": "related"
+        },
+        {
           "id": "TP-015",
           "edge": "requires"
         },
@@ -889,6 +901,38 @@
         }
       ],
       "implementation": "done",
+      "stale": false
+    },
+    {
+      "id": "ADR-0021",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0021-docops-upgrade-in-band-refresh-of-docops-owned-sca.md",
+      "title": "docops upgrade — in-band refresh of DocOps-owned scaffolding",
+      "status": "accepted",
+      "coverage": "required",
+      "date": "2026-04-22",
+      "related": [
+        "ADR-0015",
+        "ADR-0016",
+        "ADR-0020"
+      ],
+      "tags": [
+        "cli",
+        "upgrade",
+        "lifecycle"
+      ],
+      "summary": "Between v0.1.0 and v0.1.1 the product added a new `/docops:refresh` skill, removed an obsolete `/docops:next` skill, updated three other skill files with heredoc body examples, and refreshed the `AGEN…",
+      "word_count": 665,
+      "last_touched": "2026-04-22T18:01:14Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-018",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "not-started",
       "stale": false
     },
     {
@@ -1232,12 +1276,17 @@
         {
           "id": "TP-015",
           "edge": "depends_on"
+        },
+        {
+          "id": "TP-018",
+          "edge": "depends_on"
         }
       ],
       "blocks": [
         "TP-010",
         "TP-013",
-        "TP-015"
+        "TP-015",
+        "TP-018"
       ],
       "stale": false
     },
@@ -1297,6 +1346,15 @@
       "word_count": 124,
       "last_touched": "2026-04-22T09:51:55Z",
       "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-018",
+          "edge": "depends_on"
+        }
+      ],
+      "blocks": [
+        "TP-018"
+      ],
       "stale": false
     },
     {
@@ -1394,10 +1452,15 @@
         {
           "id": "TP-014",
           "edge": "depends_on"
+        },
+        {
+          "id": "TP-018",
+          "edge": "depends_on"
         }
       ],
       "blocks": [
-        "TP-014"
+        "TP-014",
+        "TP-018"
       ],
       "stale": false
     },
@@ -1487,6 +1550,29 @@
       "summary": "Let `docops new` create a doc with real content in one CLI call, so agents (and scripts) never have to write-after-create to replace the stub. Also: make validator enum errors self-diagnosing by listi…",
       "word_count": 563,
       "last_touched": "2026-04-22T17:47:49Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-018",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-018-implement-docops-upgrade-targeted-scaffold-sync.md",
+      "title": "Implement docops upgrade — targeted scaffold sync",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0021"
+      ],
+      "depends_on": [
+        "TP-007",
+        "TP-009",
+        "TP-013"
+      ],
+      "summary": "Ship the `docops upgrade` subcommand that pulls the current binary's shipped templates into an already-initialized project without clobbering `docops.yaml` or the pre-commit hook, per ADR-0021.",
+      "word_count": 743,
+      "last_touched": "2026-04-22T18:01:59Z",
       "age_days": 0,
       "stale": false
     }
