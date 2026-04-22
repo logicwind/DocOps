@@ -22,18 +22,18 @@ func JSONSchemas(cfg Config) (map[string][]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("marshal context schema: %w", err)
 	}
-	adrSchema, err := marshal(adrSchema())
+	decSchema, err := marshal(decisionSchema())
 	if err != nil {
-		return nil, fmt.Errorf("marshal adr schema: %w", err)
+		return nil, fmt.Errorf("marshal decision schema: %w", err)
 	}
 	taskSchema, err := marshal(taskSchema())
 	if err != nil {
 		return nil, fmt.Errorf("marshal task schema: %w", err)
 	}
 	return map[string][]byte{
-		"context.json": ctxSchema,
-		"adr.json":     adrSchema,
-		"task.json":    taskSchema,
+		"context.schema.json":  ctxSchema,
+		"decision.schema.json": decSchema,
+		"task.schema.json":     taskSchema,
 	}, nil
 }
 
@@ -60,7 +60,7 @@ func contextSchema(cfg Config) object {
 	}
 	return object{
 		"$schema":              JSONSchemaVersion,
-		"$id":                  SchemaBaseURI + "/context.json",
+		"$id":                  SchemaBaseURI + "/context.schema.json",
 		"title":                "DocOps Context frontmatter",
 		"description":          "Stakeholder input documents. File prefix CTX-. See ADR-0002.",
 		"type":                 "object",
@@ -81,10 +81,10 @@ func contextSchema(cfg Config) object {
 	}
 }
 
-func adrSchema() object {
+func decisionSchema() object {
 	return object{
 		"$schema":              JSONSchemaVersion,
-		"$id":                  SchemaBaseURI + "/adr.json",
+		"$id":                  SchemaBaseURI + "/decision.schema.json",
 		"title":                "DocOps ADR frontmatter",
 		"description":          "Architecture Decision Records. File prefix ADR-. See ADR-0002.",
 		"type":                 "object",
@@ -131,7 +131,7 @@ func adrSchema() object {
 func taskSchema() object {
 	return object{
 		"$schema":              JSONSchemaVersion,
-		"$id":                  SchemaBaseURI + "/task.json",
+		"$id":                  SchemaBaseURI + "/task.schema.json",
 		"title":                "DocOps Task frontmatter",
 		"description":          "Work unit. File prefix TP-. Must cite ≥1 ADR or CTX in `requires` per ADR-0004.",
 		"type":                 "object",

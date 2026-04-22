@@ -96,7 +96,12 @@ func Run(opts Options) (*Result, error) {
 // to disk in here — it only reads existing files to decide whether each
 // proposed target would be a create, a merge, or a skip.
 func plan(opts Options) ([]Action, error) {
+	// If a docops.yaml already exists at the root, use it so that
+	// project-specific context_types propagate into the emitted schema.
 	cfg := config.Default()
+	if loaded, err := config.Load(filepath.Join(opts.Root, config.DefaultFilename)); err == nil {
+		cfg = loaded
+	}
 
 	var actions []Action
 

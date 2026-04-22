@@ -11,7 +11,7 @@ func TestJSONSchemas_AllThreePresent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err = %v", err)
 	}
-	for _, name := range []string{"context.json", "adr.json", "task.json"} {
+	for _, name := range []string{"context.schema.json", "decision.schema.json", "task.schema.json"} {
 		raw, ok := schemas[name]
 		if !ok {
 			t.Fatalf("missing %s", name)
@@ -31,7 +31,7 @@ func TestContextSchema_EnumPassthrough(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	s := string(schemas["context.json"])
+	s := string(schemas["context.schema.json"])
 	if !strings.Contains(s, `"prd"`) || !strings.Contains(s, `"memo"`) {
 		t.Fatalf("context schema missing enum values:\n%s", s)
 	}
@@ -44,7 +44,7 @@ func TestTaskSchema_RequiresHasContainsClause(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	s := string(schemas["task.json"])
+	s := string(schemas["task.schema.json"])
 	if !strings.Contains(s, `"contains"`) {
 		t.Fatalf("task schema missing `contains` clause for ADR-0004:\n%s", s)
 	}
@@ -53,12 +53,29 @@ func TestTaskSchema_RequiresHasContainsClause(t *testing.T) {
 	}
 }
 
+func TestJSONSchemas_IDMatchesFilename(t *testing.T) {
+	schemas, err := JSONSchemas(Config{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, raw := range schemas {
+		var obj map[string]any
+		if err := json.Unmarshal(raw, &obj); err != nil {
+			t.Fatalf("%s: %v", name, err)
+		}
+		id, _ := obj["$id"].(string)
+		if !strings.HasSuffix(id, "/"+name) {
+			t.Errorf("%s: $id %q does not end with /%s", name, id, name)
+		}
+	}
+}
+
 func TestADRSchema_EnumsMatchGoConstants(t *testing.T) {
 	schemas, err := JSONSchemas(Config{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	s := string(schemas["adr.json"])
+	s := string(schemas["decision.schema.json"])
 	for _, v := range ADRStatuses {
 		if !strings.Contains(s, `"`+v+`"`) {
 			t.Errorf("adr schema missing status %q", v)

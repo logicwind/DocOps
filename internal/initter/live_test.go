@@ -44,7 +44,7 @@ func TestRun_BareRepo_PassesValidate(t *testing.T) {
 	}
 
 	// Schema files should be non-empty JSON.
-	for _, name := range []string{"context.json", "adr.json", "task.json"} {
+	for _, name := range []string{"context.schema.json", "decision.schema.json", "task.schema.json"} {
 		body, err := os.ReadFile(filepath.Join(root, cfg.Paths.Schema, name))
 		if err != nil {
 			t.Errorf("schema %s: %v", name, err)

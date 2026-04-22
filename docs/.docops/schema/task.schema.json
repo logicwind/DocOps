@@ -1,0 +1,62 @@
+{
+  "$id": "https://docops.dev/schema/v1/task.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Work unit. File prefix TP-. Must cite ≥1 ADR or CTX in `requires` per ADR-0004.",
+  "properties": {
+    "assignee": {
+      "default": "unassigned",
+      "type": "string"
+    },
+    "depends_on": {
+      "default": [],
+      "items": {
+        "pattern": "^TP-\\d+$",
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "priority": {
+      "default": "p2",
+      "enum": [
+        "p0",
+        "p1",
+        "p2"
+      ],
+      "type": "string"
+    },
+    "requires": {
+      "contains": {
+        "pattern": "^(CTX|ADR)-\\d+$",
+        "type": "string"
+      },
+      "description": "Must include ≥1 CTX or ADR reference (ADR-0004).",
+      "items": {
+        "pattern": "^(CTX|ADR|TP)-\\d+$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "status": {
+      "enum": [
+        "backlog",
+        "active",
+        "blocked",
+        "done"
+      ],
+      "type": "string"
+    },
+    "title": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "status",
+    "requires"
+  ],
+  "title": "DocOps Task frontmatter",
+  "type": "object"
+}

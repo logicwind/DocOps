@@ -32,9 +32,9 @@ func TestRun_BareRepo_CreatesAllArtifacts(t *testing.T) {
 		"docs/decisions",
 		"docs/tasks",
 		"docs/.docops/schema",
-		"docs/.docops/schema/context.json",
-		"docs/.docops/schema/adr.json",
-		"docs/.docops/schema/task.json",
+		"docs/.docops/schema/context.schema.json",
+		"docs/.docops/schema/decision.schema.json",
+		"docs/.docops/schema/task.schema.json",
 		"docops.yaml",
 		"AGENTS.md",
 		".git/hooks/pre-commit",
@@ -216,6 +216,37 @@ func TestRun_NoGitDir_SkipsHook(t *testing.T) {
 	}
 	if a.Kind != "skip" {
 		t.Errorf("expected skip without .git, got %q (%s)", a.Kind, a.Reason)
+	}
+}
+
+// TestRun_UsesProjectContextTypes verifies that when a docops.yaml with
+// custom context_types exists at the root, init uses those types in the
+// emitted context.schema.json rather than the built-in defaults.
+func TestRun_UsesProjectContextTypes(t *testing.T) {
+	root := t.TempDir()
+	withGit(t, root)
+
+	// Write a minimal docops.yaml with non-default context_types.
+	yaml := "version: 1\ncontext_types: [alpha, beta]\n"
+	if err := os.WriteFile(filepath.Join(root, "docops.yaml"), []byte(yaml), 0o644); err != nil {
+		t.Fatalf("write docops.yaml: %v", err)
+	}
+
+	if _, err := Run(Options{Root: root, Force: true, Out: io.Discard}); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	body, err := os.ReadFile(filepath.Join(root, "docs/.docops/schema/context.schema.json"))
+	if err != nil {
+		t.Fatalf("read context.schema.json: %v", err)
+	}
+	s := string(body)
+	if !strings.Contains(s, `"alpha"`) || !strings.Contains(s, `"beta"`) {
+		t.Errorf("context.schema.json missing custom context_types: %s", s)
+	}
+	// Default types must NOT appear (they were replaced, not merged).
+	if strings.Contains(s, `"prd"`) {
+		t.Errorf("context.schema.json still contains default type 'prd' after custom override: %s", s)
 	}
 }
 

@@ -1,6 +1,6 @@
 ---
 title: Publish JSON Schema for editor tooling
-status: backlog
+status: done
 priority: p2
 assignee: unassigned
 requires: [ADR-0002]

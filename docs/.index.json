@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22T09:42:23Z",
+  "generated_at": "2026-04-22T09:50:46Z",
   "version": 1,
   "docs": [
     {
@@ -1101,7 +1101,7 @@
       ],
       "summary": "Commands that create new CTX, ADR, or Task documents with valid frontmatter, atomic ID allocation, and correct file naming.",
       "word_count": 180,
-      "last_touched": "2026-04-22T06:03:04Z",
+      "last_touched": "2026-04-22T09:42:49Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1120,7 +1120,7 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-009-publish-json-schema.md",
       "title": "Publish JSON Schema for editor tooling",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p2",
       "assignee": "unassigned",
       "requires": [

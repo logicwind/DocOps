@@ -47,6 +47,26 @@ docops --version
 
 Everything else is pending — read `docs/tasks/` for the phase-1 backlog.
 
+## Editor integration
+
+`docops init` (and `docops schema`) write three JSON Schema files under `docs/.docops/schema/`:
+
+- `context.schema.json` — CTX frontmatter (includes a `type:` enum driven by `context_types:` in `docops.yaml`)
+- `decision.schema.json` — ADR frontmatter
+- `task.schema.json` — Task frontmatter
+
+Install the [`redhat.vscode-yaml`](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) extension, then add to your workspace `.vscode/settings.json`:
+
+```json
+"yaml.schemas": {
+  "./docs/.docops/schema/context.schema.json":  "docs/context/*.md",
+  "./docs/.docops/schema/decision.schema.json": "docs/decisions/*.md",
+  "./docs/.docops/schema/task.schema.json":     "docs/tasks/*.md"
+}
+```
+
+After editing `context_types:` in `docops.yaml`, run `docops schema` to regenerate the schemas without re-running a full `docops init`.
+
 ## Developing on DocOps itself
 
 This repository is the DocOps **source**, and it dog-foods its own convention for its own project management. Before changing anything, read `AGENTS.md` in the root — it separates the "meta" side (this repo's own docs) from the "product" side (what we ship to users). See `docs/decisions/ADR-0016-meta-vs-product-separation.md`.

@@ -1,0 +1,39 @@
+{
+  "$id": "https://docops.dev/schema/v1/context.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Stakeholder input documents. File prefix CTX-. See ADR-0002.",
+  "properties": {
+    "supersedes": {
+      "default": [],
+      "items": {
+        "pattern": "^CTX-\\d+$",
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "title": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "type": {
+      "description": "Project-configured CTX type (see docops.yaml.context_types).",
+      "enum": [
+        "prd",
+        "design",
+        "research",
+        "notes",
+        "memo",
+        "spec",
+        "brief"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "type"
+  ],
+  "title": "DocOps Context frontmatter",
+  "type": "object"
+}

@@ -1,0 +1,64 @@
+{
+  "$id": "https://docops.dev/schema/v1/decision.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Architecture Decision Records. File prefix ADR-. See ADR-0002.",
+  "properties": {
+    "coverage": {
+      "description": "required = a completed task must cite this ADR; not-needed = opt-out documented in the ADR body.",
+      "enum": [
+        "required",
+        "not-needed"
+      ],
+      "type": "string"
+    },
+    "date": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": "string"
+    },
+    "related": {
+      "default": [],
+      "description": "Cross-kind references (CTX or ADR, or TP in rare cases).",
+      "items": {
+        "pattern": "^(CTX|ADR|TP)-\\d+$",
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "accepted",
+        "superseded"
+      ],
+      "type": "string"
+    },
+    "supersedes": {
+      "default": [],
+      "items": {
+        "pattern": "^ADR-\\d+$",
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "tags": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "title": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "status",
+    "coverage",
+    "date"
+  ],
+  "title": "DocOps ADR frontmatter",
+  "type": "object"
+}

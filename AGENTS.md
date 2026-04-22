@@ -31,7 +31,7 @@ pasting in user-facing command explanations. Don't. That content belongs in
 
 ## Bootstrap state
 
-`docops init / validate / index / state / audit / new` ship as of TP-008. They are the
+`docops init / validate / index / state / audit / new / schema` ship as of TP-009. They are the
 gate for every other task:
 
 - `docops init` — scaffold DocOps into a bare repo (idempotent; `--dry-run`, `--force`).
@@ -40,6 +40,7 @@ gate for every other task:
 - `docops state` — regenerates `docs/STATE.md` (committed; never hand-edit).
 - `docops audit` — structural gap punch list.
 - `docops new <ctx|adr|task> "title" [flags]` — scaffold a new document with atomic ID allocation.
+- `docops schema` — (re)write `docs/.docops/schema/*.schema.json` from the current `docops.yaml`; use after editing `context_types:`.
 
 `status`, `get`, `list`, `graph`, `next`, `search`, `review`
 are still unbuilt — do not invent flags or behaviour that does not exist.
@@ -77,3 +78,77 @@ bin/docops                     ← product: built binary (gitignored)
 
 - **Native plan-mode** in your IDE — DocOps explicitly does not replace it.
 - **GStack** role skills if you have them installed — useful perspective, independent of DocOps scope.
+
+<!-- docops:start -->
+
+## Orientation
+
+- **Why we're building this:** `docs/context/CTX-*` (look for documents of `type: brief` or `type: prd`).
+- **What's been decided:** `docs/decisions/ADR-*.md`. Frontmatter is load-bearing — read it.
+- **What to do next:** `docs/STATE.md` for counts, needs-attention, and active work.
+- **Hard guardrails:** any CTX of `type: memo` or `type: notes` that describes constraints.
+
+## Folder layout
+
+| Folder | Contents |
+|---|---|
+| `docs/context/` | Stakeholder inputs: PRDs, design docs, memos, research, notes. File prefix `CTX-`. |
+| `docs/decisions/` | ADRs. File prefix `ADR-`. |
+| `docs/tasks/` | Work units. File prefix `TP-`. Every task cites ≥1 ADR or CTX. |
+| `docs/STATE.md` | Auto-generated state snapshot. Do not edit by hand. |
+| `docs/.index.json` | Auto-generated graph with computed reverse edges. Do not cat it into your context — use the read commands below (ADR-0018). |
+
+## Invariants you MUST respect
+
+1. **Every task must cite at least one ADR or CTX** in its `requires:` frontmatter. The validator refuses tasks without it.
+2. **References must resolve.** No citing non-existent docs; no citing superseded docs without good reason.
+3. **Do not edit `docs/STATE.md` or `docs/.index.json`** — both are regenerated from source.
+4. **Do not edit reverse-edge fields** in source frontmatter. They are computed in the index.
+5. **Filename is the ID.** `ADR-0020-whatever.md` is `ADR-0020`. Don't add an `id:` field.
+
+## CLI commands — this is the query API
+
+All commands support `--json` for structured output.
+
+```
+docops init                       # scaffold DocOps in this repo
+docops validate                   # schema + graph invariants
+docops index                      # rebuild docs/.index.json
+docops state                      # regenerate docs/STATE.md
+docops audit                      # structural coverage gaps
+docops search <query> [filters]   # content + frontmatter search
+docops next [--assignee <name>]   # next actionable task
+docops get <id>                   # doc + computed fields
+docops list [--kind …]            # trimmed listing
+docops graph <id> [--depth N]     # typed reference tree
+docops new ctx "title" --type memo
+docops new adr "title" [--related ADR-xxxx]
+docops new task "title" --requires ADR-xxxx,CTX-xxx
+docops status <id> <new-status>   # atomic status change
+docops review <ADR-id>            # semantic coverage review (writes sidecar)
+```
+
+**Prefer these commands over reading `docs/.index.json` directly.** Each
+read command returns a focused slice; the whole index is for
+bootstrap / CI consumers, not routine agent queries. Loading the full
+index into context burns tokens on docs you will not use. See
+`docs/decisions/ADR-0018-cli-as-query-layer.md` for the rationale.
+
+The binary is language-agnostic — install via direct download, Homebrew, Scoop, or Docker. No Node/Bun/Python dependency.
+
+## Recommended agent workflow
+
+1. Read `docs/STATE.md`.
+2. Run `docops audit` to see open gaps.
+3. Run `docops next` to pick a task (or open a specific `TP-*` file).
+4. Before coding: read every doc in the task's `requires:` and `depends_on:`.
+5. Work in your native plan/execute mode. DocOps does not prescribe how you code.
+6. When finished: `docops status TP-xxx done`. The index and STATE.md regenerate.
+7. If your work revealed a new decision, `docops new adr`. If a new gap, `docops new task` with citations.
+
+## Pairs well with
+
+- **GStack** role skills — they apply perspective; DocOps provides the typed state they read.
+- **Native plan mode** of your IDE — DocOps explicitly does not try to replace it.
+
+<!-- docops:end -->

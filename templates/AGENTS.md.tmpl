@@ -71,6 +71,10 @@ The binary is language-agnostic — install via direct download, Homebrew, Scoop
 6. When finished: `docops status TP-xxx done`. The index and STATE.md regenerate.
 7. If your work revealed a new decision, `docops new adr`. If a new gap, `docops new task` with citations.
 
+## Editor integration
+
+JSON Schemas for frontmatter validation live in `docs/.docops/schema/` (`context.schema.json`, `decision.schema.json`, `task.schema.json`). Wire them up in VS Code via the `redhat.vscode-yaml` extension and run `docops schema` to regenerate after editing `context_types:` in `docops.yaml`.
+
 ## Pairs well with
 
 - **GStack** role skills — they apply perspective; DocOps provides the typed state they read.
