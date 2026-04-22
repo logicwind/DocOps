@@ -23,6 +23,7 @@ const (
 	KindMkdir       = "mkdir"
 	KindWriteFile   = "write-file"
 	KindMergeAgents = "merge-agents"
+	KindRemove      = "remove"
 	KindSkip        = "skip"
 )
 
@@ -150,7 +151,8 @@ func ExtractBlock(tmpl []byte) string {
 
 // Execute applies one planned action to the filesystem. Skips are
 // no-ops; mkdir creates with 0o755; writes ensure parent dirs exist
-// and use the action's Mode.
+// and use the action's Mode; remove deletes the file (a missing file
+// is not an error).
 func Execute(a *Action) error {
 	switch a.Kind {
 	case KindSkip:
@@ -162,6 +164,11 @@ func Execute(a *Action) error {
 			return err
 		}
 		return os.WriteFile(a.Path, a.Body, a.Mode)
+	case KindRemove:
+		if err := os.Remove(a.Path); err != nil && !os.IsNotExist(err) {
+			return err
+		}
+		return nil
 	}
 	return fmt.Errorf("unknown action kind %q", a.Kind)
 }

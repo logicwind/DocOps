@@ -31,6 +31,23 @@ A GHCR image lands in a follow-up release. Until then, use Homebrew, Scoop, or d
 
 Per-platform packages (`@docops/cli-darwin-arm64`, `@docops/cli-linux-x64`, ...) will publish alongside a future release. `npm i -g @docops/cli` resolves the matching native binary via `optionalDependencies` — no postinstall network fetch. See ADR-0012 for distribution rationale.
 
+### Upgrading an existing project
+
+After `brew upgrade docops` (or your package manager equivalent), pull the
+new binary's shipped templates into your project without clobbering
+`docops.yaml` or your pre-commit hook:
+
+```sh
+brew upgrade docops          # or scoop update docops, etc.
+docops upgrade               # syncs skills, schemas, AGENTS.md block
+docops upgrade --dry-run     # preview first if you prefer
+```
+
+`docops upgrade` only touches DocOps-owned scaffolding. To also rewrite
+`docops.yaml` or reinstall the pre-commit hook, opt in with `--config`
+or `--hook`. Run `docops update-check` (or wait for `docops upgrade` to
+warn you on its own) to learn when a new release is available.
+
 ## Smoke test
 
 ```sh

@@ -47,6 +47,8 @@ func main() {
 		os.Exit(cmdSearch(args[1:]))
 	case "update-check":
 		os.Exit(cmdUpdateCheck(args[1:]))
+	case "upgrade":
+		os.Exit(cmdUpgrade(args[1:]))
 	default:
 		fmt.Fprintf(os.Stderr, "docops: unknown command %q\n\n", args[0])
 		topLevelUsage(os.Stderr)
@@ -61,6 +63,7 @@ func topLevelUsage(w *os.File) {
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "commands:")
 	fmt.Fprintln(w, "  init        scaffold DocOps in this repository")
+	fmt.Fprintln(w, "  upgrade     refresh DocOps-owned scaffolding in an existing project")
 	fmt.Fprintln(w, "  validate    schema + graph invariants over docs/")
 	fmt.Fprintln(w, "  index       build docs/.index.json enriched graph")
 	fmt.Fprintln(w, "  state       regenerate docs/STATE.md snapshot")
