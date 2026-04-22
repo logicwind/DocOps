@@ -35,6 +35,14 @@ func main() {
 		os.Exit(cmdSchema(args[1:]))
 	case "refresh":
 		os.Exit(cmdRefresh(args[1:]))
+	case "get":
+		os.Exit(cmdGet(args[1:]))
+	case "list":
+		os.Exit(cmdList(args[1:]))
+	case "graph":
+		os.Exit(cmdGraph(args[1:]))
+	case "next":
+		os.Exit(cmdNext(args[1:]))
 	default:
 		fmt.Fprintf(os.Stderr, "docops: unknown command %q\n\n", args[0])
 		topLevelUsage(os.Stderr)
@@ -56,10 +64,11 @@ func topLevelUsage(w *os.File) {
 	fmt.Fprintln(w, "  new         scaffold a new CTX/ADR/Task document")
 	fmt.Fprintln(w, "  schema      (re)write docs/.docops/schema/*.schema.json")
 	fmt.Fprintln(w, "  refresh     validate + index + state in one pass")
+	fmt.Fprintln(w, "  get         look up one doc by ID")
+	fmt.Fprintln(w, "  list        list docs with optional filters")
+	fmt.Fprintln(w, "  graph       typed edge graph from a starting doc")
+	fmt.Fprintln(w, "  next        recommend the next task to work on")
 	fmt.Fprintln(w, "  version     print the build version")
-	fmt.Fprintln(w, "")
-	fmt.Fprintln(w, "coming:")
-	fmt.Fprintln(w, "  status, get, graph, review")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "see `docops <command> --help` for per-command flags.")
 }

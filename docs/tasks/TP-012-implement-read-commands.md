@@ -1,8 +1,8 @@
 ---
 title: Implement focused read commands — `get`, `list`, `graph`, `next`
-status: backlog
+status: done
 priority: p1
-assignee: unassigned
+assignee: nachiket
 requires: [ADR-0018, ADR-0005, ADR-0006, ADR-0010]
 depends_on: [TP-004]
 ---

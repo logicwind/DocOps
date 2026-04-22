@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22T18:42:08Z",
+  "generated_at": "2026-04-22T19:12:49Z",
   "version": 1,
   "docs": [
     {
@@ -228,7 +228,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "partial",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -447,7 +447,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "partial",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -815,7 +815,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "not-started",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -960,7 +960,7 @@
       ],
       "summary": "DocOps currently writes skills into two tool-specific directories during `docops init` and `docops upgrade`:",
       "word_count": 718,
-      "last_touched": "2026-04-22T18:41:28Z",
+      "last_touched": "2026-04-22T18:58:49Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1451,9 +1451,9 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-012-implement-read-commands.md",
       "title": "Implement focused read commands — `get`, `list`, `graph`, `next`",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p1",
-      "assignee": "unassigned",
+      "assignee": "nachiket",
       "requires": [
         "ADR-0018",
         "ADR-0005",
@@ -1644,7 +1644,7 @@
       ],
       "summary": "Update `docops init` and `docops upgrade` to adopt the skills.sh canonical layout: skill files live in `.agents/skills/docops/`; tool-specific dirs (e.g. `.claude/skills/docops`) become symlinks. Per …",
       "word_count": 618,
-      "last_touched": "2026-04-22T18:42:01Z",
+      "last_touched": "2026-04-22T18:58:49Z",
       "age_days": 0,
       "stale": false
     }
