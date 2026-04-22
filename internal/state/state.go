@@ -8,8 +8,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/index"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/index"
 )
 
 // Snapshot is the fully-computed project state. It can be marshalled

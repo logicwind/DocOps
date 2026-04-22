@@ -8,9 +8,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/loader"
-	"github.com/nachiket/docops/internal/validator"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/loader"
+	"github.com/logicwind/docops/internal/validator"
 )
 
 // cmdValidate implements `docops validate [--json] [--only PATH]`.

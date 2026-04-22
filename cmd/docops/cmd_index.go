@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/index"
-	"github.com/nachiket/docops/internal/loader"
-	"github.com/nachiket/docops/internal/validator"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/index"
+	"github.com/logicwind/docops/internal/loader"
+	"github.com/logicwind/docops/internal/validator"
 )
 
 // cmdIndex implements `docops index [--json]`.

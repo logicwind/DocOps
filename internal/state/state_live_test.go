@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/index"
-	"github.com/nachiket/docops/internal/loader"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/index"
+	"github.com/logicwind/docops/internal/loader"
 )
 
 // findProjectRoot walks up from the working directory looking for docops.yaml.

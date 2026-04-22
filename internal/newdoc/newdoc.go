@@ -17,9 +17,9 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/loader"
-	"github.com/nachiket/docops/internal/schema"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/loader"
+	"github.com/logicwind/docops/internal/schema"
 	"gopkg.in/yaml.v3"
 )
 

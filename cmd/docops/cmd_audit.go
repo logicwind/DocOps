@@ -8,11 +8,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/nachiket/docops/internal/audit"
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/index"
-	"github.com/nachiket/docops/internal/loader"
-	"github.com/nachiket/docops/internal/validator"
+	"github.com/logicwind/docops/internal/audit"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/index"
+	"github.com/logicwind/docops/internal/loader"
+	"github.com/logicwind/docops/internal/validator"
 )
 
 // cmdAudit implements `docops audit [--json] [--only <rule>] [--include-not-needed]`.

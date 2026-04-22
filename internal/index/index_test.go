@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/loader"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/loader"
 )
 
 // fixedNow is a reference time used in all tests so age_days is deterministic.

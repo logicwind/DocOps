@@ -24,6 +24,7 @@
 - 2026-04-22 e94040f TP-005: docops state — regenerate STATE.md from the index
 - 2026-04-22 e22e6c6 planning: ADR-0019 + TP-013/TP-014 for v0.1.0 release
 - 2026-04-22 dafd8eb TP-006: docops audit — structural gap punch list
+- 2026-04-22 73cd5db TP-010/TP-013: finalize skill-pack scope — --no-skills + skills lint
 - 2026-04-22 6b41ceb TP-008: docops new — scaffold CTX/ADR/Task with atomic ID allocation
 - 2026-04-22 56f6d7c TP-003: docops validate — schema + graph invariants over docs/
 - 2026-04-22 5255483 planning: search + CLI-as-query-layer ADRs plus two tasks

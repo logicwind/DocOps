@@ -14,9 +14,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/schema"
-	"github.com/nachiket/docops/templates"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/schema"
+	"github.com/logicwind/docops/templates"
 )
 
 // Options configures an init run. Root is the destination repository

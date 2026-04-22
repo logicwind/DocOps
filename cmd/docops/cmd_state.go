@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/index"
-	"github.com/nachiket/docops/internal/loader"
-	"github.com/nachiket/docops/internal/state"
-	"github.com/nachiket/docops/internal/validator"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/index"
+	"github.com/logicwind/docops/internal/loader"
+	"github.com/logicwind/docops/internal/state"
+	"github.com/logicwind/docops/internal/validator"
 )
 
 // cmdState implements `docops state [--stdout] [--json]`.

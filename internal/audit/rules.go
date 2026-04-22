@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/index"
-	"github.com/nachiket/docops/internal/loader"
-	"github.com/nachiket/docops/internal/schema"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/index"
+	"github.com/logicwind/docops/internal/loader"
+	"github.com/logicwind/docops/internal/schema"
 )
 
 // IndexedDoc.Kind values are the string forms of schema.Kind constants.

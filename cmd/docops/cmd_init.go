@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nachiket/docops/internal/initter"
+	"github.com/logicwind/docops/internal/initter"
 )
 
 // cmdInit implements `docops init [--dry-run] [--force] [--no-skills]`.

@@ -24,9 +24,9 @@ builds:
         goarch: arm64
     ldflags:
       - -s -w
-      - -X github.com/nachiket/docops/internal/version.Version={{.Version}}
-      - -X github.com/nachiket/docops/internal/version.Commit={{.Commit}}
-      - -X github.com/nachiket/docops/internal/version.Date={{.Date}}
+      - -X github.com/logicwind/docops/internal/version.Version={{.Version}}
+      - -X github.com/logicwind/docops/internal/version.Commit={{.Commit}}
+      - -X github.com/logicwind/docops/internal/version.Date={{.Date}}
 
 archives:
   - id: docops
@@ -55,28 +55,28 @@ changelog:
       - '^test:'
       - '^chore:'
 
-# Homebrew tap — stub. Activate once `homebrew-docops` repo exists.
+# Homebrew tap — stub. skip_upload: true until `logicwind/homebrew-docops` repo exists (ADR-0019).
 brews:
   - name: docops
     ids: [docops]
     repository:
-      owner: nachiket
+      owner: logicwind
       name: homebrew-docops
     description: "Typed project-state substrate for LLM-first software development"
-    homepage: "https://github.com/nachiket/docops"
+    homepage: "https://github.com/logicwind/DocOps"
     license: MIT
-    skip_upload: auto
+    skip_upload: true
     test: |
       system "#{bin}/docops --version"
 
-# Scoop bucket — stub. Activate once `scoop-docops` repo exists.
+# Scoop bucket — stub. skip_upload: true until `logicwind/scoop-docops` repo exists (ADR-0019).
 scoops:
   - name: docops
     ids: [docops]
     repository:
-      owner: nachiket
+      owner: logicwind
       name: scoop-docops
     description: "Typed project-state substrate for LLM-first software development"
-    homepage: "https://github.com/nachiket/docops"
+    homepage: "https://github.com/logicwind/DocOps"
     license: MIT
-    skip_upload: auto
+    skip_upload: true

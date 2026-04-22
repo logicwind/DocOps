@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/index"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/index"
 )
 
 // fixedNow is the reference clock used throughout these tests so no test

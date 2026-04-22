@@ -8,8 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/newdoc"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/newdoc"
 )
 
 // cmdNew implements `docops new <ctx|adr|task> "title" [flags]`.

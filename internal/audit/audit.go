@@ -5,9 +5,9 @@ package audit
 import (
 	"sort"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/index"
-	"github.com/nachiket/docops/internal/loader"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/index"
+	"github.com/logicwind/docops/internal/loader"
 )
 
 // Finding is one actionable gap detected by an audit rule.

@@ -1,4 +1,4 @@
-module github.com/nachiket/docops
+module github.com/logicwind/docops
 
 go 1.23
 

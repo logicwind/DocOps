@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22T12:35:08Z",
+  "generated_at": "2026-04-22T12:38:16Z",
   "version": 1,
   "docs": [
     {
@@ -1226,7 +1226,7 @@
       ],
       "summary": "Produce the first version of the DocOps skill pack — markdown files that wrap CLI commands for Claude Code and Cursor so agents get discoverable slash-commands.",
       "word_count": 246,
-      "last_touched": "2026-04-22T06:03:04Z",
+      "last_touched": "2026-04-22T12:35:26Z",
       "age_days": 0,
       "stale": false
     },
@@ -1295,7 +1295,7 @@
       ],
       "summary": "ADR-0019 rescopes the skill-pack work: init-based distribution is the single path for v0.1.0; the `packages/` standalone bundles are deferred. This task closes the remaining gap items from TP-010 that…",
       "word_count": 301,
-      "last_touched": "2026-04-22T12:30:23Z",
+      "last_touched": "2026-04-22T12:35:26Z",
       "age_days": 0,
       "referenced_by": [
         {

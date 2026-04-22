@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/index"
-	"github.com/nachiket/docops/internal/loader"
-	"github.com/nachiket/docops/internal/validator"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/index"
+	"github.com/logicwind/docops/internal/loader"
+	"github.com/logicwind/docops/internal/validator"
 )
 
 // findProjectRoot walks up from the test file's directory to find docops.yaml.

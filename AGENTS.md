@@ -31,7 +31,7 @@ pasting in user-facing command explanations. Don't. That content belongs in
 
 ## Bootstrap state
 
-`docops init / validate / index / state / audit / new / schema` ship as of TP-009. They are the
+`docops init / validate / index / state / audit / new / schema` are the shipped v0.1.0 surface. They are the
 gate for every other task:
 
 - `docops init` — scaffold DocOps into a bare repo (idempotent; `--dry-run`, `--force`).

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nachiket/docops/internal/version"
+	"github.com/logicwind/docops/internal/version"
 )
 
 func main() {

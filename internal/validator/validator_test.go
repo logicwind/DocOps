@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/loader"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/loader"
 )
 
 // scenario builds a throwaway project with the given files relative to

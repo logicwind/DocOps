@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/nachiket/docops/internal/config"
-	"github.com/nachiket/docops/internal/schema"
+	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/schema"
 )
 
 func TestLoad_DiscoversAllKinds(t *testing.T) {

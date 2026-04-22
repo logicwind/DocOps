@@ -9,28 +9,28 @@ Typed project-state substrate for LLM-first software development. Three doc type
 ### macOS / Linux (Homebrew)
 
 ```sh
-brew install nachiket/docops/docops
+brew install logicwind/docops/docops
 ```
 
-> Tap publishes once `v0.1.0` ships.
+> Tap publishes once the `logicwind/homebrew-docops` repo is created (post-v0.1.0).
 
 ### Windows (Scoop)
 
 ```sh
-scoop bucket add docops https://github.com/nachiket/scoop-docops
+scoop bucket add docops https://github.com/logicwind/scoop-docops
 scoop install docops
 ```
 
-> Bucket publishes once `v0.1.0` ships.
+> Bucket publishes once the `logicwind/scoop-docops` repo is created (post-v0.1.0).
 
 ### Direct download
 
-Grab the archive for your platform from [GitHub Releases](https://github.com/nachiket/docops/releases), extract, put `docops` on your PATH.
+Grab the archive for your platform from [GitHub Releases](https://github.com/logicwind/DocOps/releases), extract, put `docops` on your PATH.
 
 ### Docker
 
 ```sh
-docker run --rm -v "$PWD:/repo" ghcr.io/nachiket/docops:latest --version
+docker run --rm -v "$PWD:/repo" ghcr.io/logicwind/docops:latest --version
 ```
 
 > Image publishes once `v0.1.0` ships.
@@ -97,4 +97,4 @@ make release-snapshot
 
 ## License
 
-MIT (pending — a LICENSE file will land with `v0.1.0`).
+MIT — see LICENSE.
