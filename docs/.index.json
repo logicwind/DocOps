@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22T12:38:16Z",
+  "generated_at": "2026-04-22T12:38:56Z",
   "version": 1,
   "docs": [
     {
@@ -504,7 +504,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "partial",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -541,7 +541,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "partial",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -825,7 +825,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "partial",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -1314,7 +1314,7 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-014-release-v0-1-0-under-logicwind-docops.md",
       "title": "Release v0.1.0 under logicwind/DocOps",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p1",
       "assignee": "unassigned",
       "requires": [

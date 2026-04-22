@@ -6,7 +6,7 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 19 accepted · 0 draft · 0 superseded (18 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 3 backlog · 0 active · 0 blocked · 11 done
+- Tasks: 2 backlog · 0 active · 0 blocked · 12 done
 
 ## Needs attention
 

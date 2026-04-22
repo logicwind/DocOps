@@ -1,6 +1,6 @@
 ---
 title: Release v0.1.0 under logicwind/DocOps
-status: backlog
+status: done
 priority: p1
 assignee: unassigned
 requires: [ADR-0019, ADR-0012, ADR-0011]
