@@ -21,6 +21,39 @@ type Config struct {
 	Version      int      `yaml:"version"`
 	Paths        Paths    `yaml:"paths"`
 	ContextTypes []string `yaml:"context_types"`
+	Gaps         Gaps     `yaml:"gaps"`
+}
+
+// Gaps mirrors the `gaps:` block of docops.yaml. Most entries are
+// threshold days read by `docops audit` (TP-006); the two severity knobs
+// are used by `docops validate` (TP-003) to decide whether citations to
+// superseded docs are warnings or errors.
+type Gaps struct {
+	AdrAcceptedNoTasksAfterDays   int      `yaml:"adr_accepted_no_tasks_after_days"`
+	AdrDraftStaleDays             int      `yaml:"adr_draft_stale_days"`
+	TaskActiveNoCommitsDays       int      `yaml:"task_active_no_commits_days"`
+	CtxWithNoDerivedLinksAfterDays int     `yaml:"ctx_with_no_derived_links_after_days"`
+	TaskRequiresSupersededAdr     Severity `yaml:"task_requires_superseded_adr"`
+	TaskRequiresSupersededCtx     Severity `yaml:"task_requires_superseded_ctx"`
+	AdrSemanticReviewStaleDays    int      `yaml:"adr_semantic_review_stale_days"`
+}
+
+// Severity is the level assigned to a configurable rule. Empty string means
+// "default" — callers should normalise to a concrete value.
+type Severity string
+
+const (
+	SeverityOff   Severity = "off"
+	SeverityWarn  Severity = "warn"
+	SeverityError Severity = "error"
+)
+
+// Normalise returns the severity with an explicit default for empty values.
+func (s Severity) Normalise(def Severity) Severity {
+	if s == "" {
+		return def
+	}
+	return s
 }
 
 // Paths mirrors the `paths:` section of docops.yaml. Zero values get
@@ -52,6 +85,15 @@ func Default() Config {
 			Reviews:   "docs/decisions/.reviews",
 		},
 		ContextTypes: []string{"prd", "design", "research", "notes", "memo", "spec", "brief"},
+		Gaps: Gaps{
+			AdrAcceptedNoTasksAfterDays:    7,
+			AdrDraftStaleDays:              14,
+			TaskActiveNoCommitsDays:        5,
+			CtxWithNoDerivedLinksAfterDays: 10,
+			TaskRequiresSupersededAdr:      SeverityWarn,
+			TaskRequiresSupersededCtx:      SeverityWarn,
+			AdrSemanticReviewStaleDays:     60,
+		},
 	}
 }
 
@@ -87,6 +129,27 @@ func (c *Config) ApplyDefaults() {
 	}
 	if len(c.ContextTypes) == 0 {
 		c.ContextTypes = def.ContextTypes
+	}
+	if c.Gaps.AdrAcceptedNoTasksAfterDays == 0 {
+		c.Gaps.AdrAcceptedNoTasksAfterDays = def.Gaps.AdrAcceptedNoTasksAfterDays
+	}
+	if c.Gaps.AdrDraftStaleDays == 0 {
+		c.Gaps.AdrDraftStaleDays = def.Gaps.AdrDraftStaleDays
+	}
+	if c.Gaps.TaskActiveNoCommitsDays == 0 {
+		c.Gaps.TaskActiveNoCommitsDays = def.Gaps.TaskActiveNoCommitsDays
+	}
+	if c.Gaps.CtxWithNoDerivedLinksAfterDays == 0 {
+		c.Gaps.CtxWithNoDerivedLinksAfterDays = def.Gaps.CtxWithNoDerivedLinksAfterDays
+	}
+	if c.Gaps.TaskRequiresSupersededAdr == "" {
+		c.Gaps.TaskRequiresSupersededAdr = def.Gaps.TaskRequiresSupersededAdr
+	}
+	if c.Gaps.TaskRequiresSupersededCtx == "" {
+		c.Gaps.TaskRequiresSupersededCtx = def.Gaps.TaskRequiresSupersededCtx
+	}
+	if c.Gaps.AdrSemanticReviewStaleDays == 0 {
+		c.Gaps.AdrSemanticReviewStaleDays = def.Gaps.AdrSemanticReviewStaleDays
 	}
 }
 

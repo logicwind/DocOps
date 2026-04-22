@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
@@ -9,38 +8,37 @@ import (
 )
 
 func main() {
-	var showVersion bool
-	flag.BoolVar(&showVersion, "version", false, "print version and exit")
-	flag.BoolVar(&showVersion, "v", false, "print version and exit (shorthand)")
-	flag.Usage = usage
-	flag.Parse()
+	args := os.Args[1:]
+	if len(args) == 0 {
+		topLevelUsage(os.Stderr)
+		return
+	}
 
-	if showVersion {
+	switch args[0] {
+	case "--version", "-v", "version":
 		fmt.Println(version.String())
-		return
+	case "--help", "-h", "help":
+		topLevelUsage(os.Stdout)
+	case "validate":
+		os.Exit(cmdValidate(args[1:]))
+	default:
+		fmt.Fprintf(os.Stderr, "docops: unknown command %q\n\n", args[0])
+		topLevelUsage(os.Stderr)
+		os.Exit(2)
 	}
-
-	if flag.NArg() == 0 {
-		usage()
-		return
-	}
-
-	fmt.Fprintf(os.Stderr, "docops: unknown command %q\n", flag.Arg(0))
-	fmt.Fprintln(os.Stderr, "subcommands land in subsequent tasks (see docs/tasks/)")
-	os.Exit(2)
 }
 
-func usage() {
-	fmt.Fprintln(os.Stderr, "docops — typed project-state substrate for LLM-first development")
-	fmt.Fprintln(os.Stderr, "")
-	fmt.Fprintln(os.Stderr, "usage: docops [--version] <command> [args]")
-	fmt.Fprintln(os.Stderr, "")
-	fmt.Fprintln(os.Stderr, "This build is the phase-1 scaffold (TP-001). Commands will be added by:")
-	fmt.Fprintln(os.Stderr, "  TP-002  schemas")
-	fmt.Fprintln(os.Stderr, "  TP-003  validate")
-	fmt.Fprintln(os.Stderr, "  TP-004  index")
-	fmt.Fprintln(os.Stderr, "  TP-005  state")
-	fmt.Fprintln(os.Stderr, "  TP-006  audit")
-	fmt.Fprintln(os.Stderr, "  TP-007  init")
-	fmt.Fprintln(os.Stderr, "  TP-008  new")
+func topLevelUsage(w *os.File) {
+	fmt.Fprintln(w, "docops — typed project-state substrate for LLM-first development")
+	fmt.Fprintln(w, "")
+	fmt.Fprintln(w, "usage: docops <command> [flags]")
+	fmt.Fprintln(w, "")
+	fmt.Fprintln(w, "commands:")
+	fmt.Fprintln(w, "  validate    schema + graph invariants over docs/  (TP-003)")
+	fmt.Fprintln(w, "  version     print the build version")
+	fmt.Fprintln(w, "")
+	fmt.Fprintln(w, "coming:")
+	fmt.Fprintln(w, "  init, index, state, audit, new, status, get, graph, review")
+	fmt.Fprintln(w, "")
+	fmt.Fprintln(w, "see `docops <command> --help` for per-command flags.")
 }

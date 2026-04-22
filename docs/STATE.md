@@ -10,20 +10,20 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 16 accepted · 0 draft · 0 superseded (15 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 8 backlog · 0 active · 0 blocked · 2 done
+- Tasks: 7 backlog · 0 active · 0 blocked · 3 done
 
 ## Needs attention
 
-- **TP-002 done** — frontmatter types, validators, JSON Schema emitters, and a `docops.yaml` loader all landed in `internal/schema` + `internal/config`. The dog-food self-validation test exercises every CTX/ADR/TP in this repo on each `go test`. TP-003 (validate CLI), TP-007 (init), TP-008 (new), and TP-009 (publish JSON Schema) are now all unblocked.
-- **Structural gaps:** 14 `coverage: required` ADRs still lack at least one completed citing task — this clears as TP-003..TP-010 ship. (15 → 14 because TP-002 ships with ADR-0002 / ADR-0003 / ADR-0006 citations.)
-- **Semantic coverage: never reviewed** for any ADR. Run `docops review <ADR-id>` once that command exists (TP-003+).
-- **Assignees on remaining tasks** are `unassigned` — decide who (Claude / Cursor / human) picks up each.
+- **TP-003 done** — `docops validate` is now a working pre-commit gate. Runs against this repo clean: 30 docs, 0 errors, 0 warnings. TP-004 (`index`) and the remaining p1 commands are now the natural next steps.
+- **Structural gaps:** 13 `coverage: required` ADRs still lack at least one completed citing task. (TP-003 ships with ADR-0004 / ADR-0006 / ADR-0002 citations.) Clears as TP-004..TP-010 ship.
+- **Semantic coverage: never reviewed** for any ADR. Still deferred to after the review sidecar format ships (a TP-003+ command).
+- **Assignees on remaining tasks** are `unassigned`.
 - **Meta/product layer formalized** (ADR-0016). Root `AGENTS.md` orients source-side agents; `templates/` holds user-facing artifacts. TP-007 consumes these templates verbatim.
 - **Small convention clarified** during TP-002: `related:` on ADRs accepts any doc kind (CTX/ADR/TP), not only ADR. Validator comment has the rationale.
 
 ## Active work
 
-(none — TP-002 just shipped; TP-003 is the next natural step)
+(none — TP-003 just shipped; TP-004 is the next natural step)
 
 ## Recent activity
 
@@ -31,6 +31,7 @@
 - 2026-04-22 Added ADR-0016 (meta vs. product separation). Moved user-facing `AGENTS.md` content to `templates/AGENTS.md.tmpl`; rewrote root `AGENTS.md` for source-side agents. Updated TP-007 to read from `templates/`.
 - 2026-04-22 **TP-001 done.** Go scaffold (`cmd/docops`, `internal/version`, `Makefile`, `.goreleaser.yml`, CI + release workflows, README). `docops --version` works. Language choice (Go) and npm `optionalDependencies` plan appended to ADR-0012.
 - 2026-04-22 **TP-002 done.** `internal/schema` (types/parse/validate/jsonschema) and `internal/config` (docops.yaml loader). Strict YAML decoding, multi-error validation, JSON Schema emission. Dog-food self-validation test passes against all 30 live docs. 22 tests green.
+- 2026-04-22 **TP-003 done.** `docops validate` shipped. `internal/loader` walks `docs/`; `internal/validator` runs schema + graph checks (unresolved refs, supersedes/depends_on cycles, superseded-citation severity per `gaps:`). CLI has `--json` and `--only`. 30 docs in this repo validate clean; 35 tests green total. Binary size 2.58 MB.
 
 ## Pointers
 
@@ -39,4 +40,4 @@
 - **Why we're building it:** `docs/context/CTX-001-docops-vision.md`.
 - **What to avoid:** `docs/context/CTX-004-user-constraints.md`.
 - **Repo layers:** `docs/decisions/ADR-0016-meta-vs-product-separation.md`.
-- **Next work:** `docs/tasks/TP-003-implement-validate-command.md`.
+- **Next work:** `docs/tasks/TP-004-implement-index-command.md`.
