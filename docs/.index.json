@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22T09:31:26Z",
+  "generated_at": "2026-04-22T09:42:23Z",
   "version": 1,
   "docs": [
     {
@@ -121,7 +121,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "partial",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -164,7 +164,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "partial",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -1069,7 +1069,7 @@
       ],
       "summary": "Command that turns a bare repository into a DocOps-enabled one. Idempotent — safe to run twice.",
       "word_count": 222,
-      "last_touched": "2026-04-22T06:03:04Z",
+      "last_touched": "2026-04-22T09:33:17Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1088,7 +1088,7 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-008-implement-new-command.md",
       "title": "Implement `docops new \u003ctype\u003e` — scaffold documents with ID allocation",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p1",
       "assignee": "unassigned",
       "requires": [

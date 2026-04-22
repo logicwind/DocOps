@@ -1,6 +1,6 @@
 ---
 title: Implement `docops new <type>` — scaffold documents with ID allocation
-status: backlog
+status: done
 priority: p1
 assignee: unassigned
 requires: [ADR-0003, ADR-0002, ADR-0004]

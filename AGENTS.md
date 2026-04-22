@@ -31,7 +31,7 @@ pasting in user-facing command explanations. Don't. That content belongs in
 
 ## Bootstrap state
 
-`docops init / validate / index / state / audit` ship as of TP-007. They are the
+`docops init / validate / index / state / audit / new` ship as of TP-008. They are the
 gate for every other task:
 
 - `docops init` — scaffold DocOps into a bare repo (idempotent; `--dry-run`, `--force`).
@@ -39,8 +39,9 @@ gate for every other task:
 - `docops index` — writes `docs/.index.json` (committed; regenerate after doc edits).
 - `docops state` — regenerates `docs/STATE.md` (committed; never hand-edit).
 - `docops audit` — structural gap punch list.
+- `docops new <ctx|adr|task> "title" [flags]` — scaffold a new document with atomic ID allocation.
 
-`new`, `status`, `get`, `list`, `graph`, `next`, `search`, `review`
+`status`, `get`, `list`, `graph`, `next`, `search`, `review`
 are still unbuilt — do not invent flags or behaviour that does not exist.
 If a workflow needs a command that has not shipped, propose a task first.
 

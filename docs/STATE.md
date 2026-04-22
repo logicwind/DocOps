@@ -6,7 +6,7 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 18 accepted · 0 draft · 0 superseded (17 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 5 backlog · 0 active · 0 blocked · 7 done
+- Tasks: 4 backlog · 0 active · 0 blocked · 8 done
 
 ## Needs attention
 
@@ -18,6 +18,7 @@
 
 ## Recent activity
 
+- 2026-04-22 f928497 TP-007: docops init — scaffold a DocOps-enabled repo
 - 2026-04-22 f5ab1e6 TP-004: docops index — enriched graph written to .index.json
 - 2026-04-22 f01bed5 TP-002: frontmatter schemas, validators, and JSON Schema emission
 - 2026-04-22 e94040f TP-005: docops state — regenerate STATE.md from the index

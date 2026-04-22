@@ -29,6 +29,8 @@ func main() {
 		os.Exit(cmdState(args[1:]))
 	case "audit":
 		os.Exit(cmdAudit(args[1:]))
+	case "new":
+		os.Exit(cmdNew(args[1:]))
 	default:
 		fmt.Fprintf(os.Stderr, "docops: unknown command %q\n\n", args[0])
 		topLevelUsage(os.Stderr)
@@ -47,10 +49,11 @@ func topLevelUsage(w *os.File) {
 	fmt.Fprintln(w, "  index       build docs/.index.json enriched graph   (TP-004)")
 	fmt.Fprintln(w, "  state       regenerate docs/STATE.md snapshot       (TP-005)")
 	fmt.Fprintln(w, "  audit       structural gap punch list                (TP-006)")
+	fmt.Fprintln(w, "  new         scaffold a new CTX/ADR/Task document     (TP-008)")
 	fmt.Fprintln(w, "  version     print the build version")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "coming:")
-	fmt.Fprintln(w, "  new, status, get, graph, review")
+	fmt.Fprintln(w, "  status, get, graph, review")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "see `docops <command> --help` for per-command flags.")
 }
