@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22T17:47:17Z",
+  "generated_at": "2026-04-22T17:50:17Z",
   "version": 1,
   "docs": [
     {
@@ -1486,7 +1486,7 @@
       ],
       "summary": "Let `docops new` create a doc with real content in one CLI call, so agents (and scripts) never have to write-after-create to replace the stub. Also: make validator enum errors self-diagnosing by listi…",
       "word_count": 563,
-      "last_touched": "2026-04-22T17:31:24Z",
+      "last_touched": "2026-04-22T17:47:49Z",
       "age_days": 0,
       "stale": false
     }

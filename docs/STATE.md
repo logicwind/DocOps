@@ -33,6 +33,7 @@
 - 2026-04-22 56f6d7c TP-003: docops validate — schema + graph invariants over docs/
 - 2026-04-22 5255483 planning: search + CLI-as-query-layer ADRs plus two tasks
 - 2026-04-22 50eeb7a initial docs & idea
+- 2026-04-22 4631e43 TP-017: docops new --body + validator enum hints
 - 2026-04-22 2a99403 TP-009: docops schema — JSON Schema for editor tooling
 - 2026-04-22 1a3de5c dog-food the DocOps convention (CTX, ADR, TP, meta/product split)
 - 2026-04-22 13514b1 removed reference implementation
