@@ -40,6 +40,7 @@ docops init                       # scaffold DocOps in this repo
 docops validate                   # schema + graph invariants
 docops index                      # rebuild docs/.index.json
 docops state                      # regenerate docs/STATE.md
+docops refresh                    # validate + index + state in one pass (use after every doc edit)
 docops audit                      # structural coverage gaps
 docops search <query> [filters]   # content + frontmatter search
 docops next [--assignee <name>]   # next actionable task

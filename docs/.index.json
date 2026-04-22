@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22T17:38:10Z",
+  "generated_at": "2026-04-22T17:42:05Z",
   "version": 1,
   "docs": [
     {
@@ -1441,7 +1441,7 @@
       ],
       "summary": "Fix the three ergonomic gaps in `docops init` surfaced by v0.1.0 first-user testing: no way to target a different folder, no explanation of what init will do, no confirmation before writing.",
       "word_count": 402,
-      "last_touched": "2026-04-22T17:31:24Z",
+      "last_touched": "2026-04-22T17:38:31Z",
       "age_days": 0,
       "stale": false
     },
@@ -1451,7 +1451,7 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-016-docops-refresh-composite-validate-index-state-for.md",
       "title": "docops refresh — composite validate+index+state for the edit loop",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p1",
       "assignee": "unassigned",
       "requires": [

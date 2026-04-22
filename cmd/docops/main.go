@@ -33,6 +33,8 @@ func main() {
 		os.Exit(cmdNew(args[1:]))
 	case "schema":
 		os.Exit(cmdSchema(args[1:]))
+	case "refresh":
+		os.Exit(cmdRefresh(args[1:]))
 	default:
 		fmt.Fprintf(os.Stderr, "docops: unknown command %q\n\n", args[0])
 		topLevelUsage(os.Stderr)
@@ -53,6 +55,7 @@ func topLevelUsage(w *os.File) {
 	fmt.Fprintln(w, "  audit       structural gap punch list                (TP-006)")
 	fmt.Fprintln(w, "  new         scaffold a new CTX/ADR/Task document     (TP-008)")
 	fmt.Fprintln(w, "  schema      (re)write docs/.docops/schema/*.schema.json  (TP-009)")
+	fmt.Fprintln(w, "  refresh     validate + index + state in one pass         (TP-016)")
 	fmt.Fprintln(w, "  version     print the build version")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "coming:")

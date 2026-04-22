@@ -1,6 +1,6 @@
 ---
 title: docops refresh — composite validate+index+state for the edit loop
-status: backlog
+status: done
 priority: p1
 assignee: unassigned
 requires: [ADR-0020]

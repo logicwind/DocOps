@@ -31,13 +31,14 @@ pasting in user-facing command explanations. Don't. That content belongs in
 
 ## Bootstrap state
 
-`docops init / validate / index / state / audit / new / schema` are the shipped v0.1.0 surface. They are the
+`docops init / validate / index / state / audit / new / schema / refresh` are the shipped v0.1.1 surface. They are the
 gate for every other task:
 
-- `docops init` — scaffold DocOps into a bare repo (idempotent; `--dry-run`, `--force`).
+- `docops init` — scaffold DocOps into a bare repo (idempotent; `--dry-run`, `--force`, `--yes`, `[dir]`).
 - `docops validate` — runs the schema + graph invariants; exits non-zero on any error.
 - `docops index` — writes `docs/.index.json` (committed; regenerate after doc edits).
 - `docops state` — regenerates `docs/STATE.md` (committed; never hand-edit).
+- `docops refresh` — validate + index + state in one pass; use this after every doc edit instead of the three-command chain.
 - `docops audit` — structural gap punch list.
 - `docops new <ctx|adr|task> "title" [flags]` — scaffold a new document with atomic ID allocation.
 - `docops schema` — (re)write `docs/.docops/schema/*.schema.json` from the current `docops.yaml`; use after editing `context_types:`.
@@ -51,7 +52,7 @@ If a workflow needs a command that has not shipped, propose a task first.
 1. Run `./bin/docops state` (or read `docs/STATE.md`) for where things stand.
 2. Run `./bin/docops audit` to see open structural gaps.
 3. Read `docs/tasks/` for queued work. Check `depends_on` before picking one up.
-4. When adding or modifying a doc in `docs/`, honour the frontmatter spec in `docs/decisions/ADR-0002-bare-minimum-frontmatter.md`. After edits, run `./bin/docops validate` and then `./bin/docops index && ./bin/docops state` to refresh committed artifacts.
+4. When adding or modifying a doc in `docs/`, honour the frontmatter spec in `docs/decisions/ADR-0002-bare-minimum-frontmatter.md`. After edits, run `./bin/docops refresh` to validate and refresh all committed artifacts in one step.
 5. If you create a new task, ensure its `requires:` cites ≥1 existing ADR or CTX (ADR-0004 alignment rule — the validator rejects tasks without it).
 6. **Write the ADR first, then the task(s) that cite it.** Any new capability, public surface, or product-level decision is an ADR-level event. Skipping the ADR and going straight to a task is not a shortcut — it fails ADR-0004 (tasks need citations) and loses the design rationale the graph depends on. If you catch yourself writing code before there is an ADR to cite, stop and write the ADR.
 
