@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22T08:13:19Z",
+  "generated_at": "2026-04-22T08:14:39Z",
   "version": 1,
   "docs": [
     {
@@ -337,7 +337,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "partial",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -371,7 +371,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "not-started",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -875,7 +875,7 @@
       ],
       "summary": "Command that reads `.index.json` and writes `docs/STATE.md` — the human- and LLM-readable snapshot described in ADR-0007.",
       "word_count": 393,
-      "last_touched": "2026-04-22T06:03:04Z",
+      "last_touched": "2026-04-22T08:13:45Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -894,9 +894,9 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-006-implement-audit-command.md",
       "title": "Implement `docops audit` — structural gap detection",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p1",
-      "assignee": "unassigned",
+      "assignee": "claude",
       "requires": [
         "ADR-0008",
         "ADR-0009"
@@ -905,7 +905,7 @@
         "TP-004"
       ],
       "summary": "Command that reports structural coverage gaps computed from `.index.json`. Separate from STATE.md: this is the actionable punch list, not a passive snapshot.",
-      "word_count": 191,
+      "word_count": 441,
       "last_touched": "2026-04-22T06:03:04Z",
       "age_days": 0,
       "referenced_by": [
