@@ -21,7 +21,7 @@ Windsurf, Zed, etc.), read this file before doing any work.
 | `docs/decisions/` | ADRs. File prefix `ADR-`. |
 | `docs/tasks/` | Work units. File prefix `TP-`. Every task cites ≥1 ADR or CTX. |
 | `docs/STATE.md` | Auto-generated state snapshot. Do not edit by hand. |
-| `docs/.index.json` | Auto-generated graph with computed reverse edges. Prefer querying via the CLI. |
+| `docs/.index.json` | Auto-generated graph with computed reverse edges. Do not cat it into your context — use the read commands below (ADR-0018). |
 
 ## Invariants you MUST respect
 
@@ -31,7 +31,7 @@ Windsurf, Zed, etc.), read this file before doing any work.
 4. **Do not edit reverse-edge fields** in source frontmatter. They are computed in the index.
 5. **Filename is the ID.** `ADR-0020-whatever.md` is `ADR-0020`. Don't add an `id:` field.
 
-## CLI commands
+## CLI commands — this is the query API
 
 All commands support `--json` for structured output.
 
@@ -41,15 +41,23 @@ docops validate                   # schema + graph invariants
 docops index                      # rebuild docs/.index.json
 docops state                      # regenerate docs/STATE.md
 docops audit                      # structural coverage gaps
+docops search <query> [filters]   # content + frontmatter search
 docops next [--assignee <name>]   # next actionable task
 docops get <id>                   # doc + computed fields
-docops graph <id>                 # typed reference tree
+docops list [--kind …]            # trimmed listing
+docops graph <id> [--depth N]     # typed reference tree
 docops new ctx "title" --type memo
 docops new adr "title" [--related ADR-xxxx]
 docops new task "title" --requires ADR-xxxx,CTX-xxx
 docops status <id> <new-status>   # atomic status change
 docops review <ADR-id>            # semantic coverage review (writes sidecar)
 ```
+
+**Prefer these commands over reading `docs/.index.json` directly.** Each
+read command returns a focused slice; the whole index is for
+bootstrap / CI consumers, not routine agent queries. Loading the full
+index into context burns tokens on docs you will not use. See
+`docs/decisions/ADR-0018-cli-as-query-layer.md` for the rationale.
 
 The binary is language-agnostic — install via direct download, Homebrew, Scoop, or Docker. No Node/Bun/Python dependency.
 

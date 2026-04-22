@@ -5,8 +5,8 @@
 ## Counts
 
 - Context: 4 active · 0 superseded
-- ADRs: 16 accepted · 0 draft · 0 superseded (15 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 4 backlog · 0 active · 0 blocked · 6 done
+- ADRs: 18 accepted · 0 draft · 0 superseded (17 `coverage: required`, 1 `coverage: not-needed`)
+- Tasks: 6 backlog · 0 active · 0 blocked · 6 done
 
 ## Needs attention
 
@@ -21,6 +21,7 @@
 - 2026-04-22 f5ab1e6 TP-004: docops index — enriched graph written to .index.json
 - 2026-04-22 f01bed5 TP-002: frontmatter schemas, validators, and JSON Schema emission
 - 2026-04-22 e94040f TP-005: docops state — regenerate STATE.md from the index
+- 2026-04-22 dafd8eb TP-006: docops audit — structural gap punch list
 - 2026-04-22 56f6d7c TP-003: docops validate — schema + graph invariants over docs/
 - 2026-04-22 50eeb7a initial docs & idea
 - 2026-04-22 1a3de5c dog-food the DocOps convention (CTX, ADR, TP, meta/product split)
