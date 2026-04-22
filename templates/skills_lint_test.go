@@ -20,14 +20,15 @@ import (
 
 // knownSubcmds is the shipped CLI surface for v0.1.1.
 var knownSubcmds = map[string]bool{
-	"init":     true,
-	"validate": true,
-	"index":    true,
-	"state":    true,
-	"audit":    true,
-	"new":      true,
-	"schema":   true,
-	"refresh":  true,
+	"init":         true,
+	"validate":     true,
+	"index":        true,
+	"state":        true,
+	"audit":        true,
+	"new":          true,
+	"schema":       true,
+	"refresh":      true,
+	"update-check": true,
 }
 
 // knownNewKinds are valid arguments for `docops new`.

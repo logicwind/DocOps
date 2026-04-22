@@ -45,6 +45,8 @@ func main() {
 		os.Exit(cmdNext(args[1:]))
 	case "search":
 		os.Exit(cmdSearch(args[1:]))
+	case "update-check":
+		os.Exit(cmdUpdateCheck(args[1:]))
 	default:
 		fmt.Fprintf(os.Stderr, "docops: unknown command %q\n\n", args[0])
 		topLevelUsage(os.Stderr)
@@ -71,6 +73,7 @@ func topLevelUsage(w *os.File) {
 	fmt.Fprintln(w, "  graph       typed edge graph from a starting doc")
 	fmt.Fprintln(w, "  next        recommend the next task to work on")
 	fmt.Fprintln(w, "  search      substring/regex search over title, tags, and body")
+	fmt.Fprintln(w, "  update-check  check for a newer docops release (cached probe)")
 	fmt.Fprintln(w, "  version     print the build version")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "see `docops <command> --help` for per-command flags.")
