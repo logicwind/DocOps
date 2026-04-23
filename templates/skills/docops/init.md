@@ -1,6 +1,6 @@
 ---
 name: init
-description: Scaffold DocOps into a bare repository — creates docs/ folders, docops.yaml, JSON Schemas, an AGENTS.md block, and a pre-commit hook. Safe to run twice; use --dry-run to preview.
+description: Scaffold DocOps into a bare repository — creates docs/ folders, docops.yaml, JSON Schemas, AGENTS.md and CLAUDE.md blocks, and a pre-commit hook. Safe to run twice; use --dry-run to preview.
 ---
 
 # /docops:init
@@ -18,7 +18,7 @@ What it does:
 - Creates `docs/context/`, `docs/decisions/`, `docs/tasks/` if absent.
 - Writes `docops.yaml` at the repo root with sensible defaults.
 - Writes JSON Schemas to `docs/.docops/schema/` for in-editor validation.
-- Writes or refreshes the `<!-- docops:start -->` block inside `AGENTS.md`.
+- Writes or refreshes the `<!-- docops:start -->` block inside `AGENTS.md` and `CLAUDE.md` (both files share the same docops block; Claude Code reads CLAUDE.md by default while other agents read AGENTS.md).
 - Installs a language-agnostic pre-commit hook that runs `docops validate`.
 - Scaffolds `/docops:*` skills into `.claude/skills/docops/` and `.cursor/commands/docops/`.
 

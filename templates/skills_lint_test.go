@@ -20,14 +20,16 @@ import (
 
 // knownSubcmds is the shipped CLI surface for v0.1.1.
 var knownSubcmds = map[string]bool{
-	"init":     true,
-	"validate": true,
-	"index":    true,
-	"state":    true,
-	"audit":    true,
-	"new":      true,
-	"schema":   true,
-	"refresh":  true,
+	"init":         true,
+	"validate":     true,
+	"index":        true,
+	"state":        true,
+	"audit":        true,
+	"new":          true,
+	"schema":       true,
+	"refresh":      true,
+	"update-check": true,
+	"upgrade":      true,
 }
 
 // knownNewKinds are valid arguments for `docops new`.
@@ -64,6 +66,18 @@ var flagAllowlist = map[string]map[string]bool{
 	},
 	"refresh": {
 		"--json": true,
+	},
+	"upgrade": {
+		"--dry-run": true,
+		"--config":  true,
+		"--hook":    true,
+		"--yes":     true,
+		"--json":    true,
+	},
+	"update-check": {
+		"--force":  true,
+		"--snooze": true,
+		"--json":   true,
 	},
 	// new ctx / new adr / new task share the "new" key; we resolve
 	// per-kind flags under "new/<kind>" and fall back to "new".

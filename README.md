@@ -31,6 +31,23 @@ A GHCR image lands in a follow-up release. Until then, use Homebrew, Scoop, or d
 
 Per-platform packages (`@docops/cli-darwin-arm64`, `@docops/cli-linux-x64`, ...) will publish alongside a future release. `npm i -g @docops/cli` resolves the matching native binary via `optionalDependencies` — no postinstall network fetch. See ADR-0012 for distribution rationale.
 
+### Upgrading an existing project
+
+After `brew upgrade docops` (or your package manager equivalent), pull the
+new binary's shipped templates into your project without clobbering
+`docops.yaml` or your pre-commit hook:
+
+```sh
+brew upgrade docops          # or scoop update docops, etc.
+docops upgrade               # syncs skills, schemas, AGENTS.md block
+docops upgrade --dry-run     # preview first if you prefer
+```
+
+`docops upgrade` only touches DocOps-owned scaffolding. To also rewrite
+`docops.yaml` or reinstall the pre-commit hook, opt in with `--config`
+or `--hook`. Run `docops update-check` (or wait for `docops upgrade` to
+warn you on its own) to learn when a new release is available.
+
 ## Smoke test
 
 ```sh
@@ -43,7 +60,7 @@ docops --help
 From the root of any git repo (empty or existing):
 
 ```sh
-docops init                                        # scaffolds docs/, docops.yaml, schemas, skills, pre-commit hook
+docops init                                        # scaffolds docs/, docops.yaml, schemas, skills, pre-commit hook, AGENTS.md + CLAUDE.md
 docops new ctx "Vision" --type brief --no-open     # first CTX
 docops new adr "Pick a database"                   # first decision
 docops new task "Wire up SQLite" --requires ADR-0001
@@ -90,18 +107,27 @@ make lint     # go vet ./...
 
 ### Release
 
-Tag a commit with `vX.Y.Z`; the `Release` workflow runs goreleaser, which builds the matrix, attaches archives + checksums to the GitHub Release, and updates the brew/scoop stubs (once those repos exist).
+From a clean `main`:
 
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
+make release VERSION=0.1.2
 ```
 
-For a dry run:
+That bumps the `VERSION` file (which `docops update-check` reads via raw.githubusercontent.com), commits the bump, creates an annotated `v0.1.2` tag, and pushes both to `origin`. The tag triggers `.github/workflows/release.yml`, which verifies that the tag matches the `VERSION` file and then runs goreleaser to build the matrix, attach archives + checksums to the GitHub Release, and update the brew/scoop stubs (once those tap repos exist).
+
+Preview without writing:
+
+```sh
+make release VERSION=0.1.2 DRY_RUN=1
+```
+
+Local snapshot build (no tag, no push):
 
 ```sh
 make release-snapshot
 ```
+
+If you tag manually with `git tag` and forget to bump `VERSION`, the release workflow fails fast with a clear error pointing you at `make release`.
 
 ## License
 

@@ -18,6 +18,21 @@ jobs:
         with:
           go-version: '1.23'
           cache: true
+
+      # Catch the easy mistake of pushing a tag without bumping VERSION.
+      # docops update-check fetches VERSION via raw.githubusercontent.com,
+      # so a mismatch silently breaks "is upgrade available" for everyone
+      # who already has the previous release. Fail loud here instead.
+      - name: Verify VERSION matches tag
+        run: |
+          tag_version="${GITHUB_REF#refs/tags/v}"
+          file_version=$(tr -d '[:space:]' < VERSION)
+          if [ "$tag_version" != "$file_version" ]; then
+            echo "::error::tag $GITHUB_REF (=$tag_version) does not match VERSION file (=$file_version)"
+            echo "::error::run 'make release VERSION=$tag_version' on main to do this correctly"
+            exit 1
+          fi
+
       - uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser

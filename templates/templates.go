@@ -13,12 +13,20 @@ import (
 	"strings"
 )
 
-//go:embed AGENTS.md.tmpl docops.yaml.tmpl hooks/pre-commit skills/docops
+//go:embed AGENTS.md.tmpl CLAUDE.md.tmpl docops.yaml.tmpl hooks/pre-commit skills/docops
 var tree embed.FS
 
 // AgentsBlock returns the body of templates/AGENTS.md.tmpl.
 func AgentsBlock() ([]byte, error) {
 	return tree.ReadFile("AGENTS.md.tmpl")
+}
+
+// ClaudeBlock returns the body of templates/CLAUDE.md.tmpl. The
+// docops block inside (between `<!-- docops:start -->` and
+// `<!-- docops:end -->`) is byte-identical to AgentsBlock; only the
+// preamble and footer differ. See ADR-0024.
+func ClaudeBlock() ([]byte, error) {
+	return tree.ReadFile("CLAUDE.md.tmpl")
 }
 
 // DocopsYAML returns the body of templates/docops.yaml.tmpl.

@@ -12,9 +12,9 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 
 	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/scaffold"
 	"github.com/logicwind/docops/internal/schema"
 	"github.com/logicwind/docops/templates"
 )
@@ -25,33 +25,14 @@ type Options struct {
 	Root     string
 	DryRun   bool
 	Force    bool
-	NoSkills bool // skip scaffolding .claude/skills/docops/ and .cursor/commands/docops/
+	NoSkills bool      // skip scaffolding .claude/skills/docops/ and .cursor/commands/docops/
 	Out      io.Writer // human-readable progress; defaults to os.Stdout
 	Verbose  bool
 }
 
-// Action is a single filesystem change proposed by the planner. Init
-// plans the full change set first, then executes it in one pass so
-// --dry-run and the real write share the same code path.
-type Action struct {
-	// Path is the absolute destination.
-	Path string
-
-	// Rel is Path relative to Options.Root, used in human output.
-	Rel string
-
-	// Kind is one of "mkdir", "write-file", "merge-agents", "skip".
-	Kind string
-
-	// Reason explains why the action is a skip, write, or overwrite.
-	Reason string
-
-	// Body is the bytes that would be written. Empty for mkdir / skip.
-	Body []byte
-
-	// Mode is the permission for written files (0o755 for the hook, 0o644 otherwise).
-	Mode os.FileMode
-}
+// Action aliases scaffold.Action so existing initter consumers keep
+// their imports unchanged after the scaffold extraction (TP-020).
+type Action = scaffold.Action
 
 // Result is what Run returns after a plan execution.
 type Result struct {
@@ -85,7 +66,7 @@ func Run(opts Options) (*Result, error) {
 	}
 
 	for i := range actions {
-		if err := execute(&actions[i]); err != nil {
+		if err := scaffold.Execute(&actions[i]); err != nil {
 			return nil, fmt.Errorf("apply %s: %w", actions[i].Rel, err)
 		}
 	}
@@ -97,8 +78,6 @@ func Run(opts Options) (*Result, error) {
 // to disk in here — it only reads existing files to decide whether each
 // proposed target would be a create, a merge, or a skip.
 func plan(opts Options) ([]Action, error) {
-	// If a docops.yaml already exists at the root, use it so that
-	// project-specific context_types propagate into the emitted schema.
 	cfg := config.Default()
 	if loaded, err := config.Load(filepath.Join(opts.Root, config.DefaultFilename)); err == nil {
 		cfg = loaded
@@ -113,7 +92,7 @@ func plan(opts Options) ([]Action, error) {
 		cfg.Paths.Tasks,
 		cfg.Paths.Schema,
 	} {
-		actions = append(actions, dirAction(opts, rel))
+		actions = append(actions, scaffold.DirAction(opts.Root, rel))
 	}
 
 	// 2. docops.yaml at repo root.
@@ -121,7 +100,7 @@ func plan(opts Options) ([]Action, error) {
 	if err != nil {
 		return nil, fmt.Errorf("read docops.yaml template: %w", err)
 	}
-	actions = append(actions, fileAction(opts, "docops.yaml", yamlBody, 0o644))
+	actions = append(actions, scaffold.FileAction(opts.Root, "docops.yaml", yamlBody, 0o644, opts.Force))
 
 	// 3. JSON Schema files.
 	schemas, err := schema.JSONSchemas(schema.Config{ContextTypes: cfg.ContextTypes})
@@ -135,19 +114,31 @@ func plan(opts Options) ([]Action, error) {
 	sort.Strings(schemaNames)
 	for _, name := range schemaNames {
 		rel := filepath.Join(cfg.Paths.Schema, name)
-		actions = append(actions, fileAction(opts, rel, schemas[name], 0o644))
+		actions = append(actions, scaffold.FileAction(opts.Root, rel, schemas[name], 0o644, opts.Force))
 	}
 
-	// 4. AGENTS.md — delimited-block merge if a user file exists.
+	// 4. AGENTS.md and CLAUDE.md — delimited-block merge if a user
+	// file exists, otherwise write the template verbatim. Both files
+	// are docops-managed and share the same docops block (ADR-0024).
 	agentsTmpl, err := templates.AgentsBlock()
 	if err != nil {
 		return nil, fmt.Errorf("read agents template: %w", err)
 	}
-	agentsAction, err := planAgents(opts, agentsTmpl)
+	agentsAction, err := planMarkdownBlock(opts, "AGENTS.md", agentsTmpl)
 	if err != nil {
 		return nil, err
 	}
 	actions = append(actions, agentsAction)
+
+	claudeTmpl, err := templates.ClaudeBlock()
+	if err != nil {
+		return nil, fmt.Errorf("read claude template: %w", err)
+	}
+	claudeAction, err := planMarkdownBlock(opts, "CLAUDE.md", claudeTmpl)
+	if err != nil {
+		return nil, err
+	}
+	actions = append(actions, claudeAction)
 
 	// 5. Pre-commit hook.
 	hook, err := templates.PreCommitHook()
@@ -163,7 +154,7 @@ func plan(opts Options) ([]Action, error) {
 	// 6. Agent skills — .claude/skills/docops/ and .cursor/commands/docops/.
 	// Skipped entirely when --no-skills is set; existing files are not touched.
 	if !opts.NoSkills {
-		skills, err := templates.Skills()
+		skills, err := scaffold.LoadShippedSkills()
 		if err != nil {
 			return nil, fmt.Errorf("read skills: %w", err)
 		}
@@ -173,10 +164,10 @@ func plan(opts Options) ([]Action, error) {
 		}
 		sort.Strings(skillNames)
 		for _, dir := range []string{".claude/skills/docops", ".cursor/commands/docops"} {
-			actions = append(actions, dirAction(opts, dir))
+			actions = append(actions, scaffold.DirAction(opts.Root, dir))
 			for _, name := range skillNames {
 				rel := filepath.Join(dir, name)
-				actions = append(actions, fileAction(opts, rel, skills[name], 0o644))
+				actions = append(actions, scaffold.FileAction(opts.Root, rel, skills[name], 0o644, opts.Force))
 			}
 		}
 	}
@@ -184,62 +175,12 @@ func plan(opts Options) ([]Action, error) {
 	return actions, nil
 }
 
-// dirAction builds a mkdir action that is a skip when the directory
-// already exists. Keeps idempotent re-runs quiet.
-func dirAction(opts Options, rel string) Action {
-	abs := filepath.Join(opts.Root, rel)
-	if info, err := os.Stat(abs); err == nil && info.IsDir() {
-		return Action{
-			Path:   abs,
-			Rel:    rel,
-			Kind:   "skip",
-			Reason: "directory exists",
-			Mode:   0o755,
-		}
-	}
-	return Action{
-		Path:   abs,
-		Rel:    rel,
-		Kind:   "mkdir",
-		Reason: "create directory",
-		Mode:   0o755,
-	}
-}
-
-// fileAction builds a write-file action, deciding whether the target
-// should be created, overwritten (--force on drift), or skipped.
-func fileAction(opts Options, rel string, body []byte, mode os.FileMode) Action {
-	abs := filepath.Join(opts.Root, rel)
-	a := Action{Path: abs, Rel: rel, Kind: "write-file", Body: body, Mode: mode}
-	existing, err := os.ReadFile(abs)
-	if err != nil {
-		if os.IsNotExist(err) {
-			a.Reason = "create"
-			return a
-		}
-		// Permission/other error — propagate via execute().
-		a.Reason = "create (read failed: " + err.Error() + ")"
-		return a
-	}
-	if bytes.Equal(existing, body) {
-		a.Kind = "skip"
-		a.Reason = "already up to date"
-		return a
-	}
-	if opts.Force {
-		a.Reason = "overwrite drifted content (--force)"
-		return a
-	}
-	a.Kind = "skip"
-	a.Reason = "exists and differs — rerun with --force to overwrite"
-	return a
-}
-
-// planAgents decides how to render AGENTS.md. If the file is absent we
-// write the template verbatim. If it exists with a block, we replace
+// planMarkdownBlock decides how to render a docops-managed markdown
+// file (AGENTS.md, CLAUDE.md). If the file is absent we write the
+// template verbatim. If it exists with a docops block, we refresh
 // just the block. If it exists without a block, we append the block.
-func planAgents(opts Options, tmpl []byte) (Action, error) {
-	rel := "AGENTS.md"
+// Used by both init and (indirectly) upgrade via the same logic.
+func planMarkdownBlock(opts Options, rel string, tmpl []byte) (Action, error) {
 	abs := filepath.Join(opts.Root, rel)
 
 	existing, err := os.ReadFile(abs)
@@ -250,26 +191,26 @@ func planAgents(opts Options, tmpl []byte) (Action, error) {
 		return Action{
 			Path:   abs,
 			Rel:    rel,
-			Kind:   "write-file",
+			Kind:   scaffold.KindWriteFile,
 			Body:   tmpl,
 			Mode:   0o644,
 			Reason: "create",
 		}, nil
 	}
 
-	merged, changed, reason := mergeAgentsBlock(existing, tmpl)
+	merged, changed, reason := scaffold.MergeAgentsBlock(existing, tmpl)
 	if !changed {
 		return Action{
 			Path:   abs,
 			Rel:    rel,
-			Kind:   "skip",
+			Kind:   scaffold.KindSkip,
 			Reason: reason,
 		}, nil
 	}
 	return Action{
 		Path:   abs,
 		Rel:    rel,
-		Kind:   "merge-agents",
+		Kind:   scaffold.KindMergeAgents,
 		Body:   merged,
 		Mode:   0o644,
 		Reason: reason,
@@ -285,13 +226,13 @@ func planHook(opts Options, body []byte) (Action, error) {
 		return Action{
 			Path:   filepath.Join(gitDir, "hooks", "pre-commit"),
 			Rel:    ".git/hooks/pre-commit",
-			Kind:   "skip",
+			Kind:   scaffold.KindSkip,
 			Reason: "no .git directory — run `git init` first or install the hook manually from templates/hooks/pre-commit",
 		}, nil
 	}
 	rel := ".git/hooks/pre-commit"
 	abs := filepath.Join(opts.Root, rel)
-	a := Action{Path: abs, Rel: rel, Kind: "write-file", Body: body, Mode: 0o755}
+	a := Action{Path: abs, Rel: rel, Kind: scaffold.KindWriteFile, Body: body, Mode: 0o755}
 	existing, err := os.ReadFile(abs)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -301,7 +242,7 @@ func planHook(opts Options, body []byte) (Action, error) {
 		return Action{}, err
 	}
 	if bytes.Equal(existing, body) {
-		a.Kind = "skip"
+		a.Kind = scaffold.KindSkip
 		a.Reason = "already up to date"
 		return a, nil
 	}
@@ -309,121 +250,30 @@ func planHook(opts Options, body []byte) (Action, error) {
 		a.Reason = "overwrite drifted hook (--force)"
 		return a, nil
 	}
-	a.Kind = "skip"
+	a.Kind = scaffold.KindSkip
 	a.Reason = "existing pre-commit hook differs — rerun with --force to overwrite"
 	return a, nil
 }
 
-// blockStart and blockEnd match the delimiters defined in docops.yaml
-// agents_md block_start / block_end. Keeping them as constants here
-// mirrors the template default; a user that changes delimiters in
-// docops.yaml will still get a correct write from init (no block exists
-// yet) and can update via a future `docops refresh-agents-md` command.
-const (
-	blockStart = "<!-- docops:start -->"
-	blockEnd   = "<!-- docops:end -->"
-)
-
-// mergeAgentsBlock replaces the docops:start/end block inside existing
-// content with the block extracted from the template. If no block is
-// present in existing, the template body is appended. Returns the merged
-// bytes, a changed flag (false = identical to existing), and a reason
-// string for human output.
-func mergeAgentsBlock(existing, tmpl []byte) ([]byte, bool, string) {
-	tmplBlock := extractBlock(tmpl)
-	if tmplBlock == "" {
-		// Template is malformed — return existing unchanged rather than
-		// scribbling on the user's file.
-		return existing, false, "template missing docops block; skipping merge"
-	}
-
-	ex := string(existing)
-	startIdx := strings.Index(ex, blockStart)
-	endIdx := strings.Index(ex, blockEnd)
-	if startIdx >= 0 && endIdx > startIdx {
-		endIdx += len(blockEnd)
-		replacement := blockStart + tmplBlock + blockEnd
-		merged := ex[:startIdx] + replacement + ex[endIdx:]
-		if merged == ex {
-			return existing, false, "docops block already up to date"
-		}
-		return []byte(merged), true, "refresh docops block"
-	}
-
-	// No block yet — append the template block (with delimiters) to the end.
-	appended := ex
-	if !strings.HasSuffix(appended, "\n") {
-		appended += "\n"
-	}
-	appended += "\n" + blockStart + tmplBlock + blockEnd + "\n"
-	return []byte(appended), true, "append docops block to existing AGENTS.md"
-}
-
-// extractBlock returns the content between blockStart and blockEnd in
-// tmpl. Returns "" if either marker is missing. Leading/trailing
-// newlines are preserved so the rendered block is visually identical
-// to the template.
-func extractBlock(tmpl []byte) string {
-	s := string(tmpl)
-	start := strings.Index(s, blockStart)
-	if start < 0 {
-		return ""
-	}
-	start += len(blockStart)
-	end := strings.Index(s, blockEnd)
-	if end < 0 || end < start {
-		return ""
-	}
-	return s[start:end]
-}
-
-// execute applies one planned action to the filesystem.
-func execute(a *Action) error {
-	switch a.Kind {
-	case "skip":
-		return nil
-	case "mkdir":
-		return os.MkdirAll(a.Path, 0o755)
-	case "write-file", "merge-agents":
-		if err := os.MkdirAll(filepath.Dir(a.Path), 0o755); err != nil {
-			return err
-		}
-		if err := os.WriteFile(a.Path, a.Body, a.Mode); err != nil {
-			return err
-		}
-		return nil
-	}
-	return fmt.Errorf("unknown action kind %q", a.Kind)
-}
-
-// printPlan writes a human-readable summary of the action set. For
-// dry-run we use the "would" phrasing; for real runs we use past tense.
+// printPlan adds the init-specific "next steps" footer to scaffold's
+// generic plan summary.
 func printPlan(w io.Writer, actions []Action, dry bool) {
-	var changed, skipped int
+	scaffold.PrintPlan(w, actions, dry, "docops init")
+	if dry {
+		return
+	}
+	var changed int
 	for _, a := range actions {
-		if a.Kind == "skip" {
-			skipped++
-		} else {
+		if a.Kind != scaffold.KindSkip {
 			changed++
 		}
 	}
-	verb := "applied"
-	if dry {
-		verb = "would apply"
+	if changed == 0 {
+		return
 	}
-	fmt.Fprintf(w, "docops init: %s %d change(s), skipped %d\n", verb, changed, skipped)
-	for _, a := range actions {
-		tag := a.Kind
-		if dry && a.Kind != "skip" {
-			tag = "+ " + a.Kind
-		}
-		fmt.Fprintf(w, "  %-13s %-34s %s\n", tag, a.Rel, a.Reason)
-	}
-	if !dry && changed > 0 {
-		fmt.Fprintln(w, "")
-		fmt.Fprintln(w, "next steps:")
-		fmt.Fprintln(w, "  docops validate           # confirm the scaffolded docs parse")
-		fmt.Fprintln(w, "  docops new ctx \"…\" --type brief")
-		fmt.Fprintln(w, "  docops new adr \"…\"")
-	}
+	fmt.Fprintln(w, "")
+	fmt.Fprintln(w, "next steps:")
+	fmt.Fprintln(w, "  docops validate           # confirm the scaffolded docs parse")
+	fmt.Fprintln(w, "  docops new ctx \"…\" --type brief")
+	fmt.Fprintln(w, "  docops new adr \"…\"")
 }

@@ -3,8 +3,8 @@ title: Implement docops upgrade — targeted scaffold sync
 status: backlog
 priority: p2
 assignee: unassigned
-requires: [ADR-0021]
-depends_on: [TP-007, TP-009, TP-013]
+requires: [ADR-0021, ADR-0023]
+depends_on: [TP-007, TP-009, TP-013, TP-020, TP-021]
 ---
 
 # Implement docops upgrade — targeted scaffold sync

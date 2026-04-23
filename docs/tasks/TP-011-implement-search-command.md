@@ -1,8 +1,8 @@
 ---
 title: Implement `docops search` — content + structured filter query
-status: backlog
+status: done
 priority: p1
-assignee: unassigned
+assignee: nachiket
 requires: [ADR-0017, ADR-0002, ADR-0006]
 depends_on: [TP-004]
 ---

@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/logicwind/docops/internal/scaffold"
 )
 
 // withGit creates a fake .git directory so planHook does not short-circuit.
@@ -173,7 +175,7 @@ func TestRun_AgentsMerge_PreservesUserContent(t *testing.T) {
 	if !strings.Contains(s, "Own content that DocOps must not touch.") {
 		t.Errorf("user content missing after merge: %s", s)
 	}
-	if !strings.Contains(s, blockStart) || !strings.Contains(s, blockEnd) {
+	if !strings.Contains(s, scaffold.BlockStart) || !strings.Contains(s, scaffold.BlockEnd) {
 		t.Errorf("docops block delimiters missing after merge: %s", s)
 	}
 }
@@ -182,7 +184,7 @@ func TestRun_AgentsBlockRefresh_ReplacesBlockOnly(t *testing.T) {
 	root := t.TempDir()
 	withGit(t, root)
 
-	existing := "# Header\n\n" + blockStart + "\nstale block content\n" + blockEnd + "\n\n## Keep me\n\nuser footer\n"
+	existing := "# Header\n\n" + scaffold.BlockStart + "\nstale block content\n" + scaffold.BlockEnd + "\n\n## Keep me\n\nuser footer\n"
 	if err := os.WriteFile(filepath.Join(root, "AGENTS.md"), []byte(existing), 0o644); err != nil {
 		t.Fatalf("write existing: %v", err)
 	}
@@ -201,6 +203,52 @@ func TestRun_AgentsBlockRefresh_ReplacesBlockOnly(t *testing.T) {
 	}
 	if !strings.Contains(s, "# Header") {
 		t.Errorf("user header dropped: %s", s)
+	}
+}
+
+func TestRun_CreatesClaudeMdAlongsideAgentsMd(t *testing.T) {
+	root := t.TempDir()
+	withGit(t, root)
+
+	if _, err := Run(Options{Root: root, Out: io.Discard}); err != nil {
+		t.Fatalf("run: %v", err)
+	}
+
+	for _, name := range []string{"AGENTS.md", "CLAUDE.md"} {
+		body, err := os.ReadFile(filepath.Join(root, name))
+		if err != nil {
+			t.Fatalf("%s missing after init: %v", name, err)
+		}
+		s := string(body)
+		if !strings.Contains(s, scaffold.BlockStart) || !strings.Contains(s, scaffold.BlockEnd) {
+			t.Errorf("%s missing docops block markers", name)
+		}
+	}
+}
+
+func TestRun_ClaudeMdMerge_PreservesUserContent(t *testing.T) {
+	root := t.TempDir()
+	withGit(t, root)
+
+	userBody := "# Custom CLAUDE.md\n\nThis project's specific Claude tweaks.\n"
+	if err := os.WriteFile(filepath.Join(root, "CLAUDE.md"), []byte(userBody), 0o644); err != nil {
+		t.Fatalf("write user CLAUDE.md: %v", err)
+	}
+
+	if _, err := Run(Options{Root: root, Out: io.Discard}); err != nil {
+		t.Fatalf("run: %v", err)
+	}
+
+	merged, err := os.ReadFile(filepath.Join(root, "CLAUDE.md"))
+	if err != nil {
+		t.Fatalf("read merged: %v", err)
+	}
+	s := string(merged)
+	if !strings.Contains(s, "This project's specific Claude tweaks.") {
+		t.Errorf("user content lost: %s", s)
+	}
+	if !strings.Contains(s, scaffold.BlockStart) || !strings.Contains(s, scaffold.BlockEnd) {
+		t.Errorf("docops block missing after merge: %s", s)
 	}
 }
 
