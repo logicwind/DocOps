@@ -66,6 +66,9 @@ brews:
     repository:
       owner: logicwind
       name: homebrew-tap
+      # Cross-repo push: must explicitly reference the PAT; goreleaser does
+      # NOT auto-fall-back to HOMEBREW_TAP_GITHUB_TOKEN without this line.
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     description: "Typed project-state substrate for LLM-first software development"
     homepage: "https://github.com/logicwind/DocOps"
     license: MIT
@@ -82,6 +85,9 @@ scoops:
     repository:
       owner: logicwind
       name: scoop-bucket
+      # Same cross-repo-push requirement as brew. Same PAT, aliased as
+      # SCOOP_TAP_GITHUB_TOKEN in .github/workflows/release.yml.
+      token: "{{ .Env.SCOOP_TAP_GITHUB_TOKEN }}"
     description: "Typed project-state substrate for LLM-first software development"
     homepage: "https://github.com/logicwind/DocOps"
     license: MIT

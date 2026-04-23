@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-23T08:33:23Z",
+  "generated_at": "2026-04-23T08:41:52Z",
   "version": 1,
   "docs": [
     {
@@ -860,7 +860,7 @@
       ],
       "summary": "\u003c!-- AMENDMENTS (body-only until ADR-0025 / TP-026 land the frontmatter schema):   - 2026-04-23 editorial — tap/bucket repo names migrated from     per-tool (homebrew-docops, scoop-docops) to org-wide…",
       "word_count": 1095,
-      "last_touched": "2026-04-22T12:30:23Z",
+      "last_touched": "2026-04-23T08:37:39Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -885,6 +885,10 @@
         },
         {
           "id": "TP-024",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-028",
           "edge": "requires"
         }
       ],
@@ -1100,7 +1104,7 @@
       ],
       "summary": "ADRs are immutable by convention. This is the right default — decision history must not be silently rewritten. But the convention creates a dead zone for the most common kind of post-acceptance change…",
       "word_count": 1188,
-      "last_touched": "2026-04-23T04:56:04Z",
+      "last_touched": "2026-04-23T08:37:39Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1902,7 +1906,7 @@
       ],
       "summary": "\u003e **2026-04-23 progress note.** Phase 1 (new repos created) ✅. \u003e Phase 3 (legacy repos archived) ✅. `.goreleaser.yml` has \u003e `skip_upload: false`; `.github/workflows/release.yml` passes \u003e `HOMEBREW_TAP…",
       "word_count": 619,
-      "last_touched": "2026-04-23T08:33:14Z",
+      "last_touched": "2026-04-23T08:37:39Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1950,7 +1954,7 @@
       ],
       "summary": "Ship the machine layer behind ADR-0025: the `amendments:` frontmatter field, the `docops amend` CLI, validator + audit + index + state integration, and the JSON Schema extension.",
       "word_count": 602,
-      "last_touched": "2026-04-23T04:56:54Z",
+      "last_touched": "2026-04-23T08:37:39Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1975,7 +1979,25 @@
       ],
       "summary": "Once TP-026 ships the `amendments:` schema and `docops amend` CLI, convert ADR-0019's HTML-comment amendment stub into a proper frontmatter entry using the new machinery. ADR-0019 is the live motivati…",
       "word_count": 354,
-      "last_touched": "2026-04-23T05:14:55Z",
+      "last_touched": "2026-04-23T08:37:39Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-028",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-028-fix-makefile-release-dry-run-guard-escapes-real-co.md",
+      "title": "Fix Makefile release DRY_RUN — guard escapes, real commit/tag/push runs",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0019"
+      ],
+      "summary": "Make `make release VERSION=X.Y.Z DRY_RUN=1` actually be a dry run. Today it prints the \"would do\" lines and then runs the real `echo \u003e VERSION` / `git commit` / `git tag` / `git push` commands anyway.",
+      "word_count": 425,
+      "last_touched": "2026-04-23T08:41:43Z",
       "age_days": 0,
       "stale": false
     }
