@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-23T03:32:23Z",
+  "generated_at": "2026-04-23T04:21:14Z",
   "version": 1,
   "docs": [
     {
@@ -952,7 +952,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "not-started",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -1022,7 +1022,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "not-started",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -1040,7 +1040,7 @@
       ],
       "summary": "DocOps writes its invariants (citation rules, no-edit-STATE.md, schema locations, etc.) into a delimited block in `AGENTS.md` so any coding agent — Claude Code, Cursor, Codex, Aider, Copilot, Windsurf…",
       "word_count": 555,
-      "last_touched": "2026-04-23T03:32:01Z",
+      "last_touched": "2026-04-23T03:32:42Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1048,7 +1048,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "not-started",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -1680,7 +1680,7 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-018-implement-docops-upgrade-targeted-scaffold-sync.md",
       "title": "Implement docops upgrade — targeted scaffold sync",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p2",
       "assignee": "unassigned",
       "requires": [
@@ -1737,7 +1737,7 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-020-extract-internal-scaffold-from-internal-initter-re.md",
       "title": "Extract internal/scaffold/ from internal/initter/ (refactor)",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p2",
       "assignee": "unassigned",
       "requires": [
@@ -1765,7 +1765,7 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-021-implement-update-check-cached-gstack-style-docops.md",
       "title": "Implement update-check (cached, gstack-style) + docops update-check subcommand",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p2",
       "assignee": "unassigned",
       "requires": [
@@ -1792,7 +1792,7 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-022-write-claude-md-alongside-agents-md-in-init-and-up.md",
       "title": "Write CLAUDE.md alongside AGENTS.md in init and upgrade",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p2",
       "assignee": "unassigned",
       "requires": [
@@ -1800,7 +1800,7 @@
       ],
       "summary": "Implement ADR-0024: docops writes both `CLAUDE.md` and `AGENTS.md` during `init` and refreshes both during `upgrade`. Both files share the same `\u003c!-- docops:start --\u003e … \u003c!-- docops:end --\u003e` block.",
       "word_count": 395,
-      "last_touched": "2026-04-23T03:32:20Z",
+      "last_touched": "2026-04-23T03:32:42Z",
       "age_days": 0,
       "stale": false
     }

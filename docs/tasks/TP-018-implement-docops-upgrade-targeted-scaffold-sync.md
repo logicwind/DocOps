@@ -1,6 +1,6 @@
 ---
 title: Implement docops upgrade — targeted scaffold sync
-status: backlog
+status: done
 priority: p2
 assignee: unassigned
 requires: [ADR-0021, ADR-0023]

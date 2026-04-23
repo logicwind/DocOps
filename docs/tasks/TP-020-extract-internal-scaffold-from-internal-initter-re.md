@@ -1,6 +1,6 @@
 ---
 title: Extract internal/scaffold/ from internal/initter/ (refactor)
-status: backlog
+status: done
 priority: p2
 assignee: unassigned
 requires: [ADR-0021, ADR-0023]

@@ -1,6 +1,6 @@
 ---
 title: Implement update-check (cached, gstack-style) + docops update-check subcommand
-status: backlog
+status: done
 priority: p2
 assignee: unassigned
 requires: [ADR-0023]

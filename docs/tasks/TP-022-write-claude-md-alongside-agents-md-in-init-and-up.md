@@ -1,6 +1,6 @@
 ---
 title: Write CLAUDE.md alongside AGENTS.md in init and upgrade
-status: backlog
+status: done
 priority: p2
 assignee: unassigned
 requires: [ADR-0024]
