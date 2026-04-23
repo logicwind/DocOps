@@ -17,7 +17,7 @@ Touches only DocOps-owned scaffolding:
 
 - `.claude/skills/docops/*.md` and `.cursor/commands/docops/*.md` — synced to the shipped bundle (creates new files, refreshes changed ones, removes files that left the bundle).
 - `docs/.docops/schema/*.schema.json` — regenerated from `docops.yaml`.
-- The `<!-- docops:start --> … <!-- docops:end -->` block inside `AGENTS.md` — refreshed in place; content outside the markers is preserved.
+- The `<!-- docops:start --> … <!-- docops:end -->` block inside `AGENTS.md` and `CLAUDE.md` — refreshed in place; content outside the markers is preserved. Either file is created if absent (so v0.1.x users gain CLAUDE.md on first upgrade).
 
 Leaves alone by default:
 

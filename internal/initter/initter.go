@@ -117,16 +117,28 @@ func plan(opts Options) ([]Action, error) {
 		actions = append(actions, scaffold.FileAction(opts.Root, rel, schemas[name], 0o644, opts.Force))
 	}
 
-	// 4. AGENTS.md — delimited-block merge if a user file exists.
+	// 4. AGENTS.md and CLAUDE.md — delimited-block merge if a user
+	// file exists, otherwise write the template verbatim. Both files
+	// are docops-managed and share the same docops block (ADR-0024).
 	agentsTmpl, err := templates.AgentsBlock()
 	if err != nil {
 		return nil, fmt.Errorf("read agents template: %w", err)
 	}
-	agentsAction, err := planAgents(opts, agentsTmpl)
+	agentsAction, err := planMarkdownBlock(opts, "AGENTS.md", agentsTmpl)
 	if err != nil {
 		return nil, err
 	}
 	actions = append(actions, agentsAction)
+
+	claudeTmpl, err := templates.ClaudeBlock()
+	if err != nil {
+		return nil, fmt.Errorf("read claude template: %w", err)
+	}
+	claudeAction, err := planMarkdownBlock(opts, "CLAUDE.md", claudeTmpl)
+	if err != nil {
+		return nil, err
+	}
+	actions = append(actions, claudeAction)
 
 	// 5. Pre-commit hook.
 	hook, err := templates.PreCommitHook()
@@ -163,11 +175,12 @@ func plan(opts Options) ([]Action, error) {
 	return actions, nil
 }
 
-// planAgents decides how to render AGENTS.md. If the file is absent we
-// write the template verbatim. If it exists with a block, we replace
+// planMarkdownBlock decides how to render a docops-managed markdown
+// file (AGENTS.md, CLAUDE.md). If the file is absent we write the
+// template verbatim. If it exists with a docops block, we refresh
 // just the block. If it exists without a block, we append the block.
-func planAgents(opts Options, tmpl []byte) (Action, error) {
-	rel := "AGENTS.md"
+// Used by both init and (indirectly) upgrade via the same logic.
+func planMarkdownBlock(opts Options, rel string, tmpl []byte) (Action, error) {
 	abs := filepath.Join(opts.Root, rel)
 
 	existing, err := os.ReadFile(abs)

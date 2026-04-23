@@ -174,18 +174,30 @@ func plan(opts Options) ([]scaffold.Action, error) {
 		actions = append(actions, scaffold.FileAction(opts.Root, rel, schemas[name], 0o644, true))
 	}
 
-	// 2. AGENTS.md block refresh (only if file exists).
+	// 2. AGENTS.md and CLAUDE.md block refresh. Both files share the
+	// same docops block (ADR-0024). For each: if the file exists, the
+	// block is merged in place; if absent, the full template is
+	// written so v0.1.x users gain CLAUDE.md on first upgrade after
+	// this lands.
 	agentsTmpl, err := templates.AgentsBlock()
 	if err != nil {
 		return nil, fmt.Errorf("read agents template: %w", err)
 	}
-	agentsAction, err := planAgents(opts, agentsTmpl)
+	agentsAction, err := planMarkdownBlock(opts.Root, "AGENTS.md", agentsTmpl)
 	if err != nil {
 		return nil, err
 	}
-	if agentsAction != nil {
-		actions = append(actions, *agentsAction)
+	actions = append(actions, agentsAction)
+
+	claudeTmpl, err := templates.ClaudeBlock()
+	if err != nil {
+		return nil, fmt.Errorf("read claude template: %w", err)
 	}
+	claudeAction, err := planMarkdownBlock(opts.Root, "CLAUDE.md", claudeTmpl)
+	if err != nil {
+		return nil, err
+	}
+	actions = append(actions, claudeAction)
 
 	// 3. Skills — sync each docops-owned dir against the shipped bundle.
 	skills, err := scaffold.LoadShippedSkills()
@@ -231,25 +243,33 @@ func plan(opts Options) ([]scaffold.Action, error) {
 	return actions, nil
 }
 
-// planAgents returns a refresh action for AGENTS.md if the file
-// exists and the docops block is stale or absent. Returns nil if
-// AGENTS.md doesn't exist (upgrade does not create it; that's init's
-// job).
-func planAgents(opts Options, tmpl []byte) (*scaffold.Action, error) {
-	rel := "AGENTS.md"
-	abs := filepath.Join(opts.Root, rel)
+// planMarkdownBlock returns a refresh-or-create action for a
+// docops-managed markdown file (AGENTS.md, CLAUDE.md). When the file
+// is absent, it writes the template verbatim — upgrade now creates
+// missing managed files so v0.1.x users gain CLAUDE.md on first
+// post-ADR-0024 upgrade. When present, the docops block is merged in
+// place; the rest of the file is preserved.
+func planMarkdownBlock(rootAbs, rel string, tmpl []byte) (scaffold.Action, error) {
+	abs := filepath.Join(rootAbs, rel)
 	existing, err := os.ReadFile(abs)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, nil
+			return scaffold.Action{
+				Path:   abs,
+				Rel:    rel,
+				Kind:   scaffold.KindWriteFile,
+				Body:   tmpl,
+				Mode:   0o644,
+				Reason: "create",
+			}, nil
 		}
-		return nil, err
+		return scaffold.Action{}, err
 	}
 	merged, changed, reason := scaffold.MergeAgentsBlock(existing, tmpl)
 	if !changed {
-		return &scaffold.Action{Path: abs, Rel: rel, Kind: scaffold.KindSkip, Reason: reason}, nil
+		return scaffold.Action{Path: abs, Rel: rel, Kind: scaffold.KindSkip, Reason: reason}, nil
 	}
-	return &scaffold.Action{
+	return scaffold.Action{
 		Path:   abs,
 		Rel:    rel,
 		Kind:   scaffold.KindMergeAgents,

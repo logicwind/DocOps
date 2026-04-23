@@ -81,7 +81,7 @@ func cmdInit(args []string) int {
 	fmt.Fprintln(os.Stdout, "  - docs/{context,decisions,tasks} folders")
 	fmt.Fprintln(os.Stdout, "  - docops.yaml at the repo root")
 	fmt.Fprintln(os.Stdout, "  - JSON Schemas for editor validation")
-	fmt.Fprintln(os.Stdout, "  - An AGENTS.md block (merges into existing content if present)")
+	fmt.Fprintln(os.Stdout, "  - AGENTS.md and CLAUDE.md docops blocks (merges into existing content if present)")
 	fmt.Fprintln(os.Stdout, "  - A .git/hooks/pre-commit hook (if .git exists)")
 	fmt.Fprintln(os.Stdout, "  - /docops:* agent-skill scaffolds under .claude/ and .cursor/")
 	fmt.Fprintln(os.Stdout, "Safe to re-run; existing files are never silently overwritten.")

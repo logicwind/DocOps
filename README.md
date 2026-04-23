@@ -60,7 +60,7 @@ docops --help
 From the root of any git repo (empty or existing):
 
 ```sh
-docops init                                        # scaffolds docs/, docops.yaml, schemas, skills, pre-commit hook
+docops init                                        # scaffolds docs/, docops.yaml, schemas, skills, pre-commit hook, AGENTS.md + CLAUDE.md
 docops new ctx "Vision" --type brief --no-open     # first CTX
 docops new adr "Pick a database"                   # first decision
 docops new task "Wire up SQLite" --requires ADR-0001

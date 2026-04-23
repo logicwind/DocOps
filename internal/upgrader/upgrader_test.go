@@ -304,6 +304,81 @@ func TestRun_SecondUpgradeRefusesUserAddedFileInDocopsDir(t *testing.T) {
 	}
 }
 
+func TestRun_CreatesClaudeMdWhenAbsent(t *testing.T) {
+	root := initted(t)
+	// initted does not seed CLAUDE.md (matches the v0.1.x state pre-ADR-0024).
+	if _, err := os.Stat(filepath.Join(root, "CLAUDE.md")); !os.IsNotExist(err) {
+		t.Fatalf("test precondition: CLAUDE.md should be absent, got err=%v", err)
+	}
+
+	if _, err := Run(Options{Root: root, DryRun: false, Out: io.Discard}); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	body, err := os.ReadFile(filepath.Join(root, "CLAUDE.md"))
+	if err != nil {
+		t.Fatalf("CLAUDE.md missing after upgrade: %v", err)
+	}
+	s := string(body)
+	if !strings.Contains(s, scaffold.BlockStart) || !strings.Contains(s, scaffold.BlockEnd) {
+		t.Errorf("CLAUDE.md missing docops block markers: %s", s)
+	}
+}
+
+func TestRun_RefreshesBothAGENTSAndClaudeBlocks(t *testing.T) {
+	root := initted(t)
+	stale := scaffold.BlockStart + "\nold body\n" + scaffold.BlockEnd
+	for _, name := range []string{"AGENTS.md", "CLAUDE.md"} {
+		body := "# Header\n\n" + stale + "\n\nuser footer\n"
+		if err := os.WriteFile(filepath.Join(root, name), []byte(body), 0o644); err != nil {
+			t.Fatalf("seed %s: %v", name, err)
+		}
+	}
+
+	if _, err := Run(Options{Root: root, DryRun: false, Out: io.Discard}); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	for _, name := range []string{"AGENTS.md", "CLAUDE.md"} {
+		body, err := os.ReadFile(filepath.Join(root, name))
+		if err != nil {
+			t.Fatalf("read %s: %v", name, err)
+		}
+		s := string(body)
+		if strings.Contains(s, "old body") {
+			t.Errorf("%s: stale block survived refresh", name)
+		}
+		if !strings.Contains(s, "user footer") {
+			t.Errorf("%s: user footer dropped", name)
+		}
+	}
+}
+
+func TestRun_PreservesUserContentInClaudeMdAcrossUpgrade(t *testing.T) {
+	root := initted(t)
+	// Seed CLAUDE.md with hand-written content outside any docops block.
+	body := "# My CLAUDE.md\n\nProject-specific guidance for Claude only.\n\nSee AGENTS.md for the multi-tool view.\n"
+	if err := os.WriteFile(filepath.Join(root, "CLAUDE.md"), []byte(body), 0o644); err != nil {
+		t.Fatalf("seed CLAUDE.md: %v", err)
+	}
+
+	if _, err := Run(Options{Root: root, DryRun: false, Out: io.Discard}); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	got, err := os.ReadFile(filepath.Join(root, "CLAUDE.md"))
+	if err != nil {
+		t.Fatalf("read CLAUDE.md: %v", err)
+	}
+	s := string(got)
+	if !strings.Contains(s, "Project-specific guidance for Claude only.") {
+		t.Errorf("user CLAUDE.md content lost across upgrade: %s", s)
+	}
+	if !strings.Contains(s, scaffold.BlockStart) || !strings.Contains(s, scaffold.BlockEnd) {
+		t.Errorf("docops block missing after upgrade: %s", s)
+	}
+}
+
 func TestRun_DryRunWritesNothing(t *testing.T) {
 	root := initted(t)
 	dir := filepath.Join(root, ".claude/skills/docops")

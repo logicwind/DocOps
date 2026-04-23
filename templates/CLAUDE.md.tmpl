@@ -1,8 +1,10 @@
-# Agents working in this repo
+# Claude in this repo
 
 This repository is managed with **DocOps** — a typed project-state substrate.
-If you are an AI coding agent (Claude Code, Cursor, Aider, Codex, Copilot,
-Windsurf, Zed, etc.), read this file before doing any work.
+You're reading this because Claude Code loads CLAUDE.md by default. The same
+docops block is mirrored in `AGENTS.md` for non-Claude agents (Cursor, Aider,
+Codex, Copilot, Windsurf, Zed); both files are auto-maintained by
+`docops upgrade`.
 
 <!-- docops:start -->
 
@@ -90,5 +92,5 @@ JSON Schemas for frontmatter validation live in `docs/.docops/schema/` (`context
 The block above is auto-maintained by `docops init` and `docops upgrade`.
 Edit content outside the `<!-- docops:* -->` delimiters freely; DocOps will
 preserve it. Edits inside the delimiters will be overwritten on the next
-upgrade. The same docops block also appears in `CLAUDE.md` (which Claude
-Code reads by default); both files refresh from the same shipped template.
+upgrade. The same docops block also appears in `AGENTS.md` (the multi-tool
+sibling); both refresh from the same shipped template.
