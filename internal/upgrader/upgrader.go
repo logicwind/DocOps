@@ -114,7 +114,15 @@ func Run(opts Options) (*Result, error) {
 // system might extend this; for now it is fixed to the two
 // agent-tool conventions docops init scaffolds.
 func docopsSkillDirs() []string {
-	return []string{".claude/skills/docops", ".cursor/commands/docops"}
+	return []string{".claude/commands/docops", ".cursor/commands/docops"}
+}
+
+// legacyDocopsSkillDirs lists paths that earlier docops releases wrote
+// skill files into and that upgrade should actively clean up. Claude
+// Code reads slash commands from .claude/commands/, not .claude/skills/,
+// so v0.2.x wrote to the wrong folder; v0.3.x moves them.
+func legacyDocopsSkillDirs() []string {
+	return []string{".claude/skills/docops"}
 }
 
 // shippedSkillNames returns the basenames of skill files currently
@@ -158,6 +166,34 @@ func plan(opts Options) ([]scaffold.Action, error) {
 	}
 
 	var actions []scaffold.Action
+
+	// 0. Legacy cleanup — previous docops versions wrote Claude Code
+	// slash commands into .claude/skills/docops/, but Claude Code reads
+	// them from .claude/commands/. Remove every file still sitting in
+	// the old location so users do not end up with duplicate skill
+	// files after the bundle migrates to the new folder.
+	for _, legacyDir := range legacyDocopsSkillDirs() {
+		abs := filepath.Join(opts.Root, legacyDir)
+		entries, err := os.ReadDir(abs)
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return nil, fmt.Errorf("read legacy skill dir %s: %w", legacyDir, err)
+		}
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+			rel := filepath.Join(legacyDir, entry.Name())
+			actions = append(actions, scaffold.Action{
+				Path:   filepath.Join(opts.Root, rel),
+				Rel:    rel,
+				Kind:   scaffold.KindRemove,
+				Reason: "legacy location — moved to .claude/commands/docops/",
+			})
+		}
+	}
 
 	// 1. JSON Schemas — always refreshed (docops-owned).
 	schemas, err := schema.JSONSchemas(schema.Config{ContextTypes: cfg.ContextTypes})

@@ -25,7 +25,7 @@ type Options struct {
 	Root     string
 	DryRun   bool
 	Force    bool
-	NoSkills bool      // skip scaffolding .claude/skills/docops/ and .cursor/commands/docops/
+	NoSkills bool      // skip scaffolding .claude/commands/docops/ and .cursor/commands/docops/
 	Out      io.Writer // human-readable progress; defaults to os.Stdout
 	Verbose  bool
 }
@@ -151,7 +151,7 @@ func plan(opts Options) ([]Action, error) {
 	}
 	actions = append(actions, hookAction)
 
-	// 6. Agent skills — .claude/skills/docops/ and .cursor/commands/docops/.
+	// 6. Agent skills — .claude/commands/docops/ and .cursor/commands/docops/.
 	// Skipped entirely when --no-skills is set; existing files are not touched.
 	if !opts.NoSkills {
 		skills, err := scaffold.LoadShippedSkills()
@@ -163,7 +163,7 @@ func plan(opts Options) ([]Action, error) {
 			skillNames = append(skillNames, name)
 		}
 		sort.Strings(skillNames)
-		for _, dir := range []string{".claude/skills/docops", ".cursor/commands/docops"} {
+		for _, dir := range []string{".claude/commands/docops", ".cursor/commands/docops"} {
 			actions = append(actions, scaffold.DirAction(opts.Root, dir))
 			for _, name := range skillNames {
 				rel := filepath.Join(dir, name)

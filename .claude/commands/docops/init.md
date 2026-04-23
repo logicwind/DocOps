@@ -20,7 +20,7 @@ What it does:
 - Writes JSON Schemas to `docs/.docops/schema/` for in-editor validation.
 - Writes or refreshes the `<!-- docops:start -->` block inside `AGENTS.md` and `CLAUDE.md` (both files share the same docops block; Claude Code reads CLAUDE.md by default while other agents read AGENTS.md).
 - Installs a language-agnostic pre-commit hook that runs `docops validate`.
-- Scaffolds `/docops:*` skills into `.claude/skills/docops/` and `.cursor/commands/docops/`.
+- Scaffolds `/docops:*` slash commands into `.claude/commands/docops/` and `.cursor/commands/docops/`.
 
 Flags:
 

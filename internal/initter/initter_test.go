@@ -41,9 +41,9 @@ func TestRun_BareRepo_CreatesAllArtifacts(t *testing.T) {
 		"docops.yaml",
 		"AGENTS.md",
 		".git/hooks/pre-commit",
-		".claude/skills/docops/init.md",
-		".claude/skills/docops/state.md",
-		".claude/skills/docops/new-ctx.md",
+		".claude/commands/docops/init.md",
+		".claude/commands/docops/state.md",
+		".claude/commands/docops/new-ctx.md",
 		".cursor/commands/docops/init.md",
 	} {
 		if _, err := os.Stat(filepath.Join(root, rel)); err != nil {
@@ -301,7 +301,7 @@ func TestRun_UsesProjectContextTypes(t *testing.T) {
 }
 
 // TestRun_NoSkills_SkipsSkillDirs verifies that --no-skills prevents
-// creation of .claude/skills/docops/ and .cursor/commands/docops/.
+// creation of .claude/commands/docops/ and .cursor/commands/docops/.
 func TestRun_NoSkills_SkipsSkillDirs(t *testing.T) {
 	root := t.TempDir()
 	withGit(t, root)
@@ -313,7 +313,7 @@ func TestRun_NoSkills_SkipsSkillDirs(t *testing.T) {
 
 	// Neither skill directory nor any skill file should be created.
 	for _, rel := range []string{
-		".claude/skills/docops",
+		".claude/commands/docops",
 		".cursor/commands/docops",
 	} {
 		abs := filepath.Join(root, rel)

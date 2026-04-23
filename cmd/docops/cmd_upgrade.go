@@ -141,7 +141,8 @@ func reportUpgradeError(err error) int {
 
 func printUpgradeHeader(w io.Writer, cwd string, optConfig, optHook bool) {
 	fmt.Fprintf(w, "docops upgrade will refresh DocOps-owned scaffolding in %s:\n", cwd)
-	fmt.Fprintln(w, "  - .claude/skills/docops/* and .cursor/commands/docops/* (replaced/removed to match the shipped bundle)")
+	fmt.Fprintln(w, "  - .claude/commands/docops/* and .cursor/commands/docops/* (replaced/removed to match the shipped bundle)")
+	fmt.Fprintln(w, "  - .claude/skills/docops/* (legacy location — files removed; Claude Code reads slash commands from .claude/commands/)")
 	fmt.Fprintln(w, "  - docs/.docops/schema/*.schema.json (regenerated from docops.yaml)")
 	fmt.Fprintln(w, "  - The <!-- docops:* --> block in AGENTS.md and CLAUDE.md (refreshed in place; either file is created if absent)")
 	if optConfig {
