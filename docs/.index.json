@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-23T04:21:14Z",
+  "generated_at": "2026-04-23T04:27:27Z",
   "version": 1,
   "docs": [
     {
@@ -547,9 +547,17 @@
         {
           "id": "TP-014",
           "edge": "requires"
+        },
+        {
+          "id": "TP-024",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-025",
+          "edge": "requires"
         }
       ],
-      "implementation": "done",
+      "implementation": "partial",
       "stale": false
     },
     {
@@ -607,9 +615,13 @@
         {
           "id": "TP-013",
           "edge": "requires"
+        },
+        {
+          "id": "TP-023",
+          "edge": "requires"
         }
       ],
-      "implementation": "done",
+      "implementation": "partial",
       "stale": false
     },
     {
@@ -855,9 +867,17 @@
         {
           "id": "TP-014",
           "edge": "requires"
+        },
+        {
+          "id": "TP-023",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-024",
+          "edge": "requires"
         }
       ],
-      "implementation": "done",
+      "implementation": "partial",
       "stale": false
     },
     {
@@ -1696,7 +1716,7 @@
       ],
       "summary": "Ship the `docops upgrade` subcommand that pulls the current binary's shipped templates into an already-initialized project without clobbering `docops.yaml` or the pre-commit hook, per ADR-0021.",
       "word_count": 743,
-      "last_touched": "2026-04-22T19:48:15Z",
+      "last_touched": "2026-04-23T04:24:55Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1746,7 +1766,7 @@
       ],
       "summary": "Lift the helpers that `docops upgrade` will need to share with `docops init` out of `internal/initter/` and into a new `internal/scaffold/` package, with **zero behavior change**. Sets up TP-018 to la…",
       "word_count": 370,
-      "last_touched": "2026-04-22T19:48:15Z",
+      "last_touched": "2026-04-23T04:24:55Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1773,7 +1793,7 @@
       ],
       "summary": "Ship the update-check mechanism specified by ADR-0023: a small internal package, a standalone `docops update-check` subcommand, and integration into `docops upgrade` so users learn when their binary i…",
       "word_count": 647,
-      "last_touched": "2026-04-22T19:48:15Z",
+      "last_touched": "2026-04-23T04:24:55Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1800,7 +1820,75 @@
       ],
       "summary": "Implement ADR-0024: docops writes both `CLAUDE.md` and `AGENTS.md` during `init` and refreshes both during `upgrade`. Both files share the same `\u003c!-- docops:start --\u003e … \u003c!-- docops:end --\u003e` block.",
       "word_count": 395,
-      "last_touched": "2026-04-23T03:32:42Z",
+      "last_touched": "2026-04-23T04:24:55Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-023",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-023-restore-docops-skills-for-next-search-get-list-gra.md",
+      "title": "Restore /docops:* skills for next, search, get, list, graph commands",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0013",
+        "ADR-0019"
+      ],
+      "summary": "Re-add shipped agent skills for the five CLI commands that landed in TP-011 (`search`) and TP-012 (`get`, `list`, `graph`, `next`) so the bundle satisfies TP-010/013's policy: a skill exists in `templ…",
+      "word_count": 346,
+      "last_touched": "2026-04-23T04:26:18Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-024",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-024-stand-up-logicwind-homebrew-docops-logicwind-scoop.md",
+      "title": "Stand up logicwind/homebrew-docops + logicwind/scoop-docops taps and enable goreleaser publishing",
+      "task_status": "backlog",
+      "priority": "p1",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0019",
+        "ADR-0012"
+      ],
+      "summary": "Make `brew install logicwind/docops/docops` and `scoop install docops` work for v0.2.x onward. ADR-0019 deferred this to a follow-up release; goreleaser already has the brew/scoop blocks configured wi…",
+      "word_count": 423,
+      "last_touched": "2026-04-23T04:26:46Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-025",
+          "edge": "depends_on"
+        }
+      ],
+      "blocks": [
+        "TP-025"
+      ],
+      "stale": false
+    },
+    {
+      "id": "TP-025",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-025-publish-docops-to-npm-via-per-platform-optionaldep.md",
+      "title": "Publish docops to npm via per-platform optionalDependencies (esbuild/biome/turbo pattern)",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0012"
+      ],
+      "depends_on": [
+        "TP-024"
+      ],
+      "summary": "Implement the npm distribution path committed to in ADR-0012's \"npm distribution addendum\": one thin meta-package depended on by five per-platform packages, where npm's resolver picks exactly the bina…",
+      "word_count": 574,
+      "last_touched": "2026-04-23T04:27:22Z",
       "age_days": 0,
       "stale": false
     }

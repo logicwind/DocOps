@@ -6,7 +6,7 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 22 accepted · 2 draft · 0 superseded (23 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 1 backlog · 0 active · 0 blocked · 21 done
+- Tasks: 4 backlog · 0 active · 0 blocked · 21 done
 
 ## Needs attention
 
@@ -18,6 +18,7 @@
 
 ## Recent activity
 
+- 2026-04-23 c038a01 chore: mark TP-018/020/021/022 done; ignore /docops smoke binary
 - 2026-04-23 a131d95 planning: ADR-0024 + TP-022 — ship CLAUDE.md alongside AGENTS.md
 - 2026-04-23 7656d08 planning: ADR-0023 + TP-020/TP-021 — split TP-018 into refactor + upgrader + update-check
 - 2026-04-23 6f41758 TP-012: docops get/list/graph/next — focused read commands
@@ -37,5 +38,4 @@
 - 2026-04-22 6b41ceb TP-008: docops new — scaffold CTX/ADR/Task with atomic ID allocation
 - 2026-04-22 56f6d7c TP-003: docops validate — schema + graph invariants over docs/
 - 2026-04-22 5255483 planning: search + CLI-as-query-layer ADRs plus two tasks
-- 2026-04-22 50eeb7a initial docs & idea
 
