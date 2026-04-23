@@ -107,18 +107,27 @@ make lint     # go vet ./...
 
 ### Release
 
-Tag a commit with `vX.Y.Z`; the `Release` workflow runs goreleaser, which builds the matrix, attaches archives + checksums to the GitHub Release, and updates the brew/scoop stubs (once those repos exist).
+From a clean `main`:
 
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
+make release VERSION=0.1.2
 ```
 
-For a dry run:
+That bumps the `VERSION` file (which `docops update-check` reads via raw.githubusercontent.com), commits the bump, creates an annotated `v0.1.2` tag, and pushes both to `origin`. The tag triggers `.github/workflows/release.yml`, which verifies that the tag matches the `VERSION` file and then runs goreleaser to build the matrix, attach archives + checksums to the GitHub Release, and update the brew/scoop stubs (once those tap repos exist).
+
+Preview without writing:
+
+```sh
+make release VERSION=0.1.2 DRY_RUN=1
+```
+
+Local snapshot build (no tag, no push):
 
 ```sh
 make release-snapshot
 ```
+
+If you tag manually with `git tag` and forget to bump `VERSION`, the release workflow fails fast with a clear error pointing you at `make release`.
 
 ## License
 
