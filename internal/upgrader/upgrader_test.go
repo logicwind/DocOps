@@ -37,7 +37,7 @@ func initted(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("LoadShippedSkills: %v", err)
 	}
-	for _, dir := range []string{".claude/skills/docops", ".cursor/commands/docops"} {
+	for _, dir := range []string{".claude/commands/docops", ".cursor/commands/docops"} {
 		if err := os.MkdirAll(filepath.Join(root, dir), 0o755); err != nil {
 			t.Fatalf("mkdir %s: %v", dir, err)
 		}
@@ -94,7 +94,7 @@ func TestRun_IdempotentOnFreshlyInittedProject(t *testing.T) {
 		// don't seed them here, so a fresh run will emit creates for
 		// the schema files — that's fine. Skill files are seeded
 		// byte-identically and should be skips.
-		if strings.HasPrefix(a.Rel, ".claude/skills/docops/") && a.Kind != scaffold.KindMkdir && a.Kind != scaffold.KindSkip {
+		if strings.HasPrefix(a.Rel, ".claude/commands/docops/") && a.Kind != scaffold.KindMkdir && a.Kind != scaffold.KindSkip {
 			t.Errorf("seeded skill should be skip; %s = %s", a.Rel, a.Kind)
 		}
 	}
@@ -102,7 +102,7 @@ func TestRun_IdempotentOnFreshlyInittedProject(t *testing.T) {
 
 func TestRun_AddsNewSkillRemovesStaleRefreshesChanged(t *testing.T) {
 	root := initted(t)
-	dir := filepath.Join(root, ".claude/skills/docops")
+	dir := filepath.Join(root, ".claude/commands/docops")
 
 	// Simulate v0.1.0-era state in the dir:
 	//  - delete one shipped skill so the upgrader will (re)create it.
@@ -116,7 +116,7 @@ func TestRun_AddsNewSkillRemovesStaleRefreshesChanged(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, pickRefresh), []byte("stale local body\n"), 0o644); err != nil {
 		t.Fatalf("mutate %s: %v", pickRefresh, err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "next.md"), []byte("removed-upstream skill\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "old-command.md"), []byte("removed-upstream skill\n"), 0o644); err != nil {
 		t.Fatalf("seed stale skill: %v", err)
 	}
 
@@ -125,26 +125,26 @@ func TestRun_AddsNewSkillRemovesStaleRefreshesChanged(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	addAction := findAction(res.Actions, ".claude/skills/docops/"+pickAdd)
+	addAction := findAction(res.Actions, ".claude/commands/docops/"+pickAdd)
 	if addAction == nil || addAction.Kind != scaffold.KindWriteFile || addAction.Reason != "create" {
 		t.Errorf("%s should be a create action; got %+v", pickAdd, addAction)
 	}
 
-	refreshAction := findAction(res.Actions, ".claude/skills/docops/"+pickRefresh)
+	refreshAction := findAction(res.Actions, ".claude/commands/docops/"+pickRefresh)
 	if refreshAction == nil || refreshAction.Kind != scaffold.KindWriteFile || refreshAction.Reason == "create" {
 		t.Errorf("%s should be a refresh (overwrite) action; got %+v", pickRefresh, refreshAction)
 	}
 
-	removeAction := findAction(res.Actions, ".claude/skills/docops/next.md")
+	removeAction := findAction(res.Actions, ".claude/commands/docops/old-command.md")
 	if removeAction == nil || removeAction.Kind != scaffold.KindRemove {
-		t.Errorf("next.md should be a remove action; got %+v", removeAction)
+		t.Errorf("old-command.md should be a remove action; got %+v", removeAction)
 	}
 }
 
 func TestRun_ApplyWritesFilesAndDeletesStale(t *testing.T) {
 	root := initted(t)
-	dir := filepath.Join(root, ".claude/skills/docops")
-	staleName := "next.md"
+	dir := filepath.Join(root, ".claude/commands/docops")
+	staleName := "old-command.md"
 	if err := os.WriteFile(filepath.Join(dir, staleName), []byte("stale\n"), 0o644); err != nil {
 		t.Fatalf("seed stale: %v", err)
 	}
@@ -167,6 +167,36 @@ func TestRun_ApplyWritesFilesAndDeletesStale(t *testing.T) {
 			// schema files are always written (regenerated from yaml);
 			// don't flag those as drift.
 			continue
+		}
+	}
+}
+
+// TestRun_MigratesLegacyClaudeSkillsFolder verifies that an upgrade
+// against a repo scaffolded by an older docops (which wrote slash
+// commands into .claude/skills/docops/) removes those files so the
+// agent doesn't see the same slash command from two locations.
+func TestRun_MigratesLegacyClaudeSkillsFolder(t *testing.T) {
+	root := initted(t)
+	legacyDir := filepath.Join(root, ".claude/skills/docops")
+	if err := os.MkdirAll(legacyDir, 0o755); err != nil {
+		t.Fatalf("mkdir legacy: %v", err)
+	}
+	// Seed two arbitrary filenames — upgrade should delete anything
+	// sitting in the legacy dir, not just files matching the current
+	// bundle (the old bundle shape is irrelevant by design).
+	for _, name := range []string{"init.md", "historic-command.md"} {
+		if err := os.WriteFile(filepath.Join(legacyDir, name), []byte("legacy\n"), 0o644); err != nil {
+			t.Fatalf("seed %s: %v", name, err)
+		}
+	}
+
+	if _, err := Run(Options{Root: root, DryRun: false, Out: io.Discard}); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	for _, name := range []string{"init.md", "historic-command.md"} {
+		if _, err := os.Stat(filepath.Join(legacyDir, name)); !os.IsNotExist(err) {
+			t.Errorf("%s in legacy folder should be deleted; stat err = %v", name, err)
 		}
 	}
 }
@@ -238,7 +268,7 @@ func TestRun_DoesNotTouchPreCommitHookByDefault(t *testing.T) {
 
 func TestRun_FirstUpgradeDeletesUserFileInsideDocopsDir(t *testing.T) {
 	root := initted(t)
-	dir := filepath.Join(root, ".claude/skills/docops")
+	dir := filepath.Join(root, ".claude/commands/docops")
 	custom := filepath.Join(dir, "custom.md")
 	if err := os.WriteFile(custom, []byte("user-added\n"), 0o644); err != nil {
 		t.Fatalf("seed custom skill: %v", err)
@@ -255,7 +285,7 @@ func TestRun_FirstUpgradeDeletesUserFileInsideDocopsDir(t *testing.T) {
 
 func TestRun_DoesNotTouchUserFileOneLevelUp(t *testing.T) {
 	root := initted(t)
-	sibling := filepath.Join(root, ".claude/skills/my-stuff.md")
+	sibling := filepath.Join(root, ".claude/commands/my-stuff.md")
 	if err := os.WriteFile(sibling, []byte("user content\n"), 0o644); err != nil {
 		t.Fatalf("seed sibling: %v", err)
 	}
@@ -281,7 +311,7 @@ func TestRun_SecondUpgradeRefusesUserAddedFileInDocopsDir(t *testing.T) {
 	}
 
 	// User now drops a custom skill inside the docops-owned dir.
-	custom := filepath.Join(root, ".claude/skills/docops/custom.md")
+	custom := filepath.Join(root, ".claude/commands/docops/custom.md")
 	if err := os.WriteFile(custom, []byte("user-added post-init\n"), 0o644); err != nil {
 		t.Fatalf("seed custom: %v", err)
 	}
@@ -381,8 +411,8 @@ func TestRun_PreservesUserContentInClaudeMdAcrossUpgrade(t *testing.T) {
 
 func TestRun_DryRunWritesNothing(t *testing.T) {
 	root := initted(t)
-	dir := filepath.Join(root, ".claude/skills/docops")
-	stalePath := filepath.Join(dir, "next.md")
+	dir := filepath.Join(root, ".claude/commands/docops")
+	stalePath := filepath.Join(dir, "old-command.md")
 	if err := os.WriteFile(stalePath, []byte("stale\n"), 0o644); err != nil {
 		t.Fatalf("seed: %v", err)
 	}

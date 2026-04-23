@@ -31,7 +31,7 @@ func upgradeFixture(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("LoadShippedSkills: %v", err)
 	}
-	for _, dir := range []string{".claude/skills/docops", ".cursor/commands/docops"} {
+	for _, dir := range []string{".claude/commands/docops", ".cursor/commands/docops"} {
 		if err := os.MkdirAll(filepath.Join(root, dir), 0o755); err != nil {
 			t.Fatalf("mkdir: %v", err)
 		}
@@ -67,7 +67,7 @@ func TestCmdUpgrade_RefusesWithoutDocopsYAML(t *testing.T) {
 
 func TestCmdUpgrade_DryRunWritesNothing(t *testing.T) {
 	root := upgradeFixture(t)
-	stale := filepath.Join(root, ".claude/skills/docops/next.md")
+	stale := filepath.Join(root, ".claude/commands/docops/old-command.md")
 	if err := os.WriteFile(stale, []byte("stale\n"), 0o644); err != nil {
 		t.Fatalf("seed stale: %v", err)
 	}
@@ -128,7 +128,7 @@ func TestCmdUpgrade_JSONShape(t *testing.T) {
 
 func TestCmdUpgrade_YesFlagSkipsPromptAndApplies(t *testing.T) {
 	root := upgradeFixture(t)
-	stale := filepath.Join(root, ".claude/skills/docops/next.md")
+	stale := filepath.Join(root, ".claude/commands/docops/old-command.md")
 	if err := os.WriteFile(stale, []byte("stale\n"), 0o644); err != nil {
 		t.Fatalf("seed stale: %v", err)
 	}

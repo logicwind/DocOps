@@ -40,8 +40,9 @@ func PreCommitHook() ([]byte, error) {
 }
 
 // Skills returns a map of skill leaf filename (e.g. "init.md") to file body.
-// Callers write these into `.claude/skills/docops/` and
-// `.cursor/commands/docops/`.
+// Callers write these into `.claude/commands/docops/` and
+// `.cursor/commands/docops/` — both are the slash-command directories
+// for their respective agent tools.
 func Skills() (map[string][]byte, error) {
 	out := make(map[string][]byte)
 	entries, err := fs.ReadDir(tree, "skills/docops")

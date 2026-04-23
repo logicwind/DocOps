@@ -1,6 +1,6 @@
 ---
 title: Update-check — cached, lazy, opt-out version probe
-status: draft
+status: accepted
 coverage: required
 date: "2026-04-23"
 supersedes: []

@@ -5,8 +5,8 @@
 ## Counts
 
 - Context: 4 active · 0 superseded
-- ADRs: 22 accepted · 3 draft · 0 superseded (24 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 6 backlog · 1 active · 0 blocked · 21 done
+- ADRs: 24 accepted · 2 draft · 0 superseded (25 `coverage: required`, 1 `coverage: not-needed`)
+- Tasks: 6 backlog · 1 active · 0 blocked · 22 done
 
 ## Needs attention
 
@@ -18,7 +18,11 @@
 
 ## Recent activity
 
+- 2026-04-23 e59940b planning: ADR-0026 review-delta + TP-029, expand TP-023 scope
+- 2026-04-23 d811d75 docs(adr): promote ADR-0023 and ADR-0024 to accepted
+- 2026-04-23 d0cbd50 fix(release): pass HOMEBREW_TAP_GITHUB_TOKEN explicitly to tap/bucket publishers
 - 2026-04-23 c038a01 chore: mark TP-018/020/021/022 done; ignore /docops smoke binary
+- 2026-04-23 afcd855 TP-023 phase 1: ship /docops:{next,get,list,graph,search} skills
 - 2026-04-23 aeb53b3 chore: enable tap/bucket auto-publish for v0.2.1
 - 2026-04-23 a131d95 planning: ADR-0024 + TP-022 — ship CLAUDE.md alongside AGENTS.md
 - 2026-04-23 7656d08 planning: ADR-0023 + TP-020/TP-021 — split TP-018 into refactor + upgrader + update-check
@@ -34,8 +38,4 @@
 - 2026-04-22 dafd8eb TP-006: docops audit — structural gap punch list
 - 2026-04-22 d2ba125 TP-016: docops refresh — composite validate+index+state
 - 2026-04-22 ca20529 TP-015: docops init — [dir], announcement, TTY-interactive confirm
-- 2026-04-22 8a175ae TP-014: close task, refresh committed artifacts
-- 2026-04-22 84fb540 planning: ADR-0020 + TP-015/TP-016/TP-017 for v0.1.1 ergonomics
-- 2026-04-22 73cd5db TP-010/TP-013: finalize skill-pack scope — --no-skills + skills lint
-- 2026-04-22 6b41ceb TP-008: docops new — scaffold CTX/ADR/Task with atomic ID allocation
 

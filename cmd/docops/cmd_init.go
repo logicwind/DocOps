@@ -28,7 +28,7 @@ func cmdInit(args []string) int {
 	fs.SetOutput(os.Stderr)
 	dryRun := fs.Bool("dry-run", false, "print the planned changes without writing")
 	force := fs.Bool("force", false, "overwrite files that have drifted from the shipped templates")
-	noSkills := fs.Bool("no-skills", false, "skip scaffolding .claude/skills/docops/ and .cursor/commands/docops/")
+	noSkills := fs.Bool("no-skills", false, "skip scaffolding .claude/commands/docops/ and .cursor/commands/docops/")
 	yes := fs.Bool("yes", false, "skip the interactive confirm prompt")
 	fs.BoolVar(yes, "y", false, "skip the interactive confirm prompt (short form)")
 	fs.Usage = func() {

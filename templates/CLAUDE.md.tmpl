@@ -1,97 +1,78 @@
 # Claude in this repo
 
-This repository is managed with **DocOps** — a typed project-state substrate
-([open-source, by Logicwind](https://github.com/logicwind/DocOps)).
-You're reading this because Claude Code loads CLAUDE.md by default. The same
-docops block is mirrored in `AGENTS.md` for non-Claude agents (Cursor, Aider,
-Codex, Copilot, Windsurf, Zed); both files are auto-maintained by
-`docops upgrade`.
+This repo uses **DocOps** ([logicwind/DocOps](https://github.com/logicwind/DocOps)) — a typed project-state substrate. Claude Code loads this file by default; the block below is mirrored byte-for-byte in `AGENTS.md` for other agents.
 
 <!-- docops:start -->
 
 ## Orientation
 
-- **Why we're building this:** `docs/context/CTX-*` (look for documents of `type: brief` or `type: prd`).
-- **What's been decided:** `docs/decisions/ADR-*.md`. Frontmatter is load-bearing — read it.
-- **What to do next:** `docs/STATE.md` for counts, needs-attention, and active work.
-- **Hard guardrails:** any CTX of `type: memo` or `type: notes` that describes constraints.
+- **Why:** `docs/context/CTX-*` (types `brief`, `prd`).
+- **Decided:** `docs/decisions/ADR-*.md`. Frontmatter is load-bearing.
+- **Next:** `docs/STATE.md` — counts, needs-attention, active work.
+- **Guardrails:** any CTX of type `memo` or `notes`.
 
 ## Folder layout
 
 | Folder | Contents |
 |---|---|
-| `docs/context/` | Stakeholder inputs: PRDs, design docs, memos, research, notes. File prefix `CTX-`. |
-| `docs/decisions/` | ADRs. File prefix `ADR-`. |
-| `docs/tasks/` | Work units. File prefix `TP-`. Every task cites ≥1 ADR or CTX. |
-| `docs/STATE.md` | Auto-generated state snapshot. Do not edit by hand. |
-| `docs/.index.json` | Auto-generated graph with computed reverse edges. Do not cat it into your context — use `docops state` or read individual doc files instead. |
+| `docs/context/` | PRDs, design, memos, research, notes. Prefix `CTX-`. |
+| `docs/decisions/` | ADRs. Prefix `ADR-`. |
+| `docs/tasks/` | Work units. Prefix `TP-`. Each cites ≥1 ADR or CTX. |
+| `docs/STATE.md` | Auto-generated. Don't edit. |
+| `docs/.index.json` | Auto-generated graph. Don't edit, don't load wholesale — query via `docops` instead. |
 
-## Invariants you MUST respect
+## Invariants
 
-1. **Every task must cite at least one ADR or CTX** in its `requires:` frontmatter. The validator refuses tasks without it.
-2. **References must resolve.** No citing non-existent docs; no citing superseded docs without good reason.
-3. **Do not edit `docs/STATE.md` or `docs/.index.json`** — both are regenerated from source.
-4. **Do not edit reverse-edge fields** in source frontmatter. They are computed in the index.
-5. **Filename is the ID.** `ADR-0020-whatever.md` is `ADR-0020`. Don't add an `id:` field.
+1. Every task cites ≥1 ADR or CTX in `requires:`. Validator enforces.
+2. References must resolve. No non-existent or dangling-superseded refs.
+3. Don't edit `docs/STATE.md` or `docs/.index.json` — regenerated from source.
+4. Don't edit reverse-edge fields in frontmatter — computed in the index.
+5. Filename is the ID. `ADR-0020-whatever.md` is `ADR-0020`. No `id:` field.
 
-## CLI commands — this is the query API
+## CLI — the query and mutation API
 
-### Shipped (all support `--json` for structured output)
+All commands support `--json`.
 
 ```
-docops init                       # scaffold DocOps in this repo
-docops upgrade                    # refresh DocOps-owned scaffolding after a binary upgrade
-docops update-check               # check upstream for a newer docops release (cached probe)
-docops validate                   # schema + graph invariants
-docops index                      # rebuild docs/.index.json
-docops state                      # regenerate docs/STATE.md
-docops audit                      # structural coverage gaps
-docops refresh                    # validate + index + state in one pass
-docops new ctx "title" --type memo
-docops new adr "title" [--related ADR-xxxx]
-docops new task "title" --requires ADR-xxxx,CTX-xxx
-docops schema                     # (re)write schema JSON from docops.yaml
+docops init                       scaffold DocOps in this repo
+docops upgrade                    refresh DocOps-owned scaffolding
+docops update-check               probe upstream for a newer release (cached)
+docops validate                   schema + graph invariants
+docops index                      rebuild docs/.index.json
+docops state                      regenerate docs/STATE.md
+docops audit                      structural coverage gaps
+docops refresh                    validate + index + state in one pass
+docops schema                     (re)write docs/.docops/schema/*.schema.json
+
+docops list [--type ctx|adr|task] [--status ...] [--tag ...]
+docops get <ID>                   look up one doc by ID
+docops graph <ID>                 typed edge graph from a starting doc
+docops next                       recommend the next task
+docops search <query>             substring/regex over title, tags, body
+
+docops new ctx "title" --type memo   [--body -|TEXT | --body-file PATH]
+docops new adr "title" [--related ADR-xxxx]   [--body -|TEXT | --body-file PATH]
+docops new task "title" --requires ADR-xxxx,CTX-xxx   [--body -|TEXT | --body-file PATH]
 ```
 
-### Not yet built — do not call these
+**Populate bodies at creation.** `docops new` accepts `--body TEXT`, `--body -` (stdin heredoc), or `--body-file PATH`. Use them — they avoid the stub-then-rewrite round-trip. If you must edit an existing doc, read it first, then edit in place.
 
-`status`, `get`, `list`, `graph`, `next`, `search`, `review` do not exist
-yet. If your workflow needs one, propose a task first rather than inventing
-flags or behaviour.
+For lookups, prefer `docops list|get|search|graph|next` over loading `docs/.index.json` into context.
 
-**For now, instead of `list`/`get`/`search`:** read `docs/STATE.md` for
-counts and needs-attention, or read individual `docs/{context,decisions,tasks}/`
-files directly. Avoid loading `docs/.index.json` wholesale — it is for
-bootstrap / CI consumers, not routine agent queries. See
-`docs/decisions/ADR-0018-cli-as-query-layer.md` for the rationale.
+## Workflow
 
-The binary is language-agnostic — install via direct download, Homebrew, Scoop, or Docker. No Node/Bun/Python dependency.
-
-## Recommended agent workflow
-
-1. Read `docs/STATE.md`.
-2. Run `docops audit` to see open gaps.
-3. Read `docs/tasks/` to pick a task (check `depends_on` before starting).
+1. `docops state` (or read `docs/STATE.md`).
+2. `docops audit` for open gaps.
+3. Pick a task from `docs/tasks/`; check `depends_on`.
 4. Before coding: read every doc in the task's `requires:` and `depends_on:`.
-5. Work in your native plan/execute mode. DocOps does not prescribe how you code.
-6. After finishing, update the task's frontmatter `status:` field and run `docops refresh` to regenerate index and STATE.md.
-7. If your work revealed a new decision, `docops new adr`. If a new gap, `docops new task` with citations.
+5. Work in your native plan/execute mode.
+6. After: update the task's `status:` and run `docops refresh`.
+7. New decision → `docops new adr`. New gap → `docops new task` with citations.
 
 ## Editor integration
 
-JSON Schemas for frontmatter validation live in `docs/.docops/schema/` (`context.schema.json`, `decision.schema.json`, `task.schema.json`). Wire them up in VS Code via the `redhat.vscode-yaml` extension and run `docops schema` to regenerate after editing `context_types:` in `docops.yaml`.
-
-## Pairs well with
-
-- **GStack** role skills — they apply perspective; DocOps provides the typed state they read.
-- **Native plan mode** of your IDE — DocOps explicitly does not try to replace it.
+JSON Schemas live in `docs/.docops/schema/`. In VS Code, use `redhat.vscode-yaml`. Regenerate after editing `context_types:` in `docops.yaml`: `docops schema`.
 
 <!-- docops:end -->
 
-## Notes for humans
-
-The block above is auto-maintained by `docops init` and `docops upgrade`.
-Edit content outside the `<!-- docops:* -->` delimiters freely; DocOps will
-preserve it. Edits inside the delimiters will be overwritten on the next
-upgrade. The same docops block also appears in `AGENTS.md` (the multi-tool
-sibling); both refresh from the same shipped template.
+> Content inside the `<!-- docops:* -->` markers is regenerated by `docops upgrade`. Edit freely outside.

@@ -1,6 +1,6 @@
 ---
 title: Ship CLAUDE.md alongside AGENTS.md — both share the docops block
-status: draft
+status: accepted
 coverage: required
 date: "2026-04-23"
 supersedes: []
