@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-23T17:31:02Z",
+  "generated_at": "2026-04-23T17:40:34Z",
   "version": 1,
   "docs": [
     {
@@ -632,7 +632,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "partial",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -935,7 +935,7 @@
       "summary": "First-user testing of v0.1.0 on a real project (`lw-website-nextjs-web`) surfaced three distinct friction points that are not bugs but are design regressions relative to what a polished CLI would do:",
       "word_count": 1119,
       "last_touched": "2026-04-22T17:31:24Z",
-      "age_days": 0,
+      "age_days": 1,
       "referenced_by": [
         {
           "id": "ADR-0021",
@@ -1147,7 +1147,7 @@
       ],
       "summary": "DocOps derives ADR `implementation` state from citing tasks (per ADR-0010): once every citing task is `done`, implementation flips to `done`. But \"all tasks done\" is not the same as \"the ADR's Decisio…",
       "word_count": 401,
-      "last_touched": "2026-04-23T17:25:56Z",
+      "last_touched": "2026-04-23T17:31:41Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1159,7 +1159,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "not-started",
+      "implementation": "partial",
       "stale": false
     },
     {
@@ -1737,7 +1737,7 @@
       "summary": "Fix the three ergonomic gaps in `docops init` surfaced by v0.1.0 first-user testing: no way to target a different folder, no explanation of what init will do, no confirmation before writing.",
       "word_count": 402,
       "last_touched": "2026-04-22T17:38:31Z",
-      "age_days": 0,
+      "age_days": 1,
       "stale": false
     },
     {
@@ -1921,9 +1921,9 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-023-restore-docops-skills-for-next-search-get-list-gra.md",
       "title": "Restore /docops:* skills for read commands + add orchestration skills",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p1",
-      "assignee": "unassigned",
+      "assignee": "claude",
       "requires": [
         "ADR-0013",
         "ADR-0019",
@@ -1931,7 +1931,7 @@
       ],
       "summary": "Re-add shipped agent skills for the five CLI commands that landed in TP-011 (`search`) and TP-012 (`get`, `list`, `graph`, `next`) so the bundle satisfies TP-010/013's policy: a skill exists in `templ…",
       "word_count": 715,
-      "last_touched": "2026-04-23T04:27:42Z",
+      "last_touched": "2026-04-23T17:37:46Z",
       "age_days": 0,
       "stale": false
     },
@@ -2059,7 +2059,7 @@
       ],
       "summary": "Ship the CLI + schema work defined in ADR-0026 so that ADRs whose implementation has flipped to `done` can be review-marked against the shipped code.",
       "word_count": 295,
-      "last_touched": "2026-04-23T17:28:19Z",
+      "last_touched": "2026-04-23T17:31:41Z",
       "age_days": 0,
       "stale": false
     }

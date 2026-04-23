@@ -1,6 +1,6 @@
 ---
 title: Restore /docops:* skills for read commands + add orchestration skills
-status: active
+status: done
 priority: p1
 assignee: claude
 requires: [ADR-0013, ADR-0019, ADR-0026]
