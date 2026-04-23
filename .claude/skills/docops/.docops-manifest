@@ -1,10 +1,15 @@
 # docops manifest — files in this directory owned by `docops upgrade`.
 # Do not hand-edit; rerun `docops upgrade` to regenerate.
 audit.md
+get.md
+graph.md
 init.md
+list.md
 new-adr.md
 new-ctx.md
 new-task.md
+next.md
 refresh.md
+search.md
 state.md
 upgrade.md

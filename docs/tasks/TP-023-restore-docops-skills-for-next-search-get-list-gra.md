@@ -1,8 +1,8 @@
 ---
 title: Restore /docops:* skills for read commands + add orchestration skills
-status: backlog
+status: active
 priority: p1
-assignee: unassigned
+assignee: claude
 requires: [ADR-0013, ADR-0019, ADR-0026]
 depends_on: []
 ---

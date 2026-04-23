@@ -116,7 +116,7 @@ func TestRun_AddsNewSkillRemovesStaleRefreshesChanged(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, pickRefresh), []byte("stale local body\n"), 0o644); err != nil {
 		t.Fatalf("mutate %s: %v", pickRefresh, err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "next.md"), []byte("removed-upstream skill\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "old-command.md"), []byte("removed-upstream skill\n"), 0o644); err != nil {
 		t.Fatalf("seed stale skill: %v", err)
 	}
 
@@ -135,16 +135,16 @@ func TestRun_AddsNewSkillRemovesStaleRefreshesChanged(t *testing.T) {
 		t.Errorf("%s should be a refresh (overwrite) action; got %+v", pickRefresh, refreshAction)
 	}
 
-	removeAction := findAction(res.Actions, ".claude/skills/docops/next.md")
+	removeAction := findAction(res.Actions, ".claude/skills/docops/old-command.md")
 	if removeAction == nil || removeAction.Kind != scaffold.KindRemove {
-		t.Errorf("next.md should be a remove action; got %+v", removeAction)
+		t.Errorf("old-command.md should be a remove action; got %+v", removeAction)
 	}
 }
 
 func TestRun_ApplyWritesFilesAndDeletesStale(t *testing.T) {
 	root := initted(t)
 	dir := filepath.Join(root, ".claude/skills/docops")
-	staleName := "next.md"
+	staleName := "old-command.md"
 	if err := os.WriteFile(filepath.Join(dir, staleName), []byte("stale\n"), 0o644); err != nil {
 		t.Fatalf("seed stale: %v", err)
 	}
@@ -382,7 +382,7 @@ func TestRun_PreservesUserContentInClaudeMdAcrossUpgrade(t *testing.T) {
 func TestRun_DryRunWritesNothing(t *testing.T) {
 	root := initted(t)
 	dir := filepath.Join(root, ".claude/skills/docops")
-	stalePath := filepath.Join(dir, "next.md")
+	stalePath := filepath.Join(dir, "old-command.md")
 	if err := os.WriteFile(stalePath, []byte("stale\n"), 0o644); err != nil {
 		t.Fatalf("seed: %v", err)
 	}
