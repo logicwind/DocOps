@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-23T08:41:52Z",
+  "generated_at": "2026-04-23T17:19:19Z",
   "version": 1,
   "docs": [
     {
@@ -1031,7 +1031,7 @@
       "folder": "docs/decisions",
       "path": "docs/decisions/ADR-0023-update-check-cached-lazy-opt-out-version-probe.md",
       "title": "Update-check — cached, lazy, opt-out version probe",
-      "status": "draft",
+      "status": "accepted",
       "coverage": "required",
       "date": "2026-04-23",
       "related": [
@@ -1069,7 +1069,7 @@
       "folder": "docs/decisions",
       "path": "docs/decisions/ADR-0024-ship-claude-md-alongside-agents-md-both-share-the.md",
       "title": "Ship CLAUDE.md alongside AGENTS.md — both share the docops block",
-      "status": "draft",
+      "status": "accepted",
       "coverage": "required",
       "date": "2026-04-23",
       "related": [
@@ -1447,7 +1447,7 @@
       "summary": "Command that turns a bare repository into a DocOps-enabled one. Idempotent — safe to run twice.",
       "word_count": 222,
       "last_touched": "2026-04-22T09:33:17Z",
-      "age_days": 0,
+      "age_days": 1,
       "referenced_by": [
         {
           "id": "TP-010",
@@ -1499,7 +1499,7 @@
       "summary": "Commands that create new CTX, ADR, or Task documents with valid frontmatter, atomic ID allocation, and correct file naming.",
       "word_count": 180,
       "last_touched": "2026-04-22T09:42:49Z",
-      "age_days": 0,
+      "age_days": 1,
       "referenced_by": [
         {
           "id": "TP-010",
@@ -1534,7 +1534,7 @@
       "summary": "Emit the frontmatter schemas as JSON Schema so editors (VS Code YAML plugin, JetBrains, Zed) can validate in-editor without running the CLI.",
       "word_count": 124,
       "last_touched": "2026-04-22T09:51:55Z",
-      "age_days": 0,
+      "age_days": 1,
       "referenced_by": [
         {
           "id": "TP-018",
@@ -1567,7 +1567,7 @@
       "summary": "Produce the first version of the DocOps skill pack — markdown files that wrap CLI commands for Claude Code and Cursor so agents get discoverable slash-commands.",
       "word_count": 246,
       "last_touched": "2026-04-22T12:35:26Z",
-      "age_days": 0,
+      "age_days": 1,
       "stale": false
     },
     {
@@ -1636,7 +1636,7 @@
       "summary": "ADR-0019 rescopes the skill-pack work: init-based distribution is the single path for v0.1.0; the `packages/` standalone bundles are deferred. This task closes the remaining gap items from TP-010 that…",
       "word_count": 301,
       "last_touched": "2026-04-22T12:35:26Z",
-      "age_days": 0,
+      "age_days": 1,
       "referenced_by": [
         {
           "id": "TP-014",
@@ -1673,7 +1673,7 @@
       "summary": "Migrate the module path, add the license, tidy the release pipeline, and cut the first public tag. End state: `github.com/logicwind/DocOps` exists with `v0.1.0` tagged and goreleaser-produced archives…",
       "word_count": 324,
       "last_touched": "2026-04-22T12:39:07Z",
-      "age_days": 0,
+      "age_days": 1,
       "stale": false
     },
     {
@@ -1997,7 +1997,7 @@
       ],
       "summary": "Make `make release VERSION=X.Y.Z DRY_RUN=1` actually be a dry run. Today it prints the \"would do\" lines and then runs the real `echo \u003e VERSION` / `git commit` / `git tag` / `git push` commands anyway.",
       "word_count": 425,
-      "last_touched": "2026-04-23T08:41:43Z",
+      "last_touched": "2026-04-23T08:42:57Z",
       "age_days": 0,
       "stale": false
     }
