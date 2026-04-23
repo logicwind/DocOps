@@ -19,5 +19,5 @@ func String() string {
 			v = info.Main.Version
 		}
 	}
-	return fmt.Sprintf("docops %s (commit %s, built %s)", v, Commit, Date)
+	return fmt.Sprintf("docops %s (commit %s, built %s)\nan open-source project by Logicwind · https://github.com/logicwind/DocOps", v, Commit, Date)
 }

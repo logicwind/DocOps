@@ -5,8 +5,8 @@
 ## Counts
 
 - Context: 4 active · 0 superseded
-- ADRs: 22 accepted · 2 draft · 0 superseded (23 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 4 backlog · 0 active · 0 blocked · 21 done
+- ADRs: 22 accepted · 3 draft · 0 superseded (24 `coverage: required`, 1 `coverage: not-needed`)
+- Tasks: 5 backlog · 1 active · 0 blocked · 21 done
 
 ## Needs attention
 
@@ -14,7 +14,7 @@
 
 ## Active work
 
-- (none)
+- TP-024 (nix, p1) Migrate tap/bucket to logicwind/homebrew-tap + logicwind/scoop-bucket and enable goreleaser publishing — requires: ADR-0019, ADR-0012
 
 ## Recent activity
 
@@ -23,6 +23,7 @@
 - 2026-04-23 7656d08 planning: ADR-0023 + TP-020/TP-021 — split TP-018 into refactor + upgrader + update-check
 - 2026-04-23 6f41758 TP-012: docops get/list/graph/next — focused read commands
 - 2026-04-23 32cc60b TP-011: docops search — substring/regex content search
+- 2026-04-23 325e547 planning: TP-023/024/025 — skills gap, taps, npm distribution
 - 2026-04-23 1aa3e32 remove internal TP-xxx IDs from help output; fix AGENTS.md to not document unbuilt commands
 - 2026-04-22 f928497 TP-007: docops init — scaffold a DocOps-enabled repo
 - 2026-04-22 f5ab1e6 TP-004: docops index — enriched graph written to .index.json
@@ -37,5 +38,4 @@
 - 2026-04-22 73cd5db TP-010/TP-013: finalize skill-pack scope — --no-skills + skills lint
 - 2026-04-22 6b41ceb TP-008: docops new — scaffold CTX/ADR/Task with atomic ID allocation
 - 2026-04-22 56f6d7c TP-003: docops validate — schema + graph invariants over docs/
-- 2026-04-22 5255483 planning: search + CLI-as-query-layer ADRs plus two tasks
 

@@ -51,32 +51,38 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
-      - '^chore:'
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
 
-# Homebrew tap — stub. skip_upload: true until `logicwind/homebrew-docops` repo exists (ADR-0019).
+# Homebrew tap — `logicwind/homebrew-tap` (org-wide, Vercel/HashiCorp/Fly.io
+# convention). Repo exists, token wired via HOMEBREW_TAP_GITHUB_TOKEN in the
+# release workflow. Legacy per-tool tap (`logicwind/homebrew-docops`) was
+# archived on 2026-04-23 after the pre-launch migration.
+# Install: `brew install logicwind/tap/docops`.
 brews:
   - name: docops
     ids: [docops]
     repository:
       owner: logicwind
-      name: homebrew-docops
+      name: homebrew-tap
     description: "Typed project-state substrate for LLM-first software development"
     homepage: "https://github.com/logicwind/DocOps"
     license: MIT
-    skip_upload: true
+    skip_upload: false
     test: |
       system "#{bin}/docops --version"
 
-# Scoop bucket — stub. skip_upload: true until `logicwind/scoop-docops` repo exists (ADR-0019).
+# Scoop bucket — `logicwind/scoop-bucket` (org-wide, paired with the
+# homebrew-tap). Same token (aliased as SCOOP_TAP_GITHUB_TOKEN in the
+# release workflow). Legacy `logicwind/scoop-docops` archived 2026-04-23.
 scoops:
   - name: docops
     ids: [docops]
     repository:
       owner: logicwind
-      name: scoop-docops
+      name: scoop-bucket
     description: "Typed project-state substrate for LLM-first software development"
     homepage: "https://github.com/logicwind/DocOps"
     license: MIT
-    skip_upload: true
+    skip_upload: false

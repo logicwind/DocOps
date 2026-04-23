@@ -1,8 +1,9 @@
 # AGENTS.md — working on the DocOps source
 
-You are inside the **DocOps source repository**. DocOps is the product being
-built here. This file orients agents (Claude Code, Cursor, Aider, Codex,
-Copilot, Windsurf, Zed, etc.) to the codebase.
+You are inside the **DocOps source repository**. DocOps is an open-source
+product built and maintained by **Logicwind** (`github.com/logicwind/DocOps`).
+This file orients agents (Claude Code, Cursor, Aider, Codex, Copilot,
+Windsurf, Zed, etc.) to the codebase.
 
 If you were looking for the user-facing "how to use DocOps in my project"
 guidance, see `templates/AGENTS.md.tmpl`. That is the file `docops init`

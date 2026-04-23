@@ -8,6 +8,18 @@ related: [ADR-0011, ADR-0012, ADR-0013, ADR-0014]
 tags: [release, distribution, org, scope]
 ---
 
+<!--
+AMENDMENTS (body-only until ADR-0025 / TP-026 land the frontmatter schema):
+  - 2026-04-23 editorial — tap/bucket repo names migrated from
+    per-tool (homebrew-docops, scoop-docops) to org-wide
+    (homebrew-tap, scoop-bucket). Pre-launch, no external users
+    pinned to the old path; the deferral decision itself is
+    unchanged. See the "Amendments" section at the end of this ADR
+    for the human-readable record, and TP-027 for the backfill to
+    structured frontmatter once ADR-0025 ships.
+-->
+
+
 # Ship v0.1.0 from logicwind/DocOps
 
 ## Context
@@ -70,7 +82,10 @@ Explicitly **out of scope** for v0.1.0:
   currently references them but publish is gated on those repos
   existing. v0.1.0 ships without auto-published tap/bucket; users
   install via direct GitHub Release download until the tap lands in
-  a follow-up.
+  a follow-up. `[AMENDED 2026-04-23 editorial]` — these repos were
+  migrated to the org-wide `logicwind/homebrew-tap` and
+  `logicwind/scoop-bucket` pre-launch; see the Amendments section
+  below.
 - npm per-platform shim packages (deferred per ADR-0012 addendum).
 
 ### Skill-pack descope (amends ADR-0013)
@@ -133,3 +148,37 @@ lint, and use `templates/skills/docops/` as the single source of truth.
 - The skill-pack descope leaves TP-010 partially subsumed by TP-007;
   TP-013 closes the remaining gaps (`--no-skills`, CI lint) so TP-010
   can be marked done cleanly.
+
+## Amendments
+
+Editorial corrections after this ADR was accepted. The decision
+substance is unchanged; factual details (names, links, references)
+are refreshed. Once ADR-0025 / TP-026 ship the `amendments:`
+frontmatter schema, this section becomes machine-readable (see
+TP-027 for the backfill).
+
+### 2026-04-23 — Tap/bucket repo naming (editorial)
+
+**Summary.** The v0.1.0 "out of scope" section named the follow-up
+tap and bucket repos `logicwind/homebrew-docops` and
+`logicwind/scoop-docops`. Those repos were indeed created on
+2026-04-22 with hand-authored formulas for v0.1.0 and v0.1.1. On
+2026-04-23 — still pre-launch, with no external users pinned to
+the install path — we migrated to the org-wide convention
+(`logicwind/homebrew-tap` and `logicwind/scoop-bucket`), matching
+the Vercel / HashiCorp / Fly.io pattern. TP-024 tracks the
+mechanical migration (create new repos, seed with v0.1.1 formula,
+archive the legacy per-tool repos, flip goreleaser's `skip_upload`).
+
+**What the decision said.** Defer tap/bucket setup to a follow-up
+release.
+
+**What is unchanged.** The deferral posture. The phase-2 gate. The
+goreleaser `skip_upload: true` until TP-024 lands.
+
+**What changed.** Only the target repo names, and the rationale
+captured here. No re-vote required.
+
+**By.** nix (unilateral editorial correction — pre-launch timing
+means the install-path change has zero blast radius beyond the
+author's own machine).

@@ -1,6 +1,10 @@
 # Claude in this repo
 
-This repository is managed with **DocOps** — a typed project-state substrate.
+This repository **is** the source for **DocOps**, an open-source product
+built and maintained by **Logicwind** (`github.com/logicwind/DocOps`) — a
+typed project-state substrate for LLM-first software development. This repo
+also dog-foods DocOps for its own project management.
+
 You're reading this because Claude Code loads CLAUDE.md by default. The same
 docops block is mirrored in `AGENTS.md` for non-Claude agents (Cursor, Aider,
 Codex, Copilot, Windsurf, Zed); both files are auto-maintained by

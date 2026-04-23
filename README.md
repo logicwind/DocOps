@@ -1,5 +1,7 @@
 # docops
 
+*An open-source project by [Logicwind](https://logicwind.com). Source: [github.com/logicwind/DocOps](https://github.com/logicwind/DocOps).*
+
 Typed project-state substrate for LLM-first software development. Three doc types (Context, Decision, Task) in markdown + YAML frontmatter, a computed index, a small CLI, and a coverage audit — designed so any coding agent can load a repo and know what's been decided, what's pending, and what to do next.
 
 **Status:** v0.1.0 — `init`, `validate`, `index`, `state`, `audit`, `new`, `schema` are shipped. `next`, `get`, `list`, `graph`, `status`, `search`, `review` are on the roadmap. See `docs/STATE.md` for the current backlog.
@@ -9,13 +11,16 @@ Typed project-state substrate for LLM-first software development. Three doc type
 ### macOS / Linux (Homebrew)
 
 ```sh
-brew install logicwind/docops/docops
+brew install logicwind/tap/docops
 ```
+
+Formula lives in the shared org tap `logicwind/homebrew-tap` alongside
+other Logicwind CLIs.
 
 ### Windows (Scoop)
 
 ```sh
-scoop bucket add docops https://github.com/logicwind/scoop-docops
+scoop bucket add logicwind https://github.com/logicwind/scoop-bucket
 scoop install docops
 ```
 
@@ -131,4 +136,7 @@ If you tag manually with `git tag` and forget to bump `VERSION`, the release wor
 
 ## License
 
-MIT — see LICENSE.
+MIT © [Logicwind Technologies Pvt Ltd](https://logicwind.com) — see `LICENSE`.
+
+DocOps is built and maintained by Logicwind. Issues, feature requests, and
+contributions are welcome on [GitHub](https://github.com/logicwind/DocOps).

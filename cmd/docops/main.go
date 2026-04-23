@@ -58,6 +58,7 @@ func main() {
 
 func topLevelUsage(w *os.File) {
 	fmt.Fprintln(w, "docops — typed project-state substrate for LLM-first development")
+	fmt.Fprintln(w, "an open-source project by Logicwind · https://github.com/logicwind/DocOps")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "usage: docops <command> [flags]")
 	fmt.Fprintln(w, "")
