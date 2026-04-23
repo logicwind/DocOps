@@ -113,6 +113,8 @@ bin/docops                     ← product: built binary (gitignored)
 
 ```
 docops init                       # scaffold DocOps in this repo
+docops upgrade                    # refresh DocOps-owned scaffolding after a binary upgrade
+docops update-check               # check upstream for a newer docops release (cached probe)
 docops validate                   # schema + graph invariants
 docops index                      # rebuild docs/.index.json
 docops state                      # regenerate docs/STATE.md
@@ -147,6 +149,10 @@ The binary is language-agnostic — install via direct download, Homebrew, Scoop
 5. Work in your native plan/execute mode. DocOps does not prescribe how you code.
 6. After finishing, update the task's frontmatter `status:` field and run `docops refresh` to regenerate index and STATE.md.
 7. If your work revealed a new decision, `docops new adr`. If a new gap, `docops new task` with citations.
+
+## Editor integration
+
+JSON Schemas for frontmatter validation live in `docs/.docops/schema/` (`context.schema.json`, `decision.schema.json`, `task.schema.json`). Wire them up in VS Code via the `redhat.vscode-yaml` extension and run `docops schema` to regenerate after editing `context_types:` in `docops.yaml`.
 
 ## Pairs well with
 

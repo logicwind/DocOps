@@ -9,9 +9,31 @@ Create a new task file under `docs/tasks/`.
 
 Every task must cite ≥1 ADR or CTX in `requires:` (validator enforces this — ADR-0004).
 
+Preferred pattern for agents — create and populate in one call:
+
 ```
-docops new task "<title>" --requires ADR-xxxx[,CTX-yyy]
+docops new task "Title" --requires ADR-0004 --body - <<'EOF'
+## Goal
+
+Describe the goal here.
+
+## Acceptance
+
+- Acceptance criteria.
+
+## Notes
+
+Optional notes.
+EOF
 ```
+
+If you already have the body in a file:
+
+```
+docops new task "Title" --requires ADR-0004 --body-file /path/to/body.md --json
+```
+
+`--body` and `--body-file` are mutually exclusive. Both imply `--no-open` (no editor launch). A leading `---` in the body is treated as body content, not frontmatter.
 
 If the user cannot name a citation, stop and help them find or write one:
 
