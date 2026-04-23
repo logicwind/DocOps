@@ -70,6 +70,10 @@ func cmdList(args []string) int {
 	}
 
 	kindUpper := strings.ToUpper(*kindFlag)
+	if kindUpper != "" && !validKind(kindUpper) {
+		fmt.Fprintf(os.Stderr, "docops list: --kind %q invalid (must be CTX, ADR, or TP)\n", *kindFlag)
+		return 2
+	}
 	var records []listRecord
 	for _, doc := range idx.Docs {
 		if kindUpper != "" && doc.Kind != kindUpper {

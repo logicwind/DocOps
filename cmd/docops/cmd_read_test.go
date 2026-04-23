@@ -263,6 +263,39 @@ func TestCmdList_KindFilter(t *testing.T) {
 	}
 }
 
+func TestCmdList_InvalidKind(t *testing.T) {
+	plantReadDocs(t)
+	for _, k := range []string{"task", "decision", "context", "TASK", "DECISION", "foo", "adr-status"} {
+		code := cmdList([]string{"--kind", k})
+		if code != 2 {
+			t.Errorf("--kind %q should return 2, got %d", k, code)
+		}
+	}
+}
+
+func TestCmdList_ValidKindCaseInsensitive(t *testing.T) {
+	plantReadDocs(t)
+	for _, k := range []string{"adr", "Adr", "ADR", "tp", "TP", "Tp", "ctx", "CTX", "Ctx"} {
+		out := captureStdout(t, func() {
+			code := cmdList([]string{"--kind", k})
+			if code != 0 {
+				t.Errorf("--kind %q should return 0, got %d", k, code)
+			}
+		})
+		if strings.Contains(out, "(no documents match)") {
+			t.Errorf("--kind %q should match docs, got no match", k)
+		}
+	}
+}
+
+func TestCmdList_InvalidKindErrorMessage(t *testing.T) {
+	plantReadDocs(t)
+	code := cmdList([]string{"--kind", "task"})
+	if code != 2 {
+		t.Errorf("invalid --kind should return 2, got %d", code)
+	}
+}
+
 func TestCmdList_StatusFilter(t *testing.T) {
 	plantReadDocs(t)
 

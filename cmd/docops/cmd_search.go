@@ -73,6 +73,10 @@ func cmdSearch(args []string) int {
 	}
 
 	kindUpper := strings.ToUpper(*kindFlag)
+	if kindUpper != "" && !validKind(kindUpper) {
+		fmt.Fprintf(os.Stderr, "docops search: --kind %q invalid (must be CTX, ADR, or TP)\n", *kindFlag)
+		return 2
+	}
 
 	// Guard: empty query requires at least one structured filter.
 	hasFilter := kindUpper != "" || *statusFlag != "" || *coverage != "" ||

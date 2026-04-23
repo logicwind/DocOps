@@ -223,6 +223,31 @@ func TestCmdSearch_CTXStatusError(t *testing.T) {
 	}
 }
 
+func TestCmdSearch_InvalidKind(t *testing.T) {
+	plantSearchDocs(t)
+	for _, k := range []string{"task", "decision", "context", "TASK", "DECISION", "foo", "adr-status"} {
+		code := cmdSearch([]string{"--kind", k, "rate"})
+		if code != 2 {
+			t.Errorf("--kind %q should return 2, got %d", k, code)
+		}
+	}
+}
+
+func TestCmdSearch_ValidKindCaseInsensitive(t *testing.T) {
+	plantSearchDocs(t)
+	for _, k := range []string{"adr", "Adr", "ADR"} {
+		out := captureStdout(t, func() {
+			code := cmdSearch([]string{"--kind", k, "rate"})
+			if code != 0 {
+				t.Errorf("--kind %q should return 0, got %d", k, code)
+			}
+		})
+		if strings.Contains(out, "ADR-0002") == false {
+			t.Errorf("--kind %q should match ADR-0002", k)
+		}
+	}
+}
+
 // ── ranking ──────────────────────────────────────────────────────────────────
 
 func TestCmdSearch_RankingTitleBeforeBody(t *testing.T) {
