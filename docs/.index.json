@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-23T17:19:19Z",
+  "generated_at": "2026-04-23T17:31:02Z",
   "version": 1,
   "docs": [
     {
@@ -361,6 +361,10 @@
           "edge": "related"
         },
         {
+          "id": "ADR-0026",
+          "edge": "related"
+        },
+        {
           "id": "TP-005",
           "edge": "requires"
         },
@@ -436,6 +440,10 @@
         },
         {
           "id": "ADR-0005",
+          "edge": "related"
+        },
+        {
+          "id": "ADR-0026",
           "edge": "related"
         },
         {
@@ -830,6 +838,10 @@
           "edge": "related"
         },
         {
+          "id": "ADR-0026",
+          "edge": "related"
+        },
+        {
           "id": "TP-012",
           "edge": "requires"
         }
@@ -1040,7 +1052,7 @@
       ],
       "summary": "DocOps ships through Homebrew, Scoop, and direct binary downloads. Once a user runs `docops init`, their project files (skills, schemas, AGENTS.md block) drift from upstream every time we cut a releas…",
       "word_count": 909,
-      "last_touched": "2026-04-22T19:48:15Z",
+      "last_touched": "2026-04-23T17:24:44Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1078,7 +1090,7 @@
       ],
       "summary": "DocOps writes its invariants (citation rules, no-edit-STATE.md, schema locations, etc.) into a delimited block in `AGENTS.md` so any coding agent — Claude Code, Cursor, Codex, Aider, Copilot, Windsurf…",
       "word_count": 555,
-      "last_touched": "2026-04-23T03:32:42Z",
+      "last_touched": "2026-04-23T17:24:44Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1113,6 +1125,37 @@
         },
         {
           "id": "TP-027",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "not-started",
+      "stale": false
+    },
+    {
+      "id": "ADR-0026",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0026-adr-implementation-delta-review-verify-shipped-cod.md",
+      "title": "ADR implementation delta review — verify shipped code matches decision",
+      "status": "draft",
+      "coverage": "required",
+      "date": "2026-04-23",
+      "related": [
+        "ADR-0010",
+        "ADR-0008",
+        "ADR-0018"
+      ],
+      "summary": "DocOps derives ADR `implementation` state from citing tasks (per ADR-0010): once every citing task is `done`, implementation flips to `done`. But \"all tasks done\" is not the same as \"the ADR's Decisio…",
+      "word_count": 401,
+      "last_touched": "2026-04-23T17:25:56Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-023",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-029",
           "edge": "requires"
         }
       ],
@@ -1877,16 +1920,17 @@
       "kind": "TP",
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-023-restore-docops-skills-for-next-search-get-list-gra.md",
-      "title": "Restore /docops:* skills for next, search, get, list, graph commands",
+      "title": "Restore /docops:* skills for read commands + add orchestration skills",
       "task_status": "backlog",
-      "priority": "p2",
+      "priority": "p1",
       "assignee": "unassigned",
       "requires": [
         "ADR-0013",
-        "ADR-0019"
+        "ADR-0019",
+        "ADR-0026"
       ],
       "summary": "Re-add shipped agent skills for the five CLI commands that landed in TP-011 (`search`) and TP-012 (`get`, `list`, `graph`, `next`) so the bundle satisfies TP-010/013's policy: a skill exists in `templ…",
-      "word_count": 346,
+      "word_count": 715,
       "last_touched": "2026-04-23T04:27:42Z",
       "age_days": 0,
       "stale": false
@@ -1998,6 +2042,24 @@
       "summary": "Make `make release VERSION=X.Y.Z DRY_RUN=1` actually be a dry run. Today it prints the \"would do\" lines and then runs the real `echo \u003e VERSION` / `git commit` / `git tag` / `git push` commands anyway.",
       "word_count": 425,
       "last_touched": "2026-04-23T08:42:57Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-029",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-029-implement-docops-review-reviewed-at-adr-field-stal.md",
+      "title": "Implement docops review — reviewed_at ADR field + stale-review detection",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0026"
+      ],
+      "summary": "Ship the CLI + schema work defined in ADR-0026 so that ADRs whose implementation has flipped to `done` can be review-marked against the shipped code.",
+      "word_count": 295,
+      "last_touched": "2026-04-23T17:28:19Z",
       "age_days": 0,
       "stale": false
     }
