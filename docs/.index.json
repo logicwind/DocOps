@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22T19:47:51Z",
+  "generated_at": "2026-04-23T03:32:23Z",
   "version": 1,
   "docs": [
     {
@@ -940,6 +940,10 @@
           "edge": "related"
         },
         {
+          "id": "ADR-0024",
+          "edge": "related"
+        },
+        {
           "id": "TP-018",
           "edge": "requires"
         },
@@ -998,9 +1002,13 @@
       ],
       "summary": "DocOps ships through Homebrew, Scoop, and direct binary downloads. Once a user runs `docops init`, their project files (skills, schemas, AGENTS.md block) drift from upstream every time we cut a releas…",
       "word_count": 909,
-      "last_touched": "2026-04-22T19:45:27Z",
+      "last_touched": "2026-04-22T19:48:15Z",
       "age_days": 0,
       "referenced_by": [
+        {
+          "id": "ADR-0024",
+          "edge": "related"
+        },
         {
           "id": "TP-018",
           "edge": "requires"
@@ -1011,6 +1019,32 @@
         },
         {
           "id": "TP-021",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "not-started",
+      "stale": false
+    },
+    {
+      "id": "ADR-0024",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0024-ship-claude-md-alongside-agents-md-both-share-the.md",
+      "title": "Ship CLAUDE.md alongside AGENTS.md — both share the docops block",
+      "status": "draft",
+      "coverage": "required",
+      "date": "2026-04-23",
+      "related": [
+        "ADR-0021",
+        "ADR-0023"
+      ],
+      "summary": "DocOps writes its invariants (citation rules, no-edit-STATE.md, schema locations, etc.) into a delimited block in `AGENTS.md` so any coding agent — Claude Code, Cursor, Codex, Aider, Copilot, Windsurf…",
+      "word_count": 555,
+      "last_touched": "2026-04-23T03:32:01Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-022",
           "edge": "requires"
         }
       ],
@@ -1662,7 +1696,7 @@
       ],
       "summary": "Ship the `docops upgrade` subcommand that pulls the current binary's shipped templates into an already-initialized project without clobbering `docops.yaml` or the pre-commit hook, per ADR-0021.",
       "word_count": 743,
-      "last_touched": "2026-04-22T18:02:14Z",
+      "last_touched": "2026-04-22T19:48:15Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1712,7 +1746,7 @@
       ],
       "summary": "Lift the helpers that `docops upgrade` will need to share with `docops init` out of `internal/initter/` and into a new `internal/scaffold/` package, with **zero behavior change**. Sets up TP-018 to la…",
       "word_count": 370,
-      "last_touched": "2026-04-22T19:47:02Z",
+      "last_touched": "2026-04-22T19:48:15Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1739,7 +1773,7 @@
       ],
       "summary": "Ship the update-check mechanism specified by ADR-0023: a small internal package, a standalone `docops update-check` subcommand, and integration into `docops upgrade` so users learn when their binary i…",
       "word_count": 647,
-      "last_touched": "2026-04-22T19:47:37Z",
+      "last_touched": "2026-04-22T19:48:15Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1750,6 +1784,24 @@
       "blocks": [
         "TP-018"
       ],
+      "stale": false
+    },
+    {
+      "id": "TP-022",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-022-write-claude-md-alongside-agents-md-in-init-and-up.md",
+      "title": "Write CLAUDE.md alongside AGENTS.md in init and upgrade",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0024"
+      ],
+      "summary": "Implement ADR-0024: docops writes both `CLAUDE.md` and `AGENTS.md` during `init` and refreshes both during `upgrade`. Both files share the same `\u003c!-- docops:start --\u003e … \u003c!-- docops:end --\u003e` block.",
+      "word_count": 395,
+      "last_touched": "2026-04-23T03:32:20Z",
+      "age_days": 0,
       "stale": false
     }
   ]
