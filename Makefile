@@ -44,8 +44,8 @@ release:
 	fi
 	@echo "$(VERSION)" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$$' || \
 		(echo "VERSION must match X.Y.Z (got $(VERSION))" && exit 2)
-	@if [ -n "$$(git status --porcelain)" ]; then \
-		echo "working tree not clean; commit or stash first"; exit 2; \
+	@if ! git diff-index --quiet HEAD --; then \
+		echo "tracked files have uncommitted changes; commit or stash first"; exit 2; \
 	fi
 	@branch=$$(git rev-parse --abbrev-ref HEAD); \
 	 if [ "$$branch" != "main" ]; then \
