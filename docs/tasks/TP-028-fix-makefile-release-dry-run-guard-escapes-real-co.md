@@ -1,11 +1,27 @@
 ---
 title: Fix Makefile release DRY_RUN — guard escapes, real commit/tag/push runs
-status: backlog
+status: done
 priority: p2
 assignee: unassigned
 requires: [ADR-0019]
 depends_on: []
 ---
+
+## Resolution — 2026-04-24 (commit feadefe)
+
+Applied **Option B**: collapsed the dry-run guard and the real-release
+commands into a single `\`-joined shell block. `exit 0` inside the
+`DRY_RUN=1` branch now aborts the whole sequence; the `echo > VERSION`
+/ `git commit` / `git tag` / `git push` lines share the same shell, so
+they never reach the interpreter when the guard fires. Added `set -e`
+so any failing real-release step stops the chain instead of racing
+past. Dry-run output now also prints a `re-run without DRY_RUN=1`
+footer.
+
+Skipped the scripts/ regression test (acceptance bullet 3) for now —
+low ROI relative to the single-line structural fix; re-add if this
+ever regresses.
+
 
 ## Goal
 
