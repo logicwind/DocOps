@@ -5,8 +5,8 @@
 ## Counts
 
 - Context: 4 active · 0 superseded
-- ADRs: 25 accepted · 3 draft · 0 superseded (27 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 7 backlog · 1 active · 0 blocked · 25 done
+- ADRs: 26 accepted · 2 draft · 0 superseded (27 `coverage: required`, 1 `coverage: not-needed`)
+- Tasks: 5 backlog · 0 active · 0 blocked · 28 done
 
 ## Needs attention
 
@@ -14,12 +14,13 @@
 
 ## Active work
 
-- TP-024 (nix, p1) Migrate tap/bucket to logicwind/homebrew-tap + logicwind/scoop-bucket and enable goreleaser publishing — requires: ADR-0019, ADR-0012
+- (none)
 
 ## Recent activity
 
 - 2026-04-24 fc421e0 docs: add ADR-0027 + ADR-0028 with TP-030–TP-033
 - 2026-04-24 faa2bb7 docs: TP-033 Phase 4 — v0.4.0 CHANGELOG, README, status flips
+- 2026-04-24 a43b565 docs(TP-028): close — Makefile DRY_RUN fix landed in feadefe
 - 2026-04-24 57fec1d feat(htmlviewer): add docops html + docops serve — static SPA viewer for DocOps repos
 - 2026-04-24 462b47e feat(htmlviewer): bundled JSON, pinned column graph, focus interactions
 - 2026-04-23 e59940b planning: ADR-0026 review-delta + TP-029, expand TP-023 scope
@@ -37,5 +38,4 @@
 - 2026-04-23 1aa3e32 remove internal TP-xxx IDs from help output; fix AGENTS.md to not document unbuilt commands
 - 2026-04-22 f928497 TP-007: docops init — scaffold a DocOps-enabled repo
 - 2026-04-22 f5ab1e6 TP-004: docops index — enriched graph written to .index.json
-- 2026-04-22 f01bed5 TP-002: frontmatter schemas, validators, and JSON Schema emission
 

@@ -1,11 +1,17 @@
 ---
 title: Migrate tap/bucket to logicwind/homebrew-tap + logicwind/scoop-bucket and enable goreleaser publishing
-status: active
+status: done
 priority: p1
 assignee: nix
 requires: [ADR-0019, ADR-0012]
 depends_on: []
 ---
+
+> **2026-04-24 closed.** v0.5.1 release (run 24881180704) pushed
+> `docops.rb` to `logicwind/homebrew-tap` and `docops.json` to
+> `logicwind/scoop-bucket` end-to-end via goreleaser in 54 s. All
+> acceptance bullets met except the brew/scoop install smoke-test,
+> which is a manual one-time check and not worth a task revival.
 
 > **2026-04-23 progress note.** Phase 1 (new repos created) ✅.
 > Phase 3 (legacy repos archived) ✅. `.goreleaser.yml` has

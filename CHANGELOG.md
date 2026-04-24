@@ -2,6 +2,19 @@
 
 All notable changes to docops are recorded here. Dates are UTC.
 
+## v0.5.1 — 2026-04-24
+
+### Fixed
+
+- **`make release VERSION=X.Y.Z DRY_RUN=1`** is now actually a dry run.
+  The guard's `exit 0` previously only exited its own subshell — Make
+  kept going and ran the real `echo > VERSION` / `git commit` /
+  `git tag` / `git push` lines anyway. The guard and the real-release
+  sequence now share one `\`-joined shell block with `set -e`, so
+  `DRY_RUN=1` stops cleanly before any side-effect runs. Closes TP-028.
+
+No library, SPA, or CLI behaviour changed in this release.
+
 ## v0.5.0 — 2026-04-24
 
 ### Added — `docops html` and `docops serve` (TP-030, TP-031, ADR-0027)

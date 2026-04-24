@@ -1,11 +1,19 @@
 ---
 title: Implement docops serve — localhost viewer server
-status: backlog
+status: done
 priority: p2
 assignee: unassigned
 requires: [ADR-0027]
 depends_on: [TP-030]
 ---
+
+## Shipped — v0.5.0 (2026-04-24)
+
+Implementation lives in `internal/htmlviewer/serve.go` +
+`cmd/docops/cmd_serve.go`. `docops serve [--port N] [--open] [--json]`
+listens on `127.0.0.1:8484` by default, serves the embedded SPA plus
+a freshly-rebuilt `/index.json` on every request, and exits cleanly on
+SIGINT/SIGTERM.
 
 ## Goal
 

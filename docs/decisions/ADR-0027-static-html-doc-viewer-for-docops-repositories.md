@@ -1,6 +1,6 @@
 ---
 title: Static HTML doc viewer for DocOps repositories
-status: draft
+status: accepted
 coverage: required
 date: "2026-04-24"
 supersedes: []

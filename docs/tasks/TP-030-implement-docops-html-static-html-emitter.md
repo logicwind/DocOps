@@ -1,11 +1,18 @@
 ---
 title: Implement docops html — static SPA viewer emitter
-status: backlog
+status: done
 priority: p2
 assignee: unassigned
 requires: [ADR-0027]
 depends_on: []
 ---
+
+## Shipped — v0.5.0 (2026-04-24)
+
+Implementation lives in `internal/htmlviewer/` (`spa.go`, `bundle.go`,
+`emit.go`, `index.html`) and `cmd/docops/cmd_html.go`. `docops html
+[--output PATH] [--base-url URL] [--json]` emits exactly two files
+(`index.html` + `index.json`) into the output directory.
 
 ## Goal
 
