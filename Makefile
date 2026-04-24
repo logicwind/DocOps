@@ -57,19 +57,22 @@ release:
 	@if git ls-remote --exit-code --tags origin "refs/tags/v$(VERSION)" >/dev/null 2>&1; then \
 		echo "tag v$(VERSION) already exists on origin"; exit 2; \
 	fi
-	@if [ -n "$(DRY_RUN)" ]; then \
+	@set -e; \
+	if [ -n "$(DRY_RUN)" ]; then \
 		echo "[dry-run] would write '$(VERSION)' to VERSION"; \
 		echo "[dry-run] would commit: chore: release v$(VERSION)"; \
-		echo "[dry-run] would tag: v$(VERSION)"; \
-		echo "[dry-run] would push: main + v$(VERSION) to origin"; \
+		echo "[dry-run] would tag:    v$(VERSION)"; \
+		echo "[dry-run] would push:   main + v$(VERSION) to origin"; \
+		echo; \
+		echo "[dry-run] re-run without DRY_RUN=1 to perform the release."; \
 		exit 0; \
-	fi
-	echo "$(VERSION)" > VERSION
-	git add VERSION
-	git commit -m "chore: release v$(VERSION)"
-	git tag -a "v$(VERSION)" -m "v$(VERSION)"
-	git push origin main
-	git push origin "v$(VERSION)"
-	@echo
-	@echo "v$(VERSION) tagged and pushed. Watch the release workflow:"
-	@echo "  gh run watch"
+	fi; \
+	echo "$(VERSION)" > VERSION; \
+	git add VERSION; \
+	git commit -m "chore: release v$(VERSION)"; \
+	git tag -a "v$(VERSION)" -m "v$(VERSION)"; \
+	git push origin main; \
+	git push origin "v$(VERSION)"; \
+	echo; \
+	echo "v$(VERSION) tagged and pushed. Watch the release workflow:"; \
+	echo "  gh run watch"
