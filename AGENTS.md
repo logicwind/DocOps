@@ -123,7 +123,7 @@ docops audit                      structural coverage gaps
 docops refresh                    validate + index + state in one pass
 docops schema                     (re)write docs/.docops/schema/*.schema.json
 
-docops list [--type ctx|adr|task] [--status ...] [--tag ...]
+docops list [--kind CTX|ADR|TP] [--status ...] [--tag ...]
 docops get <ID>                   look up one doc by ID
 docops graph <ID>                 typed edge graph from a starting doc
 docops next                       recommend the next task
