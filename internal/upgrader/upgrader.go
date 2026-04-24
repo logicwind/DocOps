@@ -34,6 +34,13 @@ type Options struct {
 	Hook bool
 	// Out is the human-readable progress sink; defaults to os.Stdout.
 	Out io.Writer
+	// Harnesses, if non-nil, restricts the upgrade to exactly this slug
+	// set. nil means "use every registered harness" (the library default,
+	// which tests rely on). The CLI does harness detection and passes an
+	// explicit non-nil slice; library callers can do the same or leave
+	// the field nil to write to every registered target. An empty
+	// non-nil slice means "no harnesses" (skip all slash-command writes).
+	Harnesses []string
 }
 
 // Result mirrors initter.Result: the planned/applied actions in order.
@@ -102,7 +109,7 @@ func Run(opts Options) (*Result, error) {
 	// docops-owned harness dir so subsequent upgrades scope deletions
 	// correctly. Failures here are logged but do not fail the upgrade
 	// — manifest is best-effort metadata.
-	for _, h := range registeredHarnesses() {
+	for _, h := range resolveHarnesses(opts.Harnesses) {
 		mdir := h.ManifestDir()
 		var names []string
 		if h.Layout() == LayoutNestedSkillDir {
@@ -258,7 +265,7 @@ func plan(opts Options) ([]scaffold.Action, error) {
 	}
 	sort.Strings(shippedCmds)
 
-	for _, h := range registeredHarnesses() {
+	for _, h := range resolveHarnesses(opts.Harnesses) {
 		hActions, err := planHarness(opts, h, shippedSkills, shippedCmds)
 		if err != nil {
 			return nil, err

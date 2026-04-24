@@ -2,6 +2,7 @@ package upgrader
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 )
 
@@ -109,9 +110,11 @@ type claudeAdapter struct{}
 func (claudeAdapter) Slug() string     { return "claude" }
 func (claudeAdapter) LocalDir() string { return ".claude/commands" }
 func (claudeAdapter) GlobalDir() (string, bool) {
-	// Claude Code's global dir is ~/.claude/commands.
-	// Returning ok=false for now — Phase 3 will wire global-dir detection.
-	return "", false
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", false
+	}
+	return filepath.Join(home, ".claude", "commands"), true
 }
 func (claudeAdapter) Layout() Layout { return LayoutNestedFile }
 func (claudeAdapter) FilenameFor(cmd string) string {
@@ -140,9 +143,11 @@ type cursorAdapter struct{}
 func (cursorAdapter) Slug() string     { return "cursor" }
 func (cursorAdapter) LocalDir() string { return ".cursor/commands" }
 func (cursorAdapter) GlobalDir() (string, bool) {
-	// Cursor has a global dir at ~/.cursor/commands but Phase 3
-	// handles global-dir detection; return ok=false for now.
-	return "", false
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", false
+	}
+	return filepath.Join(home, ".cursor", "commands"), true
 }
 func (cursorAdapter) Layout() Layout { return LayoutNestedFile }
 func (cursorAdapter) FilenameFor(cmd string) string {
@@ -189,6 +194,77 @@ func harnessLocalDirs() []string {
 		dirs[i] = h.LocalDir()
 	}
 	return dirs
+}
+
+// resolveHarnesses returns the harness slice to use for an upgrade run
+// given the Options.Harnesses field. nil means "every registered
+// harness" (the library default; preserves existing test semantics).
+// Non-nil filters the registry to exactly the given slugs, in registry
+// order. Unknown slugs are silently skipped — the CLI validates slugs
+// before delegating.
+func resolveHarnesses(selected []string) []Harness {
+	if selected == nil {
+		return registeredHarnesses()
+	}
+	wanted := make(map[string]bool, len(selected))
+	for _, s := range selected {
+		wanted[s] = true
+	}
+	var out []Harness
+	for _, h := range registry {
+		if wanted[h.Slug()] {
+			out = append(out, h)
+		}
+	}
+	return out
+}
+
+// DetectInstalledHarnesses returns the slugs of every registered
+// harness that is "present" — either a project-local dir exists under
+// root, or the user-level GlobalDir() exists on the machine. This is
+// the signal the CLI uses to decide which harnesses to write to when
+// the user has not passed --harnesses.
+//
+// A harness whose GlobalDir returns ok=false and whose LocalDir does
+// not exist returns false here. Detection is best-effort: stat errors
+// other than NotExist are treated as "not installed" to avoid aborting
+// an upgrade on permission problems.
+func DetectInstalledHarnesses(root string) []string {
+	var out []string
+	for _, h := range registry {
+		if harnessInstalled(h, root) {
+			out = append(out, h.Slug())
+		}
+	}
+	return out
+}
+
+// KnownHarnessSlugs returns the slugs of every registered harness in
+// registry order. Used by the CLI for flag validation and --no-<slug>
+// flag generation.
+func KnownHarnessSlugs() []string {
+	out := make([]string, 0, len(registry))
+	for _, h := range registry {
+		out = append(out, h.Slug())
+	}
+	return out
+}
+
+// harnessInstalled reports whether the given harness has any install
+// evidence — either a project-local dir, a global config dir that
+// exists on disk, or an env-var-driven global dir (e.g. CODEX_HOME).
+func harnessInstalled(h Harness, root string) bool {
+	if root != "" {
+		if fi, err := os.Stat(filepath.Join(root, h.LocalDir())); err == nil && fi.IsDir() {
+			return true
+		}
+	}
+	if path, ok := h.GlobalDir(); ok {
+		if fi, err := os.Stat(path); err == nil && fi.IsDir() {
+			return true
+		}
+	}
+	return false
 }
 
 // FilenameForLayout returns the filename for cmd under the given layout,

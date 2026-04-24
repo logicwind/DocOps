@@ -31,8 +31,13 @@ func cmdUpgrade(args []string) int {
 	asJSON := fs.Bool("json", false, "emit a JSON action plan instead of human output")
 	yes := fs.Bool("yes", false, "skip the interactive confirm prompt")
 	fs.BoolVar(yes, "y", false, "skip the interactive confirm prompt (short form)")
+	harnessesFlag := fs.String("harnesses", "", "comma-separated list of harness slugs to write to (default: auto-detect). Known: "+strings.Join(upgrader.KnownHarnessSlugs(), ","))
+	noFlags := make(map[string]*bool, len(upgrader.KnownHarnessSlugs()))
+	for _, slug := range upgrader.KnownHarnessSlugs() {
+		noFlags[slug] = fs.Bool("no-"+slug, false, "skip the "+slug+" harness for this upgrade")
+	}
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: docops upgrade [--dry-run] [--yes] [--config] [--hook] [--json]")
+		fmt.Fprintln(os.Stderr, "usage: docops upgrade [--dry-run] [--yes] [--config] [--hook] [--json] [--harnesses <list>] [--no-<slug>]")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(args); err != nil {
@@ -48,15 +53,22 @@ func cmdUpgrade(args []string) int {
 		return 2
 	}
 
+	selected, err := resolveSelectedHarnesses(cwd, *harnessesFlag, noFlags)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "docops upgrade: %v\n", err)
+		return 2
+	}
+
 	// Plan first. We always run the planner in dry-run mode internally
 	// so we can decide whether to prompt and what to print before
 	// committing to disk.
 	plan, err := upgrader.Run(upgrader.Options{
-		Root:   cwd,
-		DryRun: true,
-		Config: *cfg,
-		Hook:   *hook,
-		Out:    io.Discard,
+		Root:      cwd,
+		DryRun:    true,
+		Config:    *cfg,
+		Hook:      *hook,
+		Out:       io.Discard,
+		Harnesses: selected,
 	})
 	if err != nil {
 		return reportUpgradeError(err)
@@ -105,15 +117,67 @@ func cmdUpgrade(args []string) int {
 		out = io.Discard
 	}
 	if _, err := upgrader.Run(upgrader.Options{
-		Root:   cwd,
-		DryRun: false,
-		Config: *cfg,
-		Hook:   *hook,
-		Out:    out,
+		Root:      cwd,
+		DryRun:    false,
+		Config:    *cfg,
+		Hook:      *hook,
+		Out:       out,
+		Harnesses: selected,
 	}); err != nil {
 		return reportUpgradeError(err)
 	}
 	return 0
+}
+
+// resolveSelectedHarnesses turns the --harnesses / --no-<slug> flag
+// state into the Options.Harnesses slice the upgrader expects.
+//
+//   - If --harnesses is non-empty, the comma-split list is used verbatim
+//     (with per-slug validation and --no-<slug> subtraction applied).
+//   - If --harnesses is empty, auto-detection runs: every registered
+//     harness whose project-local or global dir is present on disk.
+//     --no-<slug> subtracts from the detected set.
+//
+// Returns a non-nil slice (possibly empty) so the library treats the
+// selection as "explicit" rather than "library default = all". Unknown
+// slugs in --harnesses are a hard error; --no-<slug> for a slug that
+// is not selected is silently ignored.
+func resolveSelectedHarnesses(root, harnessesFlag string, noFlags map[string]*bool) ([]string, error) {
+	known := make(map[string]bool, len(upgrader.KnownHarnessSlugs()))
+	for _, s := range upgrader.KnownHarnessSlugs() {
+		known[s] = true
+	}
+
+	var base []string
+	if strings.TrimSpace(harnessesFlag) != "" {
+		for _, s := range strings.Split(harnessesFlag, ",") {
+			s = strings.TrimSpace(s)
+			if s == "" {
+				continue
+			}
+			if !known[s] {
+				return nil, fmt.Errorf("unknown harness slug %q (known: %s)", s, strings.Join(upgrader.KnownHarnessSlugs(), ", "))
+			}
+			base = append(base, s)
+		}
+	} else {
+		base = upgrader.DetectInstalledHarnesses(root)
+	}
+
+	disabled := make(map[string]bool, len(noFlags))
+	for slug, ptr := range noFlags {
+		if ptr != nil && *ptr {
+			disabled[slug] = true
+		}
+	}
+
+	out := make([]string, 0, len(base))
+	for _, s := range base {
+		if !disabled[s] {
+			out = append(out, s)
+		}
+	}
+	return out, nil
 }
 
 func reportUpgradeError(err error) int {
