@@ -10,107 +10,142 @@ tags: []
 
 ## Context
 
-Agents and humans browsing a DocOps repository today see markdown files in a terminal or file tree. Raw markdown is functional but lacks the cross-referencing, navigation, and readability of rendered HTML — especially when reviewing the relationship graph (supersedes, related, requires edges) or comparing frontmatter across many documents.
+Agents and humans browsing a DocOps repository today see markdown files in a terminal or file tree. Raw markdown is functional but lacks the cross-referencing, navigation, and readability of rendered HTML — especially when tracing relationship edges (`supersedes`, `related`, `requires`, `depends_on`) or jumping from an inline `ADR-0014` reference in one doc to the doc itself.
 
-ADR-0014 explicitly listed "No web UI" as a non-goal, calling it "Backlog.md / Linear's domain." That exclusion was aimed at hosted SaaS dashboards, issue trackers, and project-management web apps — heavy infrastructure that contradicts DocOps' substrate identity. A self-contained HTML viewer emitted by the CLI is a different category. It is closer to `godoc`, `rustdoc`, or `cargo doc`: a zero-dependency, locally rendered, offline-capable view of documentation that already exists in the repo.
+ADR-0014 listed "No web UI" as a non-goal, aimed at hosted SaaS dashboards — heavy infrastructure that contradicts DocOps' substrate identity. A locally rendered viewer emitted by the CLI is a different category: closer to `godoc` / `cargo doc` — a zero-infrastructure view of documentation that already exists in the repo.
 
-The CLI already ships a read query layer (ADR-0018: `docops list`, `docops get`, `docops graph`). The HTML viewer is a presentation layer over the same data — not a new data surface, not a hosted service, not a multi-user dashboard.
+The CLI already ships a read query layer (ADR-0018: `docops list`, `docops get`, `docops graph`) and an enriched graph JSON (`docs/.index.json`). The viewer is a presentation layer over the same data — not a new data surface, not a hosted service, not a multi-user dashboard.
 
-ADR-0012's appendix selected Go as the implementation language and vetted `goldmark` for markdown AST. Go's `html/template` is stdlib. No new language or runtime is needed.
+An earlier draft of this ADR specified Go-side rendering via `goldmark` with per-document HTML files emitted by the CLI, fully inlined CSS, and no JavaScript. Before any implementation landed we pivoted (see "Amendment 2026-04-24" below). The sections below describe the shipping design.
 
 ## Decision
 
-Two new CLI subcommands serve a static HTML view of the current repository's DocOps documents:
+Two new CLI subcommands expose a **single-page web viewer** for the current repository:
 
 ```
-docops html   — one-shot emitter; writes a directory of self-contained HTML files
-docops serve  — localhost dev server with auto-rebuild on file change
+docops html    — emit a self-contained viewer directory (SPA + data)
+docops serve   — localhost HTTP server that serves the same viewer
 ```
 
-### `docops html`
+The viewer is **one HTML file**. All rendering, navigation, and graph layout happen client-side. Go's job is to emit data and serve files.
 
-Emits a directory (default `docs/.html/`, configurable via `--output`) containing:
+### Architecture
 
-| File | Content |
+```
+┌─────────────────────────────────────────────┐
+│  Go CLI (docops)                            │
+│    - fresh-builds docs/.index.json          │
+│    - copies embedded index.html             │
+│    - exposes raw .md bodies                 │
+└─────────────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────┐
+│  Browser (one index.html, ~400 lines)       │
+│    - fetches .index.json                    │
+│    - sidebar: grouped tree (CTX / ADR / TP) │
+│    - right pane: rendered markdown body     │
+│    - graph tab: Cytoscape.js                │
+│    - hash routing (#/adr/ADR-0027)          │
+└─────────────────────────────────────────────┘
+```
+
+### What Go emits
+
+`docops html --output docs/.html/` writes:
+
+| File | Purpose |
 |---|---|
-| `index.html` | STATE overview + per-kind document listings with status badges and links |
-| `ctx/{ID}.html` | Context detail — frontmatter table + rendered markdown body + reverse-edge links |
-| `adr/{ID}.html` | ADR detail — frontmatter table + rendered markdown body + amendments section + reverse-edge links |
-| `task/{ID}.html` | Task detail — frontmatter table + rendered markdown body + dependency/requires links |
-| `state.html` | Full STATE.md rendered as HTML |
+| `index.html` | The SPA. Shared code, embedded via `embed.FS` at compile time. |
+| `index.json` | Copy of `docs/.index.json` with an IDs→path map for raw bodies. |
+| `state.md` | Copy of `docs/STATE.md` (the SPA renders it on the Home view). |
+| `raw/<path>` | Verbatim copies of every CTX/ADR/TP markdown file. The SPA fetches these and renders client-side. |
 
-Flags:
-- `--output <dir>` — output directory (default: `docs/.html`)
-- `--base-url <url>` — rewrite relative links for hosting (e.g. GitHub Pages, custom domain)
-- `--json` — emit `{ "files_written": N, "output_dir": "..." }`
+That's it. No per-doc HTML. No template fan-out. No CSS asset pipeline.
 
-### `docops serve`
+`docops serve` serves the same layout from memory — the SPA is served from the embedded bytes, `/index.json` is rebuilt on each request via `internal/index.Build()`, and `/raw/<path>` reads the file from disk. No fsnotify, no live reload — the browser re-fetches on page load, which is sufficient for a dev viewer and avoids the complexity of SSE + debouncing.
 
-Starts a localhost HTTP server that renders the same HTML from memory (no intermediate file writes), watches `docs/` recursively via `fsnotify`, and auto-rebuilds affected pages on any change.
+### The SPA
 
-Flags:
-- `--port <int>` — port number (default: 8484)
-- `--no-watch` — disable auto-rebuild; serve static output from a prior `docops html` run
-- `--open` — open the default browser after startup
-- `--json` — emit `{ "url": "http://localhost:...", "watch": true }`
+One HTML file with three external `<script>`/`<link>` tags, all from jsDelivr:
 
-Default URL: `http://localhost:8484/`
-
-### Technology choices
-
-| Component | Choice | Rationale |
+| Library | Purpose | Approx. size gzipped |
 |---|---|---|
-| Markdown rendering | `github.com/yuin/goldmark` | Already vetted in ADR-0012 appendix. Zero-cgo, active maintenance. |
-| HTML generation | Go `html/template` | Stdlib. Type-safe escaping. No build step. |
-| CSS | Fully inlined per page | Zero external deps. Works offline. No CDN links. Embedded in Go source via `embed.FS`. |
-| File watching | `github.com/fsnotify/fsnotify` | De-facto Go standard for filesystem events. Cross-platform. |
-| GFM extensions | goldmark-extension tables, autolink, heading-id, strikethrough | Match the markdown conventions DocOps docs already use. |
+| `tailwindcss` (play CDN) | Styling. Zero build step. | ~50 KB |
+| `marked` | Markdown → HTML. | ~30 KB |
+| `cytoscape` | Graph layout and interaction. | ~120 KB |
+
+Total first-load cost: well under 250 KB gzipped, browser-cached after first visit. Compared to the Go-side plan (goldmark + fsnotify + embedded CSS, ~1 MB of extra binary), this trades a one-time network fetch for a smaller Go binary and a far better interactive graph.
+
+Structure:
+
+- **Left sidebar** — reads `index.json`, groups by kind (CTX / ADR / TP), collapsible sections, search box, status badges. Click to load into right pane. Current doc highlighted.
+- **Right pane**:
+  - Breadcrumb (Home > ADR > ADR-0027).
+  - Frontmatter table — every field rendered as key/value; arrays of IDs linkified to other docs.
+  - Rendered markdown body via `marked`.
+  - After rendering, a regex pass linkifies every bare `ADR-\d+`, `CTX-\d+`, `TP-\d+` token in the body to its detail view.
+- **Graph tab** — Cytoscape.js renders the full index graph; clicking a node routes to its detail view. Edge colors keyed by type (`supersedes`, `related`, `requires`, `depends_on`).
+- **URL routing** — `#/`, `#/state`, `#/ctx/CTX-001`, `#/adr/ADR-0027`, `#/task/TP-030`, `#/graph`. Deep-links from terminal output / chat work.
+- **Home view** — STATE.md (fetched + rendered via `marked`) + per-kind count tiles.
+
+### Command flags
+
+`docops html`:
+
+| Flag | Default | Description |
+|---|---|---|
+| `--output` / `-o` | `docs/.html` | Output directory (created if absent; contents replaced if present). |
+| `--base-url` | (empty) | Path prefix for all data fetches (for hosting behind a subpath). |
+| `--json` | off | Emit `{ "files_written": N, "output_dir": "..." }` to stdout. |
+
+`docops serve`:
+
+| Flag | Default | Description |
+|---|---|---|
+| `--port` / `-p` | `8484` | Port to listen on. |
+| `--open` | off | Open the default browser after startup. |
+| `--json` | off | Emit `{ "url": "http://localhost:...", "port": N }`. |
 
 ### Design principles
 
-1. **Self-contained.** Every HTML page works with zero network access. CSS, navigation, and content are in a single file. No JS framework, no build chain, no CDN.
-2. **CLI-first.** The viewer is a CLI subcommand, not a separate application. Consistent with ADR-0011.
-3. **Offline-capable.** Open a file in a browser on an airplane. No server required (after `docops html`).
-4. **Read-layer consumer.** The viewer calls the same `internal/index` and `internal/loader` packages that power `docops list`/`get`/`graph`. It never reads `.index.json` directly — honoring ADR-0018.
-5. **Hostable.** `--base-url` + static files means the output works on GitHub Pages, Netlify, S3, or any static host with zero configuration.
-
-### Visual structure
-
-Each page shares a common chrome:
-- Top nav: Home / Context / Decisions / Tasks
-- Breadcrumb: Home > ADR > ADR-0027
-- Sidebar (detail pages): graph sidebar showing related/supersedes/requires links
-- Footer: generated-by timestamp + docops version
-
-Per-kind accent colors:
-| Kind | Accent |
-|---|---|
-| CTX | Blue |
-| ADR | Amber/Gold |
-| TP | Green |
+1. **Light on the Go side.** Go ships data and one HTML file. No markdown rendering, no templating, no file watching, no SSE.
+2. **CLI-first.** Still two subcommands — consistent with ADR-0011.
+3. **Single HTML file.** The SPA is one file, human-readable, ~400 lines. Edit it in any editor. No bundler.
+4. **CDN for libs.** Tailwind / `marked` / `cytoscape` come from jsDelivr. Modern browsers cache them across sites. Vendoring locally is one config flag away if needed later.
+5. **Read-layer consumer.** `docops html` and `docops serve` both call `internal/index.Build()` — the same code path as `docops index` / `docops get` / `docops graph`. The viewer never reads `docs/.index.json` directly from Go (honors ADR-0018). The browser *does* fetch `index.json`, which is the emitted JSON artifact — a deliberate, documented surface.
 
 ## Rationale
 
-- **goldmark is already approved.** ADR-0012's appendix named it as the markdown AST library. Adding it to `go.mod` is a known quantity, not a new vetting event.
-- **fsnotify is the only new dependency** beyond goldmark. It is cross-platform, well-maintained, and widely used in the Go ecosystem (Hugo, Air, etc.). Compiles to ~200 KB in the binary.
-- **Self-contained HTML** matches the no-runtime-deps promise of ADR-0012. Users open a file in any browser without network or a running server.
-- **Two commands** split the "I need static files to deploy" (`docops html`) from "I want live preview while editing" (`docops serve`). Neither requires the other.
-- **Data via read layer** means the viewer automatically picks up every improvement to the CLI's query surface (new filters, new derived fields) without duplicating logic.
+- **Client-side rendering avoids goldmark entirely.** `marked` is a single JS file, ~30 KB gzipped, handles GFM, fast, well-maintained. No Go dependency, no binary bloat, theme tweaks are edits to one HTML file instead of recompiles.
+- **Cytoscape.js gives a real graph for free.** Zoom, pan, layout engine, click-to-navigate. Doing the equivalent in Go-rendered static HTML would require SVG generation and hand-rolled layout.
+- **One HTML file is maintainable.** No build system, no framework lock-in, no transpilation. Any future maintainer can read it top-to-bottom.
+- **Tailwind via CDN is zero-config.** The play CDN compiles on the fly from class names in the HTML. No `postcss`, no `npm`, no `tailwind.config.js`. Acceptable for a dev viewer; we can switch to a static `tailwind.css` build artifact later if we ever need pure-offline.
+- **No live reload in v1.** The editor-save → browser-refresh loop is a manual refresh. This cuts fsnotify + SSE + debouncing + reconnect logic entirely. If users ask for it, it's a ~30-line addition later.
 
 ## Consequences
 
-- **ADR-0014's "No web UI" clause is superseded.** The supersession is scoped: only the "web UI" non-goal is reversed. ADR-0014's other non-goals (no orchestration, no personas, no code generation, no execution harness, no automated PRs) remain intact.
-- **Binary size** increases by goldmark (~500 KB compiled) + goldmark extensions (~100 KB) + fsnotify (~200 KB) + embedded CSS (~15 KB). Total delta under 1 MB — well within ADR-0012's 30 MB target.
-- **Two new subcommands** are permanent CLI surface. They must be documented, tested, and maintained across schema changes.
-- **CSS is embedded** in the compiled binary via Go's `embed.FS`. Theme changes require a recompile. This is acceptable for a standalone binary — users don't edit the binary's CSS.
-- **No search UI** in v1. The viewer renders what `docops list`/`get` return. Full-text search in the browser is a future enhancement (could use client-side lunr.js or similar, but that adds JS — out of scope for v1).
-- **`docs/.html/`** should be added to `.gitignore` by default. It is a generated artifact, like `docs/.index.json`, but not committed (it is too large and changes too frequently). The user may opt in to committing it for GitHub Pages deployment.
-- **Amendments rendering** — if ADR-0025/TP-026 ships before the viewer, ADR detail pages render the amendments section. If not, the viewer ships without amendment support and gains it when TP-026 lands (the read layer handles it transparently).
+- **ADR-0014's "No web UI" clause is superseded.** Scoped: only the "web UI" non-goal is reversed. ADR-0014's other non-goals (no orchestration, no personas, no code generation, no execution harness, no automated PRs) remain intact.
+- **First load needs network access** to fetch Tailwind / marked / Cytoscape from jsDelivr. After that, the browser cache handles it. For truly offline use, users can either (a) pre-warm the browser cache, or (b) wait for a future `--vendor` flag that inlines the libs. This is a conscious tradeoff for binary size and render quality.
+- **Binary delta is tiny** — one embedded HTML file (~15 KB) plus ~60 lines of Go for each of `cmd_html` and `cmd_serve`. No new Go dependencies.
+- **Two new subcommands** are permanent CLI surface. They must be documented, tested, and maintained across schema changes — but the maintenance surface is the SPA, not template packages.
+- **`docs/.html/`** should be added to `.gitignore` by default. Users may opt in to committing it for GitHub Pages deployment (the output directory is a working static site).
+- **Amendments rendering** is transparent — `internal/index.IndexedDoc` already has an `Amendments` field (once TP-026 lands); the SPA renders it if present, skips it if absent. No ADR coupling.
+
+## Amendment 2026-04-24 — shifted to client-side SPA
+
+The original draft of this ADR specified Go-side rendering with `goldmark`, per-doc HTML files, fully inlined CSS, and no JavaScript. Before any code landed, we reconsidered:
+
+- The sidebar / detail-pane UX the user wanted needs interactive navigation (search, collapse, auto-linkify, current-doc highlight). Server-rendered static HTML makes this awkward; JS makes it natural.
+- The graph view was the strongest motivator. A real force-directed graph with click-to-navigate is trivial with Cytoscape.js and ~100 lines of Go to hand-draw an SVG fallback.
+- The Go binary stays slim and the SPA stays editable as a plain file.
+
+The decision (ship a CLI-launched HTML viewer) is unchanged; the implementation strategy pivoted before any code was written. The "Rationale" and "Consequences" sections above reflect the SPA direction. This amendment is noted inline (per ADR-0025 convention) because (a) the ADR is still `draft`, so no immutable contract was broken, and (b) the pivot is worth recording so future readers don't wonder why the ADR lost its goldmark references.
 
 ## Rollout
 
 1. This ADR lands `draft`.
-2. **TP-030** — implement `docops html` (emitter + goldmark + templates + CSS).
-3. **TP-031** — implement `docops serve` (HTTP server + fsnotify watch + live reload), depends on TP-030's rendering package.
-4. **TP-032** — finalize CSS theme and embed it properly (depends on TP-030 for integration).
-5. ADR promoted to `accepted` once TP-030 ships and the first `docops html` run produces valid output end-to-end.
+2. **TP-030** — implement `docops html` (SPA copy + index.json + state.md + raw bodies).
+3. **TP-031** — implement `docops serve` (localhost HTTP server over the same data), depends on TP-030's `internal/htmlviewer` package.
+4. **TP-032** is obsolete under the SPA approach (no Go-side CSS theme to design) — closed out via TP-030.
+5. ADR promoted to `accepted` once TP-030 ships and the first `docops html` run produces a viewer that loads against this repo's documents.

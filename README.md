@@ -1,10 +1,57 @@
-# docops
+<div align="center">
 
-*An open-source project by [Logicwind](https://logicwind.com). Source: [github.com/logicwind/DocOps](https://github.com/logicwind/DocOps).*
+# DocOps
 
-Typed project-state substrate for LLM-first software development. Three doc types (Context, Decision, Task) in markdown + YAML frontmatter, a computed index, a small CLI, and a coverage audit — designed so any coding agent can load a repo and know what's been decided, what's pending, and what to do next.
+**Typed project-state substrate for LLM-first development**
 
-**Status:** v0.1.0 — `init`, `validate`, `index`, `state`, `audit`, `new`, `schema` are shipped. `next`, `get`, `list`, `graph`, `status`, `search`, `review` are on the roadmap. See `docs/STATE.md` for the current backlog.
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/logicwind/docops)](https://goreportcard.com/report/github.com/logicwind/docops)
+[![GitHub Release](https://img.shields.io/github/v/release/logicwind/DocOps?include_prereleases)](https://github.com/logicwind/DocOps/releases)
+
+[Install](#install) · [Quickstart](#quickstart) · [How it works](#how-it-works) · [CLI reference](#cli-reference) · [Developing](#developing-on-docops-itself)
+
+</div>
+
+---
+
+> **DocOps is in active development.** The core CLI commands (`init`, `validate`, `index`, `state`, `audit`, `new`, `schema`, `refresh`, `get`, `list`, `graph`, `next`, `search`, `upgrade`) are shipped and stable. Additional commands (`serve`, `html`, `amend`, `review`, `status`) are on the roadmap — see [`docs/STATE.md`](docs/STATE.md) for what's live and what's coming.
+
+## Why DocOps?
+
+Coding agents (Claude Code, Cursor, Aider, Codex, Copilot CLI, Windsurf) land in a repo and immediately ask: *what are we building, what was decided, and what's next?* When that context lives in Slack threads, Jira tickets, or tribal knowledge, agents — and humans — guess.
+
+DocOps puts three document types in `docs/`, typed with YAML frontmatter, linked with explicit edges, and validated by a CLI:
+
+| Type | Folder | Holds | Example |
+|---|---|---|---|
+| **Context** | `docs/context/` | Stakeholder inputs — PRDs, memos, research, interview notes | Product brief, user research |
+| **Decision** | `docs/decisions/` | Architecture and process decisions (ADR format) | "Use SQLite for local state" |
+| **Task** | `docs/tasks/` | Units of work that cite ≥1 decision or context | "Wire up SQLite per ADR-0012" |
+
+The key invariant: **every task must cite at least one decision or context document.** `docops validate` enforces this. This is the alignment contract — it prevents drift between "what we're building" and "what we said we'd build."
+
+No other tool in the space enforces this.
+
+## How it works
+
+```
+docs/
+  context/CTX-001-vision.md      ← stakeholder intent
+  decisions/ADR-0001-pick-db.md   ← how we chose
+  tasks/TP-003-wire-sqlite.md    ← what to build (cites ADR-0001)
+  .index.json                    ← computed graph (don't edit)
+  STATE.md                       ← generated snapshot (don't edit)
+docops.yaml                      ← project config (context types, gap thresholds)
+```
+
+1. **`docops init`** scaffolds the folder structure, schemas, agent skills, and `AGENTS.md` into any git repo.
+2. **`docops new`** creates documents with auto-allocated IDs and validated frontmatter.
+3. **`docops validate`** checks schema and graph invariants (citations resolve, no dangling refs, task alignment rule).
+4. **`docops index`** builds the enriched graph; **`docops state`** generates a human-readable snapshot.
+5. **`docops audit`** finds structural gaps: accepted decisions with no tasks, stalled tasks, stale reviews.
+6. **Agents read `STATE.md` → pick a task → read its cited ADRs → code → update status → `docops refresh`.**
+
+The CLI is the query and mutation API. Every read command supports `--json` for scripting. See [ADR-0018](docs/decisions/ADR-0018-cli-as-query-layer.md) for the design rationale.
 
 ## Install
 
@@ -13,9 +60,6 @@ Typed project-state substrate for LLM-first software development. Three doc type
 ```sh
 brew install logicwind/tap/docops
 ```
-
-Formula lives in the shared org tap `logicwind/homebrew-tap` alongside
-other Logicwind CLIs.
 
 ### Windows (Scoop)
 
@@ -26,84 +70,62 @@ scoop install docops
 
 ### Direct download
 
-Grab the archive for your platform from [GitHub Releases](https://github.com/logicwind/DocOps/releases), extract, put `docops` on your PATH.
+Grab the archive for your platform from [GitHub Releases](https://github.com/logicwind/DocOps/releases), extract, and put `docops` on your PATH.
 
-### Docker (planned)
+### Docker and npm
 
-A GHCR image lands in a follow-up release. Until then, use Homebrew, Scoop, or direct download.
+Docker image (GHCR) and npm convenience shims (`@docops/cli`) are planned for a future release. See [ADR-0012](docs/decisions/ADR-0012-language-agnostic-distribution.md) for the distribution rationale.
 
-### npm shim (planned)
+## Quickstart
 
-Per-platform packages (`@docops/cli-darwin-arm64`, `@docops/cli-linux-x64`, ...) will publish alongside a future release. `npm i -g @docops/cli` resolves the matching native binary via `optionalDependencies` — no postinstall network fetch. See ADR-0012 for distribution rationale.
-
-### Upgrading an existing project
-
-After `brew upgrade docops` (or your package manager equivalent), pull the
-new binary's shipped templates into your project without clobbering
-`docops.yaml` or your pre-commit hook:
+From the root of any git repo:
 
 ```sh
-brew upgrade docops          # or scoop update docops, etc.
-docops upgrade               # syncs skills, schemas, AGENTS.md block
-docops upgrade --dry-run     # preview first if you prefer
+docops init                                        # scaffold everything
+docops new ctx "Product vision" --type brief        # first context document
+docops new adr "Pick a database"                    # first decision
+docops new task "Wire up SQLite" --requires ADR-0001 # task citing the decision
+docops validate                                     # check everything is sound
+docops refresh                                      # validate + index + state in one pass
+docops audit                                        # find structural gaps
 ```
 
-`docops upgrade` only touches DocOps-owned scaffolding. To also rewrite
-`docops.yaml` or reinstall the pre-commit hook, opt in with `--config`
-or `--hook`. Run `docops update-check` (or wait for `docops upgrade` to
-warn you on its own) to learn when a new release is available.
+`docops init` flags: `--dry-run` (preview), `--force` (re-sync drifted files), `--no-skills` (skip agent skill scaffolding).
 
-### Multi-harness slash commands
-
-`docops upgrade` ships `/docops:*` slash commands into every AI CLI
-harness it detects on your machine. Four harnesses are supported today:
-
-| Harness  | Local dir                 | Invocation       | Layout                           |
-|----------|---------------------------|------------------|----------------------------------|
-| Claude Code | `.claude/commands/docops/` | `/docops:get`   | nested files                     |
-| Cursor   | `.cursor/commands/docops/` | `/docops:get`   | nested files                     |
-| OpenCode | `.opencode/command/`      | `/docops-get`    | flat-prefix (`docops-get.md`)    |
-| Codex    | `.codex/skills/docops-*/` | `docops-get`     | nested skill dirs (`SKILL.md`)   |
-
-Detection: a harness is written to if its project-local dir exists *or*
-its user-level dir does (`~/.claude/commands`, `~/.cursor/commands`,
-`$XDG_CONFIG_HOME/opencode`, `$CODEX_HOME` / `~/.codex/skills`). Override
-with `docops upgrade --harnesses claude,opencode` to pin the list, or
-`docops upgrade --no-codex` to skip one. Decision: ADR-0028.
-
-## Smoke test
+### Upgrading
 
 ```sh
-docops --version
-docops --help
+brew upgrade docops              # or scoop update docops
+docops upgrade                   # sync skills, schemas, AGENTS.md
+docops upgrade --dry-run         # preview first
 ```
 
-## Quickstart — use DocOps in your own repo
+`docops upgrade` only touches DocOps-owned scaffolding. To also rewrite `docops.yaml` or reinstall the pre-commit hook, use `--config` or `--hook`. Run `docops update-check` to see if a new version is available.
 
-From the root of any git repo (empty or existing):
+## CLI reference
 
-```sh
-docops init                                        # scaffolds docs/, docops.yaml, schemas, skills, pre-commit hook, AGENTS.md + CLAUDE.md
-docops new ctx "Vision" --type brief --no-open     # first CTX
-docops new adr "Pick a database"                   # first decision
-docops new task "Wire up SQLite" --requires ADR-0001
-docops validate                                    # schema + graph invariants
-docops index                                       # writes docs/.index.json
-docops state                                       # writes docs/STATE.md
-docops audit                                       # structural gap report
-```
+| Command | What it does |
+|---|---|
+| `docops init` | Scaffold DocOps into a repo (idempotent) |
+| `docops upgrade` | Refresh DocOps-owned files in an existing project |
+| `docops validate` | Schema + graph invariants; exits non-zero on errors |
+| `docops index` | Build `docs/.index.json` (enriched graph) |
+| `docops state` | Regenerate `docs/STATE.md` (counts, active work, gaps) |
+| `docops audit` | Structural gap punch list |
+| `docops refresh` | validate + index + state in one pass |
+| `docops schema` | (Re)write JSON Schemas from `docops.yaml` |
+| `docops new` | Scaffold a new CTX, ADR, or Task document |
+| `docops get <ID>` | Look up one document by ID |
+| `docops list` | List docs with filters (`--kind`, `--status`, `--tag`) |
+| `docops graph <ID>` | Typed edge graph from a starting doc |
+| `docops next` | Recommend the next task to work on |
+| `docops search <query>` | Substring/regex search over title, tags, body |
 
-`docops init --dry-run` previews; `docops init --force` re-syncs drifted scaffolded files; `docops init --no-skills` skips the agent-skill scaffolding.
+All commands support `--json` for structured output. Run `docops <command> --help` for details.
 
 ## Editor integration
 
-`docops init` (and `docops schema`) write three JSON Schema files under `docs/.docops/schema/`:
-
-- `context.schema.json` — CTX frontmatter (includes a `type:` enum driven by `context_types:` in `docops.yaml`)
-- `decision.schema.json` — ADR frontmatter
-- `task.schema.json` — Task frontmatter
-
-Install the [`redhat.vscode-yaml`](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) extension, then add to your workspace `.vscode/settings.json`:
+`docops init` (and `docops schema`) write JSON Schemas to `docs/.docops/schema/`. Install [`redhat.vscode-yaml`](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) and add to your `.vscode/settings.json`:
 
 ```json
 "yaml.schemas": {
@@ -113,13 +135,29 @@ Install the [`redhat.vscode-yaml`](https://marketplace.visualstudio.com/items?it
 }
 ```
 
-After editing `context_types:` in `docops.yaml`, run `docops schema` to regenerate the schemas without re-running a full `docops init`.
+## What DocOps is not
 
-## Developing on DocOps itself
+DocOps is a **substrate**, not a framework. It provides typed state — not workflow, not orchestration, not personas, and not code generation. See [ADR-0014](docs/decisions/ADR-0014-positioning-substrate-not-harness.md) for the full scope boundaries.
 
-This repository is the DocOps **source**, and it dog-foods its own convention for its own project management. Before changing anything, read `AGENTS.md` in the root — it separates the "meta" side (this repo's own docs) from the "product" side (what we ship to users). See `docs/decisions/ADR-0016-meta-vs-product-separation.md`.
+- Not a phase orchestrator (that's GSD's domain).
+- Not a role/persona system (that's GStack's domain).
+- Not a code generator or execution harness.
+- Not a hosted dashboard or issue tracker.
 
-### Local workflow
+## Documentation
+
+- **[`docs/STATE.md`](docs/STATE.md)** — current project state (auto-generated)
+- **[`docs/context/`](docs/context/)** — stakeholder inputs and research
+- **[`docs/decisions/`](docs/decisions/)** — architecture decisions (ADRs)
+- **[`docs/tasks/`](docs/tasks/)** — work items with citation requirements
+- **[`AGENTS.md`](AGENTS.md)** — orientation for coding agents working on DocOps itself
+- **[`CHANGELOG.md`](CHANGELOG.md)** — release history
+
+## Contributing
+
+Issues, feature requests, and pull requests are welcome on [GitHub](https://github.com/logicwind/DocOps/issues). This repo dog-foods DocOps: all changes go through the same `validate` → `index` → `state` cycle.
+
+See [`AGENTS.md`](AGENTS.md) for the orientation guide if you're an agent, and the Makefile targets for the local development workflow:
 
 ```sh
 make tidy     # go mod tidy
@@ -128,33 +166,24 @@ make test     # go test -race ./...
 make lint     # go vet ./...
 ```
 
+## Developing on DocOps itself
+
+This repository is the DocOps **source**, and it dog-foods its own convention. The root `AGENTS.md` separates the "meta" layer (this repo's own project management) from the "product" layer (what `docops init` emits into user repos). See [ADR-0016](docs/decisions/ADR-0016-meta-vs-product-separation.md).
+
 ### Release
 
 From a clean `main`:
 
 ```sh
-make release VERSION=0.1.2
+make release VERSION=0.4.1
 ```
 
-That bumps the `VERSION` file (which `docops update-check` reads via raw.githubusercontent.com), commits the bump, creates an annotated `v0.1.2` tag, and pushes both to `origin`. The tag triggers `.github/workflows/release.yml`, which verifies that the tag matches the `VERSION` file and then runs goreleaser to build the matrix, attach archives + checksums to the GitHub Release, and update the brew/scoop stubs (once those tap repos exist).
+This bumps the `VERSION` file, commits, creates an annotated tag, and pushes. The tag triggers `.github/workflows/release.yml`, which runs goreleaser to build the matrix, attach artifacts to the GitHub Release, and update the Homebrew/Scoop stubs.
 
-Preview without writing:
-
-```sh
-make release VERSION=0.1.2 DRY_RUN=1
-```
-
-Local snapshot build (no tag, no push):
-
-```sh
-make release-snapshot
-```
-
-If you tag manually with `git tag` and forget to bump `VERSION`, the release workflow fails fast with a clear error pointing you at `make release`.
+Dry-run: `make release VERSION=0.4.1 DRY_RUN=1`. Local snapshot (no tag, no push): `make release-snapshot`.
 
 ## License
 
-MIT © [Logicwind Technologies Pvt Ltd](https://logicwind.com) — see `LICENSE`.
+MIT © [Logicwind Technologies Pvt Ltd](https://logicwind.com) — see [`LICENSE`](LICENSE).
 
-DocOps is built and maintained by Logicwind. Issues, feature requests, and
-contributions are welcome on [GitHub](https://github.com/logicwind/DocOps).
+DocOps is built and maintained by [Logicwind](https://logicwind.com).

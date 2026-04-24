@@ -12,5 +12,12 @@ coverage.*
 # flock artifact from `docops new` ID allocation (transient, zero-byte).
 docs/.docops/*.lock
 
+# Generated viewer output from `docops html` (regenerate on demand).
+docs/.html/
+
 # `go build` smoke binary at repo root (real builds go to bin/ via Makefile).
 /docops
+
+# Playwright MCP logs and screenshots.
+.playwright-mcp/
+*.png

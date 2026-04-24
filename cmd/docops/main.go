@@ -49,6 +49,10 @@ func main() {
 		os.Exit(cmdUpdateCheck(args[1:]))
 	case "upgrade":
 		os.Exit(cmdUpgrade(args[1:]))
+	case "html":
+		os.Exit(cmdHtml(args[1:]))
+	case "serve":
+		os.Exit(cmdServe(args[1:]))
 	default:
 		fmt.Fprintf(os.Stderr, "docops: unknown command %q\n\n", args[0])
 		topLevelUsage(os.Stderr)
@@ -78,6 +82,8 @@ func topLevelUsage(w *os.File) {
 	fmt.Fprintln(w, "  next        recommend the next task to work on")
 	fmt.Fprintln(w, "  search      substring/regex search over title, tags, and body")
 	fmt.Fprintln(w, "  update-check  check for a newer docops release (cached probe)")
+	fmt.Fprintln(w, "  html        emit a browsable HTML viewer (docs/.html/)")
+	fmt.Fprintln(w, "  serve       localhost web viewer on :8484 (live)")
 	fmt.Fprintln(w, "  version     print the build version")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "see `docops <command> --help` for per-command flags.")
