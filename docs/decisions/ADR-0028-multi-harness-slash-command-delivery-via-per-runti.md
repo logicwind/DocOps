@@ -1,11 +1,11 @@
 ---
 title: Multi-harness slash-command delivery via per-runtime translation
-status: draft
+status: accepted
 coverage: required
 date: "2026-04-24"
 supersedes: []
 related: [ADR-0013, ADR-0021, ADR-0022]
-tags: []
+tags: [installer, upgrade, multi-harness, interop, frontmatter]
 ---
 
 ## Context

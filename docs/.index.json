@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-24T02:22:43Z",
+  "generated_at": "2026-04-24T03:09:56Z",
   "version": 1,
   "docs": [
     {
@@ -648,7 +648,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "partial",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -1070,7 +1070,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "not-started",
+      "implementation": "partial",
       "stale": false
     },
     {
@@ -1215,7 +1215,7 @@
       ],
       "summary": "Agents and humans browsing a DocOps repository today see markdown files in a terminal or file tree. Raw markdown is functional but lacks the cross-referencing, navigation, and readability of rendered …",
       "word_count": 1117,
-      "last_touched": "2026-04-23T19:04:53Z",
+      "last_touched": "2026-04-24T02:25:56Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1240,7 +1240,7 @@
       "folder": "docs/decisions",
       "path": "docs/decisions/ADR-0028-multi-harness-slash-command-delivery-via-per-runti.md",
       "title": "Multi-harness slash-command delivery via per-runtime translation",
-      "status": "draft",
+      "status": "accepted",
       "coverage": "required",
       "date": "2026-04-24",
       "related": [
@@ -1248,9 +1248,16 @@
         "ADR-0021",
         "ADR-0022"
       ],
+      "tags": [
+        "installer",
+        "upgrade",
+        "multi-harness",
+        "interop",
+        "frontmatter"
+      ],
       "summary": "TP-023 (commit `379ee51`) moved `/docops:*` from skills to **slash commands** under `.claude/commands/docops/`. ADR-0022 had already solved multi-tool *skills* via a canonical `.agents/skills/` store …",
       "word_count": 996,
-      "last_touched": "2026-04-24T02:21:09Z",
+      "last_touched": "2026-04-24T02:25:56Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1258,7 +1265,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "not-started",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -2176,7 +2183,7 @@
       ],
       "summary": "Ship `docops html` — a one-shot CLI subcommand that reads the current repository's DocOps documents through the read layer and emits a directory of self-contained HTML files covering all CTX, ADR, and…",
       "word_count": 783,
-      "last_touched": "2026-04-23T19:06:26Z",
+      "last_touched": "2026-04-24T02:25:56Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -2211,7 +2218,7 @@
       ],
       "summary": "Ship `docops serve` — an HTTP server that renders the same HTML as `docops html` from memory, watches `docs/` for changes, and auto-rebuilds affected pages so the browser stays in sync during editing.",
       "word_count": 848,
-      "last_touched": "2026-04-23T19:10:40Z",
+      "last_touched": "2026-04-24T02:25:56Z",
       "age_days": 0,
       "stale": false
     },
@@ -2232,7 +2239,7 @@
       ],
       "summary": "Design and implement the default CSS theme for the docops HTML viewer (`docops html` and `docops serve`). The theme must look professional, render markdown faithfully, work offline, and be fully embed…",
       "word_count": 799,
-      "last_touched": "2026-04-23T19:12:23Z",
+      "last_touched": "2026-04-24T02:25:56Z",
       "age_days": 0,
       "stale": false
     },
@@ -2242,17 +2249,17 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-033-ship-docops-to-opencode-via-per-harness-adapter-fi.md",
       "title": "Ship /docops:* to OpenCode and Codex via per-harness adapter",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p2",
-      "assignee": "unassigned",
+      "assignee": "claude",
       "requires": [
         "ADR-0028",
         "ADR-0022",
         "ADR-0013"
       ],
-      "summary": "Extend `docops upgrade` to ship `/docops:*` slash commands into **OpenCode and Codex** alongside the existing Claude Code and Cursor targets, via the per-harness adapter architecture defined in ADR-00…",
-      "word_count": 1320,
-      "last_touched": "2026-04-24T02:22:37Z",
+      "summary": "- Phase 1 (`cf3a2c7`) — `Harness` interface + registry; Claude/Cursor   adapters. Byte-identical output. - Phase 2 (`daa00b6`) — OpenCode adapter + layout-aware writer   (`planHarness`, frontmatter pa…",
+      "word_count": 1413,
+      "last_touched": "2026-04-24T02:25:56Z",
       "age_days": 0,
       "stale": false
     }

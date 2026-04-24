@@ -53,6 +53,24 @@ docops upgrade --dry-run     # preview first if you prefer
 or `--hook`. Run `docops update-check` (or wait for `docops upgrade` to
 warn you on its own) to learn when a new release is available.
 
+### Multi-harness slash commands
+
+`docops upgrade` ships `/docops:*` slash commands into every AI CLI
+harness it detects on your machine. Four harnesses are supported today:
+
+| Harness  | Local dir                 | Invocation       | Layout                           |
+|----------|---------------------------|------------------|----------------------------------|
+| Claude Code | `.claude/commands/docops/` | `/docops:get`   | nested files                     |
+| Cursor   | `.cursor/commands/docops/` | `/docops:get`   | nested files                     |
+| OpenCode | `.opencode/command/`      | `/docops-get`    | flat-prefix (`docops-get.md`)    |
+| Codex    | `.codex/skills/docops-*/` | `docops-get`     | nested skill dirs (`SKILL.md`)   |
+
+Detection: a harness is written to if its project-local dir exists *or*
+its user-level dir does (`~/.claude/commands`, `~/.cursor/commands`,
+`$XDG_CONFIG_HOME/opencode`, `$CODEX_HOME` / `~/.codex/skills`). Override
+with `docops upgrade --harnesses claude,opencode` to pin the list, or
+`docops upgrade --no-codex` to skip one. Decision: ADR-0028.
+
 ## Smoke test
 
 ```sh

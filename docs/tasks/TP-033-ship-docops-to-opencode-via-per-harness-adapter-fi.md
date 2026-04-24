@@ -1,11 +1,28 @@
 ---
 title: Ship /docops:* to OpenCode and Codex via per-harness adapter
-status: backlog
+status: done
 priority: p2
-assignee: unassigned
+assignee: claude
 requires: [ADR-0028, ADR-0022, ADR-0013]
 depends_on: []
 ---
+
+## Shipped in v0.4.0
+
+- Phase 1 (`cf3a2c7`) — `Harness` interface + registry; Claude/Cursor
+  adapters. Byte-identical output.
+- Phase 2 (`daa00b6`) — OpenCode adapter + layout-aware writer
+  (`planHarness`, frontmatter parser/serializer, tool-name mapping).
+- Phase 2b (`0807a1a`) — Codex adapter (`LayoutNestedSkillDir`),
+  per-command `name:` injection, manifest tracks subdir names.
+- Phase 3 (`5182e9b`) — harness detection; `--harnesses` /
+  `--no-<slug>` flags; exported `DetectInstalledHarnesses` and
+  `KnownHarnessSlugs`.
+- Phase 4 (this commit) — README + CHANGELOG + v0.4.0 bump.
+
+Not yet shipped: Kilo, Windsurf, Gemini, Copilot, Antigravity, Augment,
+Trae. Each is a separate TP when demand shows up.
+
 
 ## Goal
 
