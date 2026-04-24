@@ -98,23 +98,17 @@ func Run(opts Options) (*Result, error) {
 		}
 	}
 	// After successful execution, refresh the manifest in each
-	// docops-owned skill dir so subsequent upgrades scope deletions
+	// docops-owned harness dir so subsequent upgrades scope deletions
 	// correctly. Failures here are logged but do not fail the upgrade
 	// — manifest is best-effort metadata.
-	for _, dir := range docopsSkillDirs() {
+	for _, h := range registeredHarnesses() {
+		dir := h.LocalDir()
 		if err := writeManifest(filepath.Join(opts.Root, dir), shippedSkillNames(actions, dir)); err != nil {
 			fmt.Fprintf(opts.Out, "  warning: refresh manifest in %s: %v\n", dir, err)
 		}
 	}
 	printPlan(opts.Out, actions, false)
 	return &Result{Actions: actions}, nil
-}
-
-// docopsSkillDirs lists the directories upgrade owns. A future plugin
-// system might extend this; for now it is fixed to the two
-// agent-tool conventions docops init scaffolds.
-func docopsSkillDirs() []string {
-	return []string{".claude/commands/docops", ".cursor/commands/docops"}
 }
 
 // legacyDocopsSkillDirs lists paths that earlier docops releases wrote
@@ -246,7 +240,7 @@ func plan(opts Options) ([]scaffold.Action, error) {
 	}
 	sort.Strings(skillNames)
 
-	for _, dir := range docopsSkillDirs() {
+	for _, dir := range harnessLocalDirs() {
 		dirActions, err := planSkillDir(opts, dir, skills, skillNames)
 		if err != nil {
 			return nil, err
