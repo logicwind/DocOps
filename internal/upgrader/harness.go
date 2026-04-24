@@ -162,11 +162,12 @@ func (cursorAdapter) TransformFrontmatter(src map[string]any) (map[string]any, e
 
 // registry is the ordered list of all registered harness adapters.
 // docops upgrade iterates this list to write commands into each target.
-// To add a new harness (Codex, …) register it here.
+// To add a new harness register it here.
 var registry = []Harness{
 	claudeAdapter{},
 	cursorAdapter{},
 	openCodeAdapter{},
+	codexAdapter{},
 }
 
 // registeredHarnesses returns the current adapter registry. Callers

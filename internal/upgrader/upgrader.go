@@ -104,7 +104,15 @@ func Run(opts Options) (*Result, error) {
 	// — manifest is best-effort metadata.
 	for _, h := range registeredHarnesses() {
 		mdir := h.ManifestDir()
-		if err := writeManifest(filepath.Join(opts.Root, mdir), shippedSkillNames(actions, mdir)); err != nil {
+		var names []string
+		if h.Layout() == LayoutNestedSkillDir {
+			// Codex manifest lists directory names (e.g. "docops-get"),
+			// not individual file paths — cleanup is per-subdirectory.
+			names = shippedSkillDirNames(actions, mdir)
+		} else {
+			names = shippedSkillNames(actions, mdir)
+		}
+		if err := writeManifest(filepath.Join(opts.Root, mdir), names); err != nil {
 			fmt.Fprintf(opts.Out, "  warning: refresh manifest in %s: %v\n", mdir, err)
 		}
 	}
@@ -377,9 +385,7 @@ func planHarness(opts Options, h Harness, shipped map[string][]byte, shippedCmds
 	case LayoutFlatPrefixFile:
 		return planFlatPrefixHarness(opts, h, shipped, shippedCmds)
 	case LayoutNestedSkillDir:
-		// TODO(Phase 2b): implement Codex nested-skill-dir writer.
-		// Each command becomes a directory docops-<cmd>/ containing SKILL.md.
-		return nil, fmt.Errorf("planHarness: LayoutNestedSkillDir not yet implemented (harness %q)", h.Slug())
+		return planNestedSkillDirHarness(opts, h, shipped, shippedCmds)
 	default:
 		return nil, fmt.Errorf("planHarness: unknown layout %d for harness %q", h.Layout(), h.Slug())
 	}
@@ -539,6 +545,186 @@ func planFlatPrefixHarness(opts Options, h Harness, shipped map[string][]byte, s
 	}
 
 	return actions, nil
+}
+
+// planNestedSkillDirHarness handles LayoutNestedSkillDir harnesses (Codex).
+// Each command lands at filepath.Join(h.LocalDir(), "docops-<cmd>", "SKILL.md").
+// The manifest (at h.ManifestDir()/.docops-manifest) lists directory names
+// (e.g. "docops-get"), not file paths, so cleanup is per-subdirectory.
+//
+// NOTE on name: injection:
+// Codex skills require a name: field equal to the skill directory name
+// (e.g. "docops-get"). TransformFrontmatter is purposely pure and has no
+// knowledge of the command name, so after calling it we inject
+// name: "docops-<cmd>" into the resulting map before serialization.
+// This keeps the Harness interface stable. See also the comment on codexAdapter.
+func planNestedSkillDirHarness(opts Options, h Harness, shipped map[string][]byte, shippedCmds []string) ([]scaffold.Action, error) {
+	localDir := h.LocalDir()       // e.g. ".codex/skills"
+	manifestDir := h.ManifestDir() // same as localDir for NestedSkillDir
+	absLocalDir := filepath.Join(opts.Root, localDir)
+
+	// List present docops-* subdirectories (by name, not file path).
+	presentDirs, dirExists, err := listNestedSkillDirs(absLocalDir)
+	if err != nil {
+		return nil, err
+	}
+
+	manifest, manifestExists, err := readManifest(filepath.Join(opts.Root, manifestDir))
+	if err != nil {
+		return nil, err
+	}
+
+	// Build the set of shipped directory names (e.g. "docops-get").
+	shippedDirs := make([]string, len(shippedCmds))
+	for i, cmd := range shippedCmds {
+		shippedDirs[i] = "docops-" + cmd
+	}
+
+	// Safety belt: if we have a manifest, reject any docops-* dirs not
+	// accounted for by either the shipped set or the previous manifest.
+	if manifestExists {
+		shippedSet := stringSet(shippedDirs)
+		manifestSet := stringSet(manifest)
+		var unknown []string
+		for _, name := range presentDirs {
+			if !shippedSet[name] && !manifestSet[name] {
+				unknown = append(unknown, name)
+			}
+		}
+		if len(unknown) > 0 {
+			sort.Strings(unknown)
+			return nil, &ErrUnknownFiles{Dir: localDir, Files: unknown}
+		}
+	}
+
+	var actions []scaffold.Action
+
+	// Ensure the parent skills directory exists.
+	actions = append(actions, scaffold.DirAction(opts.Root, localDir))
+
+	// Refresh / create every shipped command with frontmatter transform.
+	// Per-command: inject name: "docops-<cmd>" after the pure transform.
+	for _, cmd := range shippedCmds {
+		skillDirName := "docops-" + cmd
+		skillDirRel := filepath.Join(localDir, skillDirName)
+
+		// Ensure the per-command subdirectory exists.
+		actions = append(actions, scaffold.DirAction(opts.Root, skillDirRel))
+
+		srcBody := shipped[cmd+".md"]
+
+		// Apply the harness's pure transform, then inject name:.
+		fm, node, body, err := parseFrontmatter(srcBody)
+		if err != nil {
+			return nil, fmt.Errorf("parse frontmatter for %s/%s: %w", h.Slug(), cmd, err)
+		}
+		outFM, err := h.TransformFrontmatter(fm)
+		if err != nil {
+			return nil, fmt.Errorf("transform frontmatter for %s/%s: %w", h.Slug(), cmd, err)
+		}
+		// Inject name: "docops-<cmd>" — the per-command bit that
+		// TransformFrontmatter cannot set because it is a pure function
+		// with no knowledge of the command name.
+		outFM["name"] = skillDirName
+		outBody, err := serializeFrontmatter(outFM, node, body)
+		if err != nil {
+			return nil, fmt.Errorf("serialize frontmatter for %s/%s: %w", h.Slug(), cmd, err)
+		}
+
+		rel := filepath.Join(h.LocalDir(), h.FilenameFor(cmd)) // e.g. .codex/skills/docops-get/SKILL.md
+		actions = append(actions, scaffold.FileAction(opts.Root, rel, outBody, 0o644, true))
+	}
+
+	// Remove docops-* subdirs that are no longer in the shipped bundle.
+	// Minimum acceptable: emit KindRemove for docops-<stale>/SKILL.md.
+	// An empty dir may remain behind; that is acceptable for v0.
+	if dirExists {
+		shippedSet := stringSet(shippedDirs)
+		for _, name := range presentDirs {
+			if shippedSet[name] {
+				continue
+			}
+			skillFile := filepath.Join(localDir, name, "SKILL.md")
+			actions = append(actions, scaffold.Action{
+				Path:   filepath.Join(opts.Root, skillFile),
+				Rel:    skillFile,
+				Kind:   scaffold.KindRemove,
+				Reason: "no longer in shipped bundle",
+				Mode:   0o644,
+			})
+		}
+	}
+
+	return actions, nil
+}
+
+// listNestedSkillDirs returns the names of subdirectories in dir whose
+// name starts with "docops-" and that contain a SKILL.md file. dirExists
+// distinguishes a missing directory from an empty one.
+func listNestedSkillDirs(dir string) (names []string, dirExists bool, err error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, false, nil
+		}
+		return nil, false, err
+	}
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+		name := e.Name()
+		if !strings.HasPrefix(name, "docops-") {
+			continue
+		}
+		// Only count dirs that contain a SKILL.md (to match GSD's listCodexSkillNames).
+		skillPath := filepath.Join(dir, name, "SKILL.md")
+		if _, err := os.Stat(skillPath); err == nil {
+			names = append(names, name)
+		}
+	}
+	sort.Strings(names)
+	return names, true, nil
+}
+
+// shippedSkillDirNames returns the directory names of actions that
+// represent a SKILL.md write under manifestDir. Used to build the
+// Codex manifest, which lists directory names (e.g. "docops-get") not
+// file paths. Only immediate child directory names are returned.
+func shippedSkillDirNames(actions []scaffold.Action, manifestDir string) []string {
+	prefix := manifestDir + string(filepath.Separator)
+	var names []string
+	for _, a := range actions {
+		if a.Kind == scaffold.KindRemove {
+			continue
+		}
+		rel := a.Rel
+		if len(rel) <= len(prefix) || rel[:len(prefix)] != prefix {
+			continue
+		}
+		// rel is like ".codex/skills/docops-get/SKILL.md"
+		// after stripping prefix: "docops-get/SKILL.md"
+		rest := rel[len(prefix):]
+		// We want only the first path segment (the skill dir name).
+		sep := strings.IndexByte(rest, filepath.Separator)
+		if sep < 0 {
+			// This is a flat file, not a skill dir — skip.
+			continue
+		}
+		dirName := rest[:sep]
+		if strings.HasPrefix(dirName, "docops-") {
+			names = append(names, dirName)
+		}
+	}
+	sort.Strings(names)
+	// Deduplicate (DirAction + FileAction both appear under the same skill dir).
+	var deduped []string
+	for i, n := range names {
+		if i == 0 || n != names[i-1] {
+			deduped = append(deduped, n)
+		}
+	}
+	return deduped
 }
 
 // listFlatPrefixFiles returns the basenames of regular files in dir
