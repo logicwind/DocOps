@@ -35,14 +35,16 @@ func TestRegistry_AllAdaptersHaveNonEmptyFields(t *testing.T) {
 
 // TestRegistry_TransformFrontmatter_IdentityForPhase1 verifies that
 // Claude and Cursor adapters return a copy of the input frontmatter
-// unchanged (identity transform).
+// unchanged (identity transform). OpenCode is intentionally excluded —
+// it performs a non-identity transform (drops "name:", remaps tools).
 func TestRegistry_TransformFrontmatter_IdentityForPhase1(t *testing.T) {
 	src := map[string]any{
 		"description":   "fetch a doc by ID",
 		"allowed-tools": []string{"Read", "Bash"},
 	}
 
-	for _, h := range registeredHarnesses() {
+	identityHarnesses := []Harness{claudeAdapter{}, cursorAdapter{}}
+	for _, h := range identityHarnesses {
 		h := h
 		t.Run(h.Slug(), func(t *testing.T) {
 			got, err := h.TransformFrontmatter(src)
@@ -126,5 +128,63 @@ func TestHarnessLocalDirs_MatchesRegistry(t *testing.T) {
 		if dirs[i] != h.LocalDir() {
 			t.Errorf("dirs[%d] = %q; want %q (from %s adapter)", i, dirs[i], h.LocalDir(), h.Slug())
 		}
+	}
+}
+
+// TestOpenCodeAdapter_SatisfiesInterface is a compile-time and runtime
+// smoke test that openCodeAdapter implements Harness and returns the
+// expected values for the key contract points.
+func TestOpenCodeAdapter_SatisfiesInterface(t *testing.T) {
+	var _ Harness = openCodeAdapter{} // compile-time check
+
+	h := openCodeAdapter{}
+
+	if h.Slug() != "opencode" {
+		t.Errorf("Slug() = %q; want %q", h.Slug(), "opencode")
+	}
+	if h.LocalDir() != ".opencode/command" {
+		t.Errorf("LocalDir() = %q; want %q", h.LocalDir(), ".opencode/command")
+	}
+	if h.ManifestDir() != ".opencode/command" {
+		t.Errorf("ManifestDir() = %q; want %q", h.ManifestDir(), ".opencode/command")
+	}
+	if h.Layout() != LayoutFlatPrefixFile {
+		t.Errorf("Layout() = %d; want LayoutFlatPrefixFile (%d)", h.Layout(), LayoutFlatPrefixFile)
+	}
+	if got := h.FilenameFor("get"); got != "docops-get.md" {
+		t.Errorf("FilenameFor(%q) = %q; want %q", "get", got, "docops-get.md")
+	}
+	if got := h.FilenameFor("audit"); got != "docops-audit.md" {
+		t.Errorf("FilenameFor(%q) = %q; want %q", "audit", got, "docops-audit.md")
+	}
+}
+
+// TestClaudeAdapter_PathConvention verifies the LocalDir / ManifestDir
+// split for the Claude adapter (the path composition invariant from TP-033).
+func TestClaudeAdapter_PathConvention(t *testing.T) {
+	h := claudeAdapter{}
+	if h.LocalDir() != ".claude/commands" {
+		t.Errorf("LocalDir() = %q; want %q", h.LocalDir(), ".claude/commands")
+	}
+	if h.ManifestDir() != ".claude/commands/docops" {
+		t.Errorf("ManifestDir() = %q; want %q", h.ManifestDir(), ".claude/commands/docops")
+	}
+	if got := h.FilenameFor("get"); got != "docops/get.md" {
+		t.Errorf("FilenameFor(%q) = %q; want %q", "get", got, "docops/get.md")
+	}
+}
+
+// TestCursorAdapter_PathConvention verifies the LocalDir / ManifestDir
+// split for the Cursor adapter.
+func TestCursorAdapter_PathConvention(t *testing.T) {
+	h := cursorAdapter{}
+	if h.LocalDir() != ".cursor/commands" {
+		t.Errorf("LocalDir() = %q; want %q", h.LocalDir(), ".cursor/commands")
+	}
+	if h.ManifestDir() != ".cursor/commands/docops" {
+		t.Errorf("ManifestDir() = %q; want %q", h.ManifestDir(), ".cursor/commands/docops")
+	}
+	if got := h.FilenameFor("get"); got != "docops/get.md" {
+		t.Errorf("FilenameFor(%q) = %q; want %q", "get", got, "docops/get.md")
 	}
 }

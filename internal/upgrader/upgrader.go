@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/logicwind/docops/internal/config"
 	"github.com/logicwind/docops/internal/scaffold"
@@ -102,9 +103,9 @@ func Run(opts Options) (*Result, error) {
 	// correctly. Failures here are logged but do not fail the upgrade
 	// — manifest is best-effort metadata.
 	for _, h := range registeredHarnesses() {
-		dir := h.LocalDir()
-		if err := writeManifest(filepath.Join(opts.Root, dir), shippedSkillNames(actions, dir)); err != nil {
-			fmt.Fprintf(opts.Out, "  warning: refresh manifest in %s: %v\n", dir, err)
+		mdir := h.ManifestDir()
+		if err := writeManifest(filepath.Join(opts.Root, mdir), shippedSkillNames(actions, mdir)); err != nil {
+			fmt.Fprintf(opts.Out, "  warning: refresh manifest in %s: %v\n", mdir, err)
 		}
 	}
 	printPlan(opts.Out, actions, false)
@@ -119,18 +120,23 @@ func legacyDocopsSkillDirs() []string {
 	return []string{".claude/skills/docops"}
 }
 
-// shippedSkillNames returns the basenames of skill files currently
-// present (write or refresh actions) in the given dir, derived from
+// shippedSkillNames returns the basenames of files currently present
+// (write or refresh actions) in the given manifestDir, derived from
 // the action set. Used to write the post-upgrade manifest.
-func shippedSkillNames(actions []scaffold.Action, dir string) []string {
-	prefix := dir + string(filepath.Separator)
+//
+// For LayoutNestedFile harnesses, manifestDir is LocalDir()+"/docops";
+// for LayoutFlatPrefixFile it is LocalDir() itself. Only the
+// immediately-nested filenames (no path separators) are returned so
+// the manifest stays a flat list.
+func shippedSkillNames(actions []scaffold.Action, manifestDir string) []string {
+	prefix := manifestDir + string(filepath.Separator)
 	var names []string
 	for _, a := range actions {
 		if a.Kind == scaffold.KindRemove {
 			continue
 		}
-		// Only top-level files under the dir count — skip the dir
-		// itself and any nested paths (none today, future-proof).
+		// Only top-level files under the manifestDir count — skip the
+		// dir itself and any deeper nested paths.
 		if rel := a.Rel; len(rel) > len(prefix) && rel[:len(prefix)] == prefix {
 			name := rel[len(prefix):]
 			if !containsSep(name) {
@@ -229,23 +235,27 @@ func plan(opts Options) ([]scaffold.Action, error) {
 	}
 	actions = append(actions, claudeAction)
 
-	// 3. Skills — sync each docops-owned dir against the shipped bundle.
-	skills, err := scaffold.LoadShippedSkills()
+	// 3. Commands — sync each docops-owned harness dir against the
+	// shipped bundle, applying per-harness layout and frontmatter
+	// transforms.
+	shippedSkills, err := scaffold.LoadShippedSkills()
 	if err != nil {
 		return nil, fmt.Errorf("read skills: %w", err)
 	}
-	skillNames := make([]string, 0, len(skills))
-	for name := range skills {
-		skillNames = append(skillNames, name)
+	shippedCmds := make([]string, 0, len(shippedSkills))
+	for name := range shippedSkills {
+		// Strip the .md extension — shipped keys are basenames like "get.md".
+		cmd := strings.TrimSuffix(name, ".md")
+		shippedCmds = append(shippedCmds, cmd)
 	}
-	sort.Strings(skillNames)
+	sort.Strings(shippedCmds)
 
-	for _, dir := range harnessLocalDirs() {
-		dirActions, err := planSkillDir(opts, dir, skills, skillNames)
+	for _, h := range registeredHarnesses() {
+		hActions, err := planHarness(opts, h, shippedSkills, shippedCmds)
 		if err != nil {
 			return nil, err
 		}
-		actions = append(actions, dirActions...)
+		actions = append(actions, hActions...)
 	}
 
 	// 4. Opt-in: docops.yaml.
@@ -342,30 +352,67 @@ func planHook(opts Options, body []byte) (scaffold.Action, error) {
 	return a, nil
 }
 
-// planSkillDir walks one docops-owned skill directory and emits the
-// create / refresh / remove / skip actions to bring it in line with
-// the shipped bundle. The safety belt (manifest check) fires here:
-// any present file that the manifest does not vouch for and the
-// shipped bundle does not contain triggers ErrUnknownFiles.
-func planSkillDir(opts Options, dir string, shipped map[string][]byte, shippedNames []string) ([]scaffold.Action, error) {
-	absDir := filepath.Join(opts.Root, dir)
+// planHarness is the layout-aware replacement for planSkillDir. It
+// emits create / refresh / remove / skip actions for one harness target
+// by dispatching on h.Layout():
+//
+//   - LayoutNestedFile: owns h.ManifestDir() (= LocalDir()+"/docops").
+//     Scans that directory for existing files.
+//   - LayoutFlatPrefixFile: owns a flat subset of h.LocalDir() — only
+//     files matching "docops-*.md" and the manifest. Other files in
+//     LocalDir() belong to other tools and are never touched.
+//   - LayoutNestedSkillDir: not yet implemented (Phase 2b). Returns an
+//     explicit error so the missing branch is obvious.
+//
+// For each shipped command, the output path is:
+//
+//	filepath.Join(h.LocalDir(), h.FilenameFor(cmd))
+//
+// The file body is the shipped canonical bytes with
+// h.TransformFrontmatter applied to the YAML frontmatter block.
+func planHarness(opts Options, h Harness, shipped map[string][]byte, shippedCmds []string) ([]scaffold.Action, error) {
+	switch h.Layout() {
+	case LayoutNestedFile:
+		return planNestedFileHarness(opts, h, shipped, shippedCmds)
+	case LayoutFlatPrefixFile:
+		return planFlatPrefixHarness(opts, h, shipped, shippedCmds)
+	case LayoutNestedSkillDir:
+		// TODO(Phase 2b): implement Codex nested-skill-dir writer.
+		// Each command becomes a directory docops-<cmd>/ containing SKILL.md.
+		return nil, fmt.Errorf("planHarness: LayoutNestedSkillDir not yet implemented (harness %q)", h.Slug())
+	default:
+		return nil, fmt.Errorf("planHarness: unknown layout %d for harness %q", h.Layout(), h.Slug())
+	}
+}
 
-	present, dirExists, err := listSkillFiles(absDir)
+// planNestedFileHarness handles LayoutNestedFile harnesses (Claude, Cursor).
+// The owned directory is h.ManifestDir() (= h.LocalDir()+"/docops").
+// Files land at filepath.Join(h.LocalDir(), h.FilenameFor(cmd)).
+func planNestedFileHarness(opts Options, h Harness, shipped map[string][]byte, shippedCmds []string) ([]scaffold.Action, error) {
+	// The manifest lives in ManifestDir, which is also the fully-owned
+	// subdirectory for LayoutNestedFile harnesses.
+	manifestDir := h.ManifestDir()
+	absManifestDir := filepath.Join(opts.Root, manifestDir)
+
+	present, dirExists, err := listSkillFiles(absManifestDir)
 	if err != nil {
 		return nil, err
 	}
 
-	manifest, manifestExists, err := readManifest(absDir)
+	manifest, manifestExists, err := readManifest(absManifestDir)
 	if err != nil {
 		return nil, err
 	}
 
-	// Safety belt: only enforce when a manifest exists. First-time
-	// upgraders (v0.1.x users) get an implicit pass — anything in the
-	// dir is treated as docops-owned and reconciled against the
-	// shipped bundle.
+	// Build the set of shipped basenames (e.g. "get.md") for safety belt
+	// and removal logic — these are the filenames inside manifestDir.
+	shippedBasenames := make([]string, len(shippedCmds))
+	for i, cmd := range shippedCmds {
+		shippedBasenames[i] = cmd + ".md"
+	}
+
 	if manifestExists {
-		shippedSet := stringSet(shippedNames)
+		shippedSet := stringSet(shippedBasenames)
 		manifestSet := stringSet(manifest)
 		var unknown []string
 		for _, name := range present {
@@ -375,34 +422,35 @@ func planSkillDir(opts Options, dir string, shipped map[string][]byte, shippedNa
 		}
 		if len(unknown) > 0 {
 			sort.Strings(unknown)
-			return nil, &ErrUnknownFiles{Dir: dir, Files: unknown}
+			return nil, &ErrUnknownFiles{Dir: manifestDir, Files: unknown}
 		}
 	}
 
 	var actions []scaffold.Action
 
-	// Ensure the directory exists (mkdir or skip).
-	actions = append(actions, scaffold.DirAction(opts.Root, dir))
+	// Ensure the manifest directory exists (mkdir or skip).
+	// For NestedFile this is LocalDir()/docops — create if absent.
+	actions = append(actions, scaffold.DirAction(opts.Root, manifestDir))
 
-	// Refresh / create every shipped file.
-	for _, name := range shippedNames {
-		rel := filepath.Join(dir, name)
-		actions = append(actions, scaffold.FileAction(opts.Root, rel, shipped[name], 0o644, true))
+	// Refresh / create every shipped command.
+	for _, cmd := range shippedCmds {
+		srcBody := shipped[cmd+".md"]
+		outBody, err := applyTransform(srcBody, h.TransformFrontmatter)
+		if err != nil {
+			return nil, fmt.Errorf("transform frontmatter for %s/%s: %w", h.Slug(), cmd, err)
+		}
+		rel := filepath.Join(h.LocalDir(), h.FilenameFor(cmd))
+		actions = append(actions, scaffold.FileAction(opts.Root, rel, outBody, 0o644, true))
 	}
 
-	// Remove anything that is in the dir but not in the shipped bundle.
-	// On first run (no manifest), this includes user files inside
-	// docops/ — by design (see ADR-0021: "DocOps owns the docops/
-	// subdirectory"). On subsequent runs, the safety belt above
-	// already vetted the dir, so removals are scoped to manifest ∩
-	// (not shipped) — i.e. genuine shipped removals.
+	// Remove files in the owned dir that are no longer in the shipped bundle.
 	if dirExists {
-		shippedSet := stringSet(shippedNames)
+		shippedSet := stringSet(shippedBasenames)
 		for _, name := range present {
 			if shippedSet[name] {
 				continue
 			}
-			rel := filepath.Join(dir, name)
+			rel := filepath.Join(manifestDir, name)
 			actions = append(actions, scaffold.Action{
 				Path:   filepath.Join(opts.Root, rel),
 				Rel:    rel,
@@ -413,11 +461,109 @@ func planSkillDir(opts Options, dir string, shipped map[string][]byte, shippedNa
 		}
 	}
 
-	// Also drop the manifest sentinel from "present" before any output
-	// — it is internal metadata, not a skill file. listSkillFiles
-	// already excludes dotfiles; nothing to do here.
+	return actions, nil
+}
+
+// planFlatPrefixHarness handles LayoutFlatPrefixFile harnesses (OpenCode).
+// The owned file set is the subset of h.LocalDir() matching "docops-*.md"
+// plus the manifest sentinel. Other files in LocalDir() are never touched.
+func planFlatPrefixHarness(opts Options, h Harness, shipped map[string][]byte, shippedCmds []string) ([]scaffold.Action, error) {
+	localDir := h.LocalDir()       // e.g. ".opencode/command"
+	manifestDir := h.ManifestDir() // same as localDir for FlatPrefix
+	absLocalDir := filepath.Join(opts.Root, localDir)
+
+	// List only docops-owned files (docops-*.md) in the flat dir.
+	present, dirExists, err := listFlatPrefixFiles(absLocalDir)
+	if err != nil {
+		return nil, err
+	}
+
+	manifest, manifestExists, err := readManifest(filepath.Join(opts.Root, manifestDir))
+	if err != nil {
+		return nil, err
+	}
+
+	// Build the set of shipped flat filenames (e.g. "docops-get.md").
+	shippedFlat := make([]string, len(shippedCmds))
+	for i, cmd := range shippedCmds {
+		shippedFlat[i] = h.FilenameFor(cmd) // "docops-get.md"
+	}
+
+	if manifestExists {
+		shippedSet := stringSet(shippedFlat)
+		manifestSet := stringSet(manifest)
+		var unknown []string
+		for _, name := range present {
+			if !shippedSet[name] && !manifestSet[name] {
+				unknown = append(unknown, name)
+			}
+		}
+		if len(unknown) > 0 {
+			sort.Strings(unknown)
+			return nil, &ErrUnknownFiles{Dir: localDir, Files: unknown}
+		}
+	}
+
+	var actions []scaffold.Action
+
+	// Ensure the target directory exists.
+	actions = append(actions, scaffold.DirAction(opts.Root, localDir))
+
+	// Refresh / create every shipped command with frontmatter transform.
+	for _, cmd := range shippedCmds {
+		srcBody := shipped[cmd+".md"]
+		outBody, err := applyTransform(srcBody, h.TransformFrontmatter)
+		if err != nil {
+			return nil, fmt.Errorf("transform frontmatter for %s/%s: %w", h.Slug(), cmd, err)
+		}
+		rel := filepath.Join(h.LocalDir(), h.FilenameFor(cmd))
+		actions = append(actions, scaffold.FileAction(opts.Root, rel, outBody, 0o644, true))
+	}
+
+	// Remove owned files that are no longer in the shipped bundle.
+	if dirExists {
+		shippedSet := stringSet(shippedFlat)
+		for _, name := range present {
+			if shippedSet[name] {
+				continue
+			}
+			rel := filepath.Join(localDir, name)
+			actions = append(actions, scaffold.Action{
+				Path:   filepath.Join(opts.Root, rel),
+				Rel:    rel,
+				Kind:   scaffold.KindRemove,
+				Reason: "no longer in shipped bundle",
+				Mode:   0o644,
+			})
+		}
+	}
 
 	return actions, nil
+}
+
+// listFlatPrefixFiles returns the basenames of regular files in dir
+// whose name matches "docops-*.md" (the docops-owned subset of a flat
+// command directory). Dotfiles and files not matching the prefix are
+// skipped — they belong to other tools.
+func listFlatPrefixFiles(dir string) (names []string, dirExists bool, err error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, false, nil
+		}
+		return nil, false, err
+	}
+	for _, e := range entries {
+		if !e.Type().IsRegular() {
+			continue
+		}
+		name := e.Name()
+		if strings.HasPrefix(name, "docops-") && strings.HasSuffix(name, ".md") {
+			names = append(names, name)
+		}
+	}
+	sort.Strings(names)
+	return names, true, nil
 }
 
 // listSkillFiles returns the basenames of regular files directly
