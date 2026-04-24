@@ -120,8 +120,14 @@ docops upgrade --dry-run         # preview first
 | `docops graph <ID>` | Typed edge graph from a starting doc |
 | `docops next` | Recommend the next task to work on |
 | `docops search <query>` | Substring/regex search over title, tags, body |
+| `docops html` | Emit a browsable HTML viewer to `docs/.html/` |
+| `docops serve` | Localhost web viewer on `:8484` — sidebar, graph, live |
 
 All commands support `--json` for structured output. Run `docops <command> --help` for details.
+
+### HTML viewer
+
+`docops serve --open` spins up a localhost web UI for the current repo: sidebar by kind (CTX / ADR / TP), frontmatter + rendered markdown on the right, and an interactive graph tab. Hover a node to focus its neighborhood, single-click to pin, double-click to open the doc. Works on any modern browser; no install, no framework — the SPA pulls Tailwind / `marked` / `cytoscape` from jsDelivr on first load.
 
 ## Editor integration
 
