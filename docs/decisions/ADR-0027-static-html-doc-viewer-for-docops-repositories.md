@@ -34,36 +34,35 @@ The viewer is **one HTML file**. All rendering, navigation, and graph layout hap
 ```
 ┌─────────────────────────────────────────────┐
 │  Go CLI (docops)                            │
-│    - fresh-builds docs/.index.json          │
+│    - builds a viewer bundle (index + every  │
+│      doc body + STATE.md, all in one JSON)  │
 │    - copies embedded index.html             │
-│    - exposes raw .md bodies                 │
 └─────────────────────────────────────────────┘
                       │
                       ▼
 ┌─────────────────────────────────────────────┐
-│  Browser (one index.html, ~400 lines)       │
-│    - fetches .index.json                    │
+│  Browser (one index.html, ~530 lines)       │
+│    - fetches the bundle once                │
 │    - sidebar: grouped tree (CTX / ADR / TP) │
 │    - right pane: rendered markdown body     │
-│    - graph tab: Cytoscape.js                │
-│    - hash routing (#/adr/ADR-0027)          │
+│    - graph tab: pinned-column Cytoscape     │
+│    - hover/click highlight, dbl-click opens │
+│    - hash routing (#/ADR/ADR-0027)          │
 └─────────────────────────────────────────────┘
 ```
 
 ### What Go emits
 
-`docops html --output docs/.html/` writes:
+`docops html --output docs/.html/` writes **just two files**:
 
 | File | Purpose |
 |---|---|
-| `index.html` | The SPA. Shared code, embedded via `embed.FS` at compile time. |
-| `index.json` | Copy of `docs/.index.json` with an IDs→path map for raw bodies. |
-| `state.md` | Copy of `docs/STATE.md` (the SPA renders it on the Home view). |
-| `raw/<path>` | Verbatim copies of every CTX/ADR/TP markdown file. The SPA fetches these and renders client-side. |
+| `index.html` | The SPA. Embedded in the Go binary via `embed.FS` at compile time; written verbatim. |
+| `index.json` | Viewer bundle: the enriched index graph plus every CTX/ADR/TP body (frontmatter stripped) and STATE.md inlined at the top level. One fetch, zero follow-up round-trips. |
 
-That's it. No per-doc HTML. No template fan-out. No CSS asset pipeline.
+No per-doc HTML. No template fan-out. No CSS asset pipeline. No raw/ copy of source markdown. No separate `state.md` file.
 
-`docops serve` serves the same layout from memory — the SPA is served from the embedded bytes, `/index.json` is rebuilt on each request via `internal/index.Build()`, and `/raw/<path>` reads the file from disk. No fsnotify, no live reload — the browser re-fetches on page load, which is sufficient for a dev viewer and avoids the complexity of SSE + debouncing.
+`docops serve` serves the same two artifacts from memory — `/` returns the embedded SPA bytes, `/index.json` rebuilds the bundle on each request via `internal/index.Build()`. No fsnotify, no live reload — the browser reload refreshes everything, sufficient for a dev viewer and avoids SSE + debouncing complexity.
 
 ### The SPA
 
@@ -79,15 +78,17 @@ Total first-load cost: well under 250 KB gzipped, browser-cached after first vis
 
 Structure:
 
-- **Left sidebar** — reads `index.json`, groups by kind (CTX / ADR / TP), collapsible sections, search box, status badges. Click to load into right pane. Current doc highlighted.
+- **Left sidebar** — reads the bundle, groups by kind (CTX / ADR / TP), collapsible sections, search box, status badges. Click to load into right pane. Current doc highlighted.
 - **Right pane**:
-  - Breadcrumb (Home > ADR > ADR-0027).
+  - Breadcrumb (Home > Decision > ADR-0027).
   - Frontmatter table — every field rendered as key/value; arrays of IDs linkified to other docs.
-  - Rendered markdown body via `marked`.
+  - Rendered markdown body via `marked`, read straight from `doc.body` in the bundle (no extra fetch).
   - After rendering, a regex pass linkifies every bare `ADR-\d+`, `CTX-\d+`, `TP-\d+` token in the body to its detail view.
-- **Graph tab** — Cytoscape.js renders the full index graph; clicking a node routes to its detail view. Edge colors keyed by type (`supersedes`, `related`, `requires`, `depends_on`).
-- **URL routing** — `#/`, `#/state`, `#/ctx/CTX-001`, `#/adr/ADR-0027`, `#/task/TP-030`, `#/graph`. Deep-links from terminal output / chat work.
-- **Home view** — STATE.md (fetched + rendered via `marked`) + per-kind count tiles.
+  - Reverse-edge chips (Referenced by, Superseded by, Derived ADRs, Active tasks, Blocks) linked back into the SPA.
+- **Graph tab** — Cytoscape.js with a pinned column layout: **CTX on the left (1 column), ADR in the middle (2 columns), TP on the right (3 columns)**. IDs are column-major so they stack in numerical order down each column. Section headers sit above each group; a legend in the top-right corner shows kind + edge-type colors. Edge colors by type: `supersedes` red, `requires` blue, `depends_on` purple, `related` gray.
+- **Graph interactions** — hover a node to focus it and its neighborhood (everything else fades); single tap pins that selection; tap on blank background clears; double tap opens the doc's detail view. Neighbor set = outgoing + incoming edges + the other endpoint of each. Section-header nodes are non-interactive.
+- **URL routing** — `#/`, `#/state`, `#/CTX/CTX-001`, `#/ADR/ADR-0027`, `#/TP/TP-030`, `#/graph`. Deep-links from terminal output / chat work.
+- **Home view** — STATE.md (from the bundle's inlined `state_md`) + per-kind count tiles.
 
 ### Command flags
 
@@ -141,6 +142,16 @@ The original draft of this ADR specified Go-side rendering with `goldmark`, per-
 - The Go binary stays slim and the SPA stays editable as a plain file.
 
 The decision (ship a CLI-launched HTML viewer) is unchanged; the implementation strategy pivoted before any code was written. The "Rationale" and "Consequences" sections above reflect the SPA direction. This amendment is noted inline (per ADR-0025 convention) because (a) the ADR is still `draft`, so no immutable contract was broken, and (b) the pivot is worth recording so future readers don't wonder why the ADR lost its goldmark references.
+
+## Amendment 2026-04-24 (later) — bundled JSON + pinned graph + interactions
+
+Three refinements that landed during implementation and are worth capturing here so the ADR matches shipped reality:
+
+1. **Bundled JSON.** The initial SPA design fetched `raw/<path>` per doc-click and a separate `/state.md`. In practice that meant copying 60+ markdown files into `docs/.html/raw/` and making two extra round-trips per navigation. Shipped design inlines every doc body and STATE.md into the emitted `index.json`. Output is now two files (`index.html` + `index.json`), navigation is instant, `/raw/*` and `/state.md` routes are gone.
+2. **Pinned column graph layout.** Cytoscape's default force-directed layout was hard to read for a DocOps graph — strongly clustered but no obvious grouping. The shipped layout is `preset` with computed positions: CTX in 1 column on the left, ADR in 2 columns in the middle, TP in 3 columns on the right; column-major fill so IDs stack in numerical order down each column. Section headers above each group; legend with hover/click/dbl-click hints in the top-right corner.
+3. **Focus-on-hover interactions.** Clicking a node originally navigated to its detail view, which was noisy when what the user wanted was "just show me what this connects to." Shipped model: hover focuses a node's closed neighborhood (faded everything else), single tap pins that focus (click again or tap blank to clear), double-tap navigates. This mirrors Kibana / Linkurious / OSINT graph-viewer conventions.
+
+No decision change — these are implementation details that fell out of using the viewer against this repo's own docs. Captured here (rather than a superseding ADR) because the direction is unchanged and the ADR is still `draft`.
 
 ## Rollout
 

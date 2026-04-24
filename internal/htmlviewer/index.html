@@ -187,18 +187,14 @@ async function renderHome() {
     </a>
   `).join('');
 
-  let stateMd = '';
-  try {
-    const res = await fetch(url('state.md'), { cache: 'no-cache' });
-    if (res.ok) stateMd = await res.text();
-  } catch (_) {}
+  const stateMd = state.index.state_md || '';
 
   document.getElementById('main').innerHTML = `
     <div class="max-w-4xl mx-auto p-6">
       <h1 class="text-2xl font-bold mb-1">Project state</h1>
       <p class="text-sm text-gray-500 mb-4">Generated ${escapeHtml(state.index.generated_at || '')}</p>
       <div class="grid grid-cols-3 gap-3 mb-6">${tiles}</div>
-      <article class="prose">${stateMd ? renderMarkdown(stateMd) : '<p class="text-gray-500">No STATE.md available.</p>'}</article>
+      <article class="prose">${stateMd ? linkifyIds(renderMarkdown(stateMd)) : '<p class="text-gray-500">No STATE.md available.</p>'}</article>
     </div>
   `;
 }
@@ -210,7 +206,7 @@ function firstOfKind(k) {
 
 /* ---------------------------------------------------------- doc view */
 
-async function renderDoc(id) {
+function renderDoc(id) {
   const doc = state.byId.get(id);
   if (!doc) {
     document.getElementById('main').innerHTML =
@@ -219,12 +215,7 @@ async function renderDoc(id) {
     return;
   }
 
-  let body = '';
-  try {
-    const res = await fetch(url('raw/' + doc.path), { cache: 'no-cache' });
-    if (res.ok) body = stripFrontmatter(await res.text());
-  } catch (_) {}
-
+  const body = doc.body || '';
   const rendered = renderMarkdown(body);
   const linkified = linkifyIds(rendered);
 
@@ -321,12 +312,8 @@ function renderReverseEdges(doc) {
 
 /* ---------------------------------------------------------- state view */
 
-async function renderState() {
-  let md = '';
-  try {
-    const res = await fetch(url('state.md'), { cache: 'no-cache' });
-    if (res.ok) md = await res.text();
-  } catch (_) {}
+function renderState() {
+  const md = state.index.state_md || '';
   document.getElementById('main').innerHTML = `
     <div class="max-w-4xl mx-auto p-6">
       <nav class="text-xs text-gray-500 mb-3"><a href="#/" class="hover:underline">Home</a> <span class="mx-1">›</span> STATE</nav>
@@ -338,7 +325,25 @@ async function renderState() {
 /* ---------------------------------------------------------- graph view */
 
 function renderGraph() {
-  document.getElementById('main').innerHTML = `<div id="graph"></div>`;
+  document.getElementById('main').innerHTML = `
+    <div class="relative">
+      <div id="graph-legend" class="absolute top-3 right-3 z-10 bg-white/90 backdrop-blur border border-gray-200 rounded p-2 text-xs shadow-sm">
+        <div class="flex items-center gap-2 mb-1"><span class="inline-block w-2 h-2 rounded-full kind-dot-CTX"></span>Context</div>
+        <div class="flex items-center gap-2 mb-1"><span class="inline-block w-2 h-2 rounded-full kind-dot-ADR"></span>Decisions</div>
+        <div class="flex items-center gap-2 mb-2"><span class="inline-block w-2 h-2 rounded-full kind-dot-TP"></span>Tasks</div>
+        <div class="border-t border-gray-100 pt-1.5 space-y-0.5 text-gray-600">
+          <div><span class="inline-block w-4 h-0.5 align-middle mr-1" style="background:#dc2626"></span>supersedes</div>
+          <div><span class="inline-block w-4 h-0.5 align-middle mr-1" style="background:#2563eb"></span>requires</div>
+          <div><span class="inline-block w-4 h-0.5 align-middle mr-1" style="background:#7c3aed"></span>depends_on</div>
+          <div><span class="inline-block w-4 h-0.5 align-middle mr-1" style="background:#9ca3af"></span>related</div>
+        </div>
+        <div class="border-t border-gray-100 mt-1.5 pt-1.5 text-[10px] text-gray-500 leading-tight">
+          hover · focus<br>click · pin<br>dbl-click · open
+        </div>
+      </div>
+      <div id="graph"></div>
+    </div>
+  `;
 
   const kindColor = { CTX: '#2563eb', ADR: '#d97706', TP: '#16a34a' };
   const edgeColor = {
@@ -348,9 +353,50 @@ function renderGraph() {
     depends_on: '#7c3aed',
   };
 
+  // Pinned column layout: CTX (1 col) | ADR (2 cols) | TP (3 cols).
+  // Column-major fill so IDs stack in numerical order down each column.
+  const kindConfig = {
+    CTX: { cols: 1, xOffset: 0 },
+    ADR: { cols: 2, xOffset: 340 },
+    TP:  { cols: 3, xOffset: 900 },
+  };
+  const colGap = 170;
+  const rowGap = 46;
+  const headerY = -60;
+
+  const byKind = { CTX: [], ADR: [], TP: [] };
+  for (const d of state.index.docs) if (byKind[d.kind]) byKind[d.kind].push(d);
+  for (const k of Object.keys(byKind)) byKind[k].sort((a, b) => a.id.localeCompare(b.id));
+
+  const positions = new Map();
+  for (const [k, cfg] of Object.entries(kindConfig)) {
+    const list = byKind[k];
+    const rowsPerCol = Math.max(1, Math.ceil(list.length / cfg.cols));
+    list.forEach((d, i) => {
+      const col = Math.floor(i / rowsPerCol);
+      const row = i % rowsPerCol;
+      positions.set(d.id, { x: cfg.xOffset + col * colGap, y: row * rowGap });
+    });
+  }
+
   const nodes = state.index.docs.map(d => ({
-    data: { id: d.id, label: d.id, kind: d.kind, title: d.title || '' }
+    data: { id: d.id, label: d.id, kind: d.kind, title: d.title || '' },
+    position: positions.get(d.id),
+    grabbable: true,
   }));
+
+  // Section headers as non-interactive label nodes above each column group.
+  const headerNodes = [
+    { id: '__h_CTX', label: 'Context',   kind: 'CTX', x: kindConfig.CTX.xOffset },
+    { id: '__h_ADR', label: 'Decisions', kind: 'ADR', x: kindConfig.ADR.xOffset + ((kindConfig.ADR.cols - 1) * colGap) / 2 },
+    { id: '__h_TP',  label: 'Tasks',     kind: 'TP',  x: kindConfig.TP.xOffset  + ((kindConfig.TP.cols  - 1) * colGap) / 2 },
+  ].map(h => ({
+    data: { id: h.id, label: h.label, kind: h.kind, isHeader: true },
+    position: { x: h.x, y: headerY },
+    selectable: false,
+    grabbable: false,
+  }));
+
   const edges = [];
   const seen = new Set();
   const addEdge = (from, to, type) => {
@@ -369,7 +415,7 @@ function renderGraph() {
 
   const cy = cytoscape({
     container: document.getElementById('graph'),
-    elements: [...nodes, ...edges],
+    elements: [...headerNodes, ...nodes, ...edges],
     style: [
       {
         selector: 'node',
@@ -378,22 +424,82 @@ function renderGraph() {
           'label': 'data(label)',
           'font-size': 10,
           'color': '#111827',
-          'text-valign': 'bottom',
-          'text-margin-y': 4,
-          'width': 16,
-          'height': 16,
+          'text-valign': 'center',
+          'text-halign': 'right',
+          'text-margin-x': 5,
+          'width': 14,
+          'height': 14,
+        }
+      },
+      {
+        selector: 'node[?isHeader]',
+        style: {
+          'background-color': '#ffffff',
+          'background-opacity': 0,
+          'border-width': 0,
+          'label': 'data(label)',
+          'font-size': 14,
+          'font-weight': 700,
+          'color': n => kindColor[n.data('kind')] || '#111827',
+          'text-valign': 'center',
+          'text-halign': 'center',
+          'text-margin-x': 0,
+          'width': 1,
+          'height': 1,
         }
       },
       {
         selector: 'edge',
         style: {
-          'width': 1.2,
+          'width': 1.1,
           'line-color': e => edgeColor[e.data('type')] || '#d1d5db',
           'curve-style': 'bezier',
           'target-arrow-shape': 'triangle',
           'target-arrow-color': e => edgeColor[e.data('type')] || '#d1d5db',
-          'arrow-scale': 0.8,
-          'opacity': 0.75,
+          'arrow-scale': 0.7,
+          'opacity': 0.55,
+        }
+      },
+      {
+        selector: '.faded',
+        style: {
+          'opacity': 0.08,
+          'text-opacity': 0.15,
+          'transition-property': 'opacity, text-opacity',
+          'transition-duration': '150ms',
+        }
+      },
+      {
+        selector: 'node.focused',
+        style: {
+          'border-width': 2.5,
+          'border-color': '#111827',
+          'width': 18,
+          'height': 18,
+          'font-weight': 700,
+          'opacity': 1,
+          'text-opacity': 1,
+          'z-index': 999,
+        }
+      },
+      {
+        selector: 'node.neighbor',
+        style: {
+          'border-width': 1.5,
+          'border-color': '#111827',
+          'font-weight': 600,
+          'opacity': 1,
+          'text-opacity': 1,
+          'z-index': 998,
+        }
+      },
+      {
+        selector: 'edge.incident',
+        style: {
+          'width': 2.4,
+          'opacity': 1,
+          'arrow-scale': 1,
+          'z-index': 997,
         }
       },
       {
@@ -401,11 +507,74 @@ function renderGraph() {
         style: { 'border-width': 3, 'border-color': '#111827' }
       }
     ],
-    layout: { name: 'cose', animate: false, idealEdgeLength: 90, nodeRepulsion: 6000 },
+    layout: { name: 'preset' },
+    wheelSensitivity: 0.3,
+    minZoom: 0.3,
+    maxZoom: 2.5,
   });
+  cy.fit(undefined, 40);
+  window.__docopsCy = cy; // escape hatch for devtools + e2e tests
+
+  /* ---- interactivity: hover focus, click pin, dbl-click open ---- */
+
+  let pinnedId = null;
+
+  const clearHighlights = () => {
+    cy.elements().removeClass('faded focused neighbor incident');
+  };
+  const highlightNode = (n) => {
+    clearHighlights();
+    const nhood = n.closedNeighborhood();
+    // Protect section header pseudo-nodes from the dim pass.
+    const headers = cy.nodes('[?isHeader]');
+    cy.elements().not(nhood).not(headers).addClass('faded');
+    nhood.nodes().not(n).not(headers).addClass('neighbor');
+    nhood.edges().addClass('incident');
+    n.addClass('focused');
+  };
+
+  cy.on('mouseover', 'node', e => {
+    if (e.target.data('isHeader')) return;
+    if (pinnedId) return; // pinned selection wins over transient hover
+    highlightNode(e.target);
+  });
+  cy.on('mouseout', 'node', e => {
+    if (pinnedId) return;
+    if (e.target.data('isHeader')) return;
+    clearHighlights();
+  });
+
+  // Single tap toggles pin. Double tap opens the doc.
+  let lastTap = { id: null, t: 0 };
+  const DOUBLE_MS = 350;
   cy.on('tap', 'node', e => {
-    const d = state.byId.get(e.target.id());
-    if (d) location.hash = `#/${d.kind}/${d.id}`;
+    if (e.target.data('isHeader')) return;
+    const id = e.target.id();
+    const now = Date.now();
+    if (lastTap.id === id && now - lastTap.t < DOUBLE_MS) {
+      // Double-tap: navigate.
+      lastTap = { id: null, t: 0 };
+      const d = state.byId.get(id);
+      if (d) location.hash = `#/${d.kind}/${d.id}`;
+      return;
+    }
+    lastTap = { id, t: now };
+    // Single-tap: pin / unpin.
+    if (pinnedId === id) {
+      pinnedId = null;
+      clearHighlights();
+    } else {
+      pinnedId = id;
+      highlightNode(e.target);
+    }
+  });
+
+  // Tap on blank background clears the pin.
+  cy.on('tap', e => {
+    if (e.target === cy) {
+      pinnedId = null;
+      clearHighlights();
+    }
   });
 }
 
@@ -415,14 +584,6 @@ function renderMarkdown(md) {
   if (!md) return '';
   marked.setOptions({ gfm: true, breaks: false, headerIds: false, mangle: false });
   return marked.parse(md);
-}
-
-function stripFrontmatter(src) {
-  if (!src.startsWith('---')) return src;
-  const end = src.indexOf('\n---', 3);
-  if (end === -1) return src;
-  const tail = src.slice(end + 4);
-  return tail.replace(/^\r?\n/, '');
 }
 
 function linkifyIds(html) {

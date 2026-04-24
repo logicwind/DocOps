@@ -9,9 +9,9 @@ depends_on: []
 
 ## Goal
 
-Ship `docops html` — a one-shot CLI subcommand that emits a self-contained, browsable viewer for the current DocOps repository. The viewer is a single HTML single-page app that reads the repository's graph + document bodies and renders them client-side with sidebar navigation, rendered markdown, cross-reference linkification, and a graph tab.
+Ship `docops html` — a one-shot CLI subcommand that emits a self-contained, browsable viewer for the current DocOps repository. The viewer is a single HTML single-page app that reads the repository's graph + every document body + STATE.md out of a single bundled JSON and renders everything client-side with sidebar navigation, rendered markdown, cross-reference linkification, and a pinned-column graph tab.
 
-End state: running `docops html` in any DocOps-enabled repo writes `docs/.html/` containing one `index.html` SPA plus the data files it fetches, openable in any modern browser.
+End state: running `docops html` in any DocOps-enabled repo writes exactly **two files** into `docs/.html/` (`index.html` + `index.json`), openable in any modern browser.
 
 ## Acceptance
 
@@ -22,19 +22,28 @@ End state: running `docops html` in any DocOps-enabled repo writes `docs/.html/`
 ```
 docs/.html/
   index.html          — the SPA (embedded in the Go binary via embed.FS)
-  index.json          — copy of docs/.index.json, with raw-body paths baked in
-  state.md            — copy of docs/STATE.md
-  raw/
-    context/CTX-*.md  — verbatim copies
-    decisions/ADR-*.md
-    tasks/TP-*.md
+  index.json          — viewer bundle: enriched index + doc bodies + STATE.md
 ```
 
-No per-doc HTML. No `ctx/`, `adr/`, `task/` rendered-page directories. Everything above the raw markdown is fetched and rendered by the SPA at runtime.
+Two files, always. No per-doc HTML, no `raw/` copy directory, no separate `state.md`. Navigation is instant after first load because every body is already in the bundle.
+
+The bundle shape:
+
+```
+{
+  "generated_at": "...",
+  "version": 1,
+  "state_md": "<contents of docs/STATE.md, or empty>",
+  "docs": [
+    { ...IndexedDoc fields..., "body": "<markdown with frontmatter stripped>" },
+    ...
+  ]
+}
+```
 
 ### The SPA (`index.html`)
 
-A single HTML file, ~400 lines, embedded into the Go binary via `go:embed`. Pulls three libs from jsDelivr:
+A single HTML file, ~530 lines, embedded into the Go binary via `go:embed`. Pulls three libs from jsDelivr:
 
 - `tailwindcss` play CDN — styling
 - `marked` — markdown rendering
@@ -43,12 +52,13 @@ A single HTML file, ~400 lines, embedded into the Go binary via `go:embed`. Pull
 Sections:
 
 - **Left sidebar**: grouped tree (CTX / ADR / TP), collapsible, status badge per row, search box, current-doc highlight.
-- **Right pane**: breadcrumb → frontmatter table → rendered body. After rendering, a regex pass linkifies `ADR-\d+` / `CTX-\d+` / `TP-\d+` tokens in the HTML to `#/kind/ID`.
-- **Graph tab**: Cytoscape instance consuming the same `index.json` edges. Click a node → routes to detail view.
-- **Home view**: renders `state.md` + per-kind count tiles.
-- **URL routing**: hash-based — `#/`, `#/state`, `#/graph`, `#/ctx/CTX-001`, `#/adr/ADR-0027`, `#/task/TP-030`.
+- **Right pane**: breadcrumb → frontmatter table → reverse-edge chips → rendered body from `doc.body` in the bundle. After rendering, a regex pass linkifies `ADR-\d+` / `CTX-\d+` / `TP-\d+` tokens in the HTML to `#/KIND/ID`.
+- **Graph tab**: Cytoscape instance with a **pinned column layout** — CTX in 1 column (left), ADR in 2 columns (middle), TP in 3 columns (right); column-major fill so IDs stack in numerical order. Section-header label nodes above each group; a legend with hover/click/dbl-click hints in the top-right. Edge colors by type: `supersedes` red, `requires` blue, `depends_on` purple, `related` gray.
+- **Graph interactions**: hover a node → focus its closed neighborhood, fade everything else. Single tap pins that focus; tap blank background clears. Double-tap opens the doc's detail view.
+- **Home view**: renders the bundle's inlined `state_md` + per-kind count tiles.
+- **URL routing**: hash-based — `#/`, `#/state`, `#/graph`, `#/CTX/CTX-001`, `#/ADR/ADR-0027`, `#/TP/TP-030`.
 
-The SPA lives at `internal/htmlviewer/index.html` and is embedded via `//go:embed index.html` in `internal/htmlviewer/spa.go`.
+The SPA lives at `internal/htmlviewer/index.html` and is embedded via `//go:embed index.html` in `internal/htmlviewer/spa.go`. The cytoscape instance is exposed on `window.__docopsCy` as an escape hatch for devtools and end-to-end tests.
 
 ### Command flags
 
@@ -66,25 +76,27 @@ New files:
 
 - `internal/htmlviewer/spa.go` — exports `SPA []byte` via `//go:embed index.html`.
 - `internal/htmlviewer/index.html` — the SPA source.
-- `internal/htmlviewer/emit.go` — `Emit(idx *index.Index, root, outDir string) (int, error)` — writes `index.html`, `index.json`, `state.md`, and `raw/**`. Returns file count.
+- `internal/htmlviewer/bundle.go` — `BuildBundle(idx, cfg, root) (*Bundle, error)` — reads STATE.md + each doc body off disk (with frontmatter stripped) and returns the combined JSON payload. Shared by emit and serve.
+- `internal/htmlviewer/emit.go` — `Emit(idx, cfg, root, opts) (int, error)` — writes `index.html` and `index.json` (from `BuildBundle`). Returns file count (2 on success). Also handles `--base-url` by injecting `<base href>` into the SPA head.
 - `cmd/docops/cmd_html.go` — flag parsing, bootstrap, calls `htmlviewer.Emit`.
 
-`cmd_html.go` calls `bootstrapIndex("html")` (shared helper — already used by `get`/`graph`/`list`/`next`), then `htmlviewer.Emit` to write the output directory. Follows the existing pattern of `cmd_index.go` for `--json` and `--output` handling.
+`cmd_html.go` calls `bootstrapIndex("html")` (shared helper — already used by `get`/`graph`/`list`/`next`), then `htmlviewer.Emit` to write the output directory.
 
 ### Data sourcing
 
-- `index.json` is the serialized `internal/index.Index` produced by `internal/index.Build()` — same code path as `docops index`.
-- `raw/*` files are copies of the source markdown files on disk. The SPA strips the YAML frontmatter before rendering with `marked`.
-- `state.md` is read from `docs/STATE.md` if present; regenerated via `internal/state` if missing.
+- Bundle is produced by `BuildBundle` from the in-memory `*index.Index` (no `.index.json` file read).
+- Each `BundleDoc` embeds `index.IndexedDoc` and adds a `Body string` field. Body is the source `.md` file with its leading `---\n...\n---\n` block stripped.
+- `state_md` at the top level of the bundle is the verbatim contents of `cfg.Paths.State` (default `docs/STATE.md`), empty string if absent.
 
 ### Tests
 
+- `internal/htmlviewer/bundle_test.go`:
+  - `BuildBundle` against a fixture → asserts `state_md` populated, every doc has a non-empty body, frontmatter is stripped (body does not start with `---`).
 - `internal/htmlviewer/emit_test.go`:
-  - `Emit` against a temp repo fixture → assert `index.html`, `index.json`, `state.md`, `raw/decisions/ADR-0001.md` exist.
-  - `index.json` parses as valid JSON and matches `index.Index` shape.
-  - No external resource references written outside the output directory.
+  - `Emit` against a temp repo fixture → exactly two files written (`index.html`, `index.json`); no `raw/` dir created.
+  - `index.json` parses as `Bundle` with the expected shape.
 - `cmd/docops/cmd_html_test.go`:
-  - `--json` mode emits valid `{"files_written":N,"output_dir":"..."}`.
+  - `--json` mode emits valid `{"files_written":2,"output_dir":"..."}`.
   - Non-DocOps repo (no `docops.yaml`) → exit 2 with clear error.
   - `--output` on a parent dir that doesn't exist → creates it.
 

@@ -19,13 +19,13 @@ End state: `docops serve` starts on `localhost:8484` (default), serves `index.ht
 
 - Listens on `localhost:{port}` (default `8484`).
 - Routes:
-  - `GET /`                     → embedded SPA bytes (`internal/htmlviewer.SPA`).
-  - `GET /index.json`           → fresh `internal/index.Build()` output, JSON-encoded.
-  - `GET /state.md`             → `docs/STATE.md` from disk (regenerated via `internal/state` if stale).
-  - `GET /raw/{path}`           → file on disk under `docs/context|decisions|tasks/...` (path-traversal-safe).
-  - `GET /health`               → `{"status":"ok"}` for CI / scripted checks.
-- `Content-Type` set appropriately: `text/html`, `application/json`, `text/markdown`.
-- Unknown paths → 404 with a small inline "Not found" HTML snippet.
+  - `GET /` and `GET /index.html` → embedded SPA bytes (`internal/htmlviewer.SPA`).
+  - `GET /index.json`             → fresh viewer bundle via `internal/htmlviewer.BuildBundle` (enriched index + every doc body + STATE.md, all in one payload).
+  - `GET /health`                 → `{"status":"ok"}` for CI / scripted checks.
+- `Content-Type` set appropriately: `text/html`, `application/json`.
+- Unknown paths → 404.
+
+No `/raw/*` or `/state.md` route — everything the SPA renders is in the single bundle.
 
 ### Command flags
 
@@ -40,21 +40,18 @@ Exit: `0` on SIGINT / SIGTERM shutdown, `1` on fatal start error (port in use, n
 ### Go implementation
 
 - `cmd/docops/cmd_serve.go` — flag parsing, `http.Server` setup, signal handling.
-- `internal/htmlviewer/serve.go` — `Handler(root string, cfg *config.Config) http.Handler` returning a `*http.ServeMux` that wires the routes above. Rebuilds the index on `/index.json` requests.
-- Path-traversal guard on `/raw/` — reject anything containing `..` or resolving outside `docs/`.
+- `internal/htmlviewer/serve.go` — `Handler(root string, cfg config.Config) http.Handler` returning a `*http.ServeMux` that wires the routes above. Rebuilds the bundle (index + bodies + state) on every `/index.json` request.
 - Graceful shutdown: `http.Server.Shutdown(ctx)` with a 5 s deadline on SIGINT.
 
 ### No live reload in v1
 
-The SPA already triggers a full data refresh on navigation (hash change → re-fetch `index.json` / raw body). Editors that save a file and switch to the browser can hit Cmd-R. If live reload becomes a common ask, we add a `/events` SSE endpoint + a ~20-line JS snippet in a follow-up task — explicitly deferred here to keep v1 tight.
+Browser reload (Cmd-R) is sufficient — it re-fetches the bundle and everything updates. No fsnotify, no SSE, no debouncing. If live reload becomes a common ask, we add a `/events` SSE endpoint + a ~20-line JS snippet in a follow-up task — explicitly deferred here to keep v1 tight.
 
 ### Tests
 
 - `internal/htmlviewer/serve_test.go`:
   - `GET /` → 200 + `text/html` + contains `<title>DocOps`.
-  - `GET /index.json` → 200 + parses as `index.Index`.
-  - `GET /raw/decisions/ADR-0001.md` against a fixture → 200 + matches file bytes.
-  - `GET /raw/../../etc/passwd` → 400.
+  - `GET /index.json` → 200 + parses as `Bundle` (with `state_md` + per-doc `body`).
   - `GET /nope` → 404.
 - `cmd/docops/cmd_serve_test.go`:
   - Smoke test: start server on random port (`--port 0`), hit `/health`, shut down cleanly.

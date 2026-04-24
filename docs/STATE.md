@@ -6,7 +6,7 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 25 accepted · 3 draft · 0 superseded (27 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 9 backlog · 1 active · 0 blocked · 23 done
+- Tasks: 8 backlog · 1 active · 0 blocked · 24 done
 
 ## Needs attention
 
@@ -19,6 +19,8 @@
 ## Recent activity
 
 - 2026-04-24 fc421e0 docs: add ADR-0027 + ADR-0028 with TP-030–TP-033
+- 2026-04-24 faa2bb7 docs: TP-033 Phase 4 — v0.4.0 CHANGELOG, README, status flips
+- 2026-04-24 57fec1d feat(htmlviewer): add docops html + docops serve — static SPA viewer for DocOps repos
 - 2026-04-23 e59940b planning: ADR-0026 review-delta + TP-029, expand TP-023 scope
 - 2026-04-23 dc91851 TP-023 phase 2: ship orchestration skills; close TP-023
 - 2026-04-23 d811d75 docs(adr): promote ADR-0023 and ADR-0024 to accepted
@@ -36,6 +38,4 @@
 - 2026-04-22 f5ab1e6 TP-004: docops index — enriched graph written to .index.json
 - 2026-04-22 f01bed5 TP-002: frontmatter schemas, validators, and JSON Schema emission
 - 2026-04-22 e94040f TP-005: docops state — regenerate STATE.md from the index
-- 2026-04-22 e22e6c6 planning: ADR-0019 + TP-013/TP-014 for v0.1.0 release
-- 2026-04-22 dafd8eb TP-006: docops audit — structural gap punch list
 

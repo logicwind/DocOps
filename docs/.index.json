@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-24T03:09:56Z",
+  "generated_at": "2026-04-24T04:51:01Z",
   "version": 1,
   "docs": [
     {
@@ -1214,8 +1214,8 @@
         "ADR-0018"
       ],
       "summary": "Agents and humans browsing a DocOps repository today see markdown files in a terminal or file tree. Raw markdown is functional but lacks the cross-referencing, navigation, and readability of rendered …",
-      "word_count": 1117,
-      "last_touched": "2026-04-24T02:25:56Z",
+      "word_count": 1864,
+      "last_touched": "2026-04-24T04:23:47Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1231,7 +1231,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "not-started",
+      "implementation": "partial",
       "stale": false
     },
     {
@@ -1257,7 +1257,7 @@
       ],
       "summary": "TP-023 (commit `379ee51`) moved `/docops:*` from skills to **slash commands** under `.claude/commands/docops/`. ADR-0022 had already solved multi-tool *skills* via a canonical `.agents/skills/` store …",
       "word_count": 996,
-      "last_touched": "2026-04-24T02:25:56Z",
+      "last_touched": "2026-04-24T03:10:20Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1279,6 +1279,9 @@
       "word_count": 478,
       "last_touched": "2026-04-22T06:03:04Z",
       "age_days": 1,
+      "derived_adrs": [
+        "ADR-0027"
+      ],
       "stale": false
     },
     {
@@ -1914,7 +1917,7 @@
       "summary": "Ship the `docops upgrade` subcommand that pulls the current binary's shipped templates into an already-initialized project without clobbering `docops.yaml` or the pre-commit hook, per ADR-0021.",
       "word_count": 743,
       "last_touched": "2026-04-23T04:24:55Z",
-      "age_days": 0,
+      "age_days": 1,
       "referenced_by": [
         {
           "id": "TP-019",
@@ -1964,7 +1967,7 @@
       "summary": "Lift the helpers that `docops upgrade` will need to share with `docops init` out of `internal/initter/` and into a new `internal/scaffold/` package, with **zero behavior change**. Sets up TP-018 to la…",
       "word_count": 370,
       "last_touched": "2026-04-23T04:24:55Z",
-      "age_days": 0,
+      "age_days": 1,
       "referenced_by": [
         {
           "id": "TP-018",
@@ -1991,7 +1994,7 @@
       "summary": "Ship the update-check mechanism specified by ADR-0023: a small internal package, a standalone `docops update-check` subcommand, and integration into `docops upgrade` so users learn when their binary i…",
       "word_count": 647,
       "last_touched": "2026-04-23T04:24:55Z",
-      "age_days": 0,
+      "age_days": 1,
       "referenced_by": [
         {
           "id": "TP-018",
@@ -2018,7 +2021,7 @@
       "summary": "Implement ADR-0024: docops writes both `CLAUDE.md` and `AGENTS.md` during `init` and refreshes both during `upgrade`. Both files share the same `\u003c!-- docops:start --\u003e … \u003c!-- docops:end --\u003e` block.",
       "word_count": 395,
       "last_touched": "2026-04-23T04:24:55Z",
-      "age_days": 0,
+      "age_days": 1,
       "stale": false
     },
     {
@@ -2087,7 +2090,7 @@
       "summary": "Implement the npm distribution path committed to in ADR-0012's \"npm distribution addendum\": one thin meta-package depended on by five per-platform packages, where npm's resolver picks exactly the bina…",
       "word_count": 574,
       "last_touched": "2026-04-23T04:27:42Z",
-      "age_days": 0,
+      "age_days": 1,
       "stale": false
     },
     {
@@ -2174,16 +2177,16 @@
       "kind": "TP",
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-030-implement-docops-html-static-html-emitter.md",
-      "title": "Implement docops html — static HTML emitter",
+      "title": "Implement docops html — static SPA viewer emitter",
       "task_status": "backlog",
       "priority": "p2",
       "assignee": "unassigned",
       "requires": [
         "ADR-0027"
       ],
-      "summary": "Ship `docops html` — a one-shot CLI subcommand that reads the current repository's DocOps documents through the read layer and emits a directory of self-contained HTML files covering all CTX, ADR, and…",
-      "word_count": 783,
-      "last_touched": "2026-04-24T02:25:56Z",
+      "summary": "Ship `docops html` — a one-shot CLI subcommand that emits a self-contained, browsable viewer for the current DocOps repository. The viewer is a single HTML single-page app that reads the repository's …",
+      "word_count": 827,
+      "last_touched": "2026-04-24T04:23:47Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -2206,7 +2209,7 @@
       "kind": "TP",
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-031-implement-docops-serve-live-dev-server-with-auto-r.md",
-      "title": "Implement docops serve — live dev server with auto-rebuild",
+      "title": "Implement docops serve — localhost viewer server",
       "task_status": "backlog",
       "priority": "p2",
       "assignee": "unassigned",
@@ -2216,9 +2219,9 @@
       "depends_on": [
         "TP-030"
       ],
-      "summary": "Ship `docops serve` — an HTTP server that renders the same HTML as `docops html` from memory, watches `docs/` for changes, and auto-rebuilds affected pages so the browser stays in sync during editing.",
-      "word_count": 848,
-      "last_touched": "2026-04-24T02:25:56Z",
+      "summary": "Ship `docops serve` — a localhost HTTP server that serves the same SPA + data as `docops html`, but rebuilds the index on each page load instead of writing files to disk. Stays in memory, no fsnotify,…",
+      "word_count": 474,
+      "last_touched": "2026-04-24T04:23:47Z",
       "age_days": 0,
       "stale": false
     },
@@ -2228,7 +2231,7 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-032-design-ship-default-css-theme-for-html-viewer.md",
       "title": "Design + ship default CSS theme for HTML viewer",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p2",
       "assignee": "unassigned",
       "requires": [
@@ -2237,9 +2240,9 @@
       "depends_on": [
         "TP-030"
       ],
-      "summary": "Design and implement the default CSS theme for the docops HTML viewer (`docops html` and `docops serve`). The theme must look professional, render markdown faithfully, work offline, and be fully embed…",
-      "word_count": 799,
-      "last_touched": "2026-04-24T02:25:56Z",
+      "summary": "This task is retained for audit trail and closed without implementation.",
+      "word_count": 204,
+      "last_touched": "2026-04-24T04:23:47Z",
       "age_days": 0,
       "stale": false
     },
@@ -2259,7 +2262,7 @@
       ],
       "summary": "- Phase 1 (`cf3a2c7`) — `Harness` interface + registry; Claude/Cursor   adapters. Byte-identical output. - Phase 2 (`daa00b6`) — OpenCode adapter + layout-aware writer   (`planHarness`, frontmatter pa…",
       "word_count": 1413,
-      "last_touched": "2026-04-24T02:25:56Z",
+      "last_touched": "2026-04-24T03:10:20Z",
       "age_days": 0,
       "stale": false
     }
