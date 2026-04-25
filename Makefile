@@ -8,7 +8,7 @@ LDFLAGS := -s -w \
   -X $(PKG)/internal/version.Commit=$(COMMIT) \
   -X $(PKG)/internal/version.Date=$(DATE)
 
-.PHONY: build install test lint clean tidy release-snapshot release
+.PHONY: build install test lint clean tidy release-snapshot release publish
 
 build:
 	@mkdir -p bin
@@ -31,6 +31,19 @@ clean:
 
 release-snapshot:
 	goreleaser release --snapshot --clean
+
+# make publish VERSION=X.Y.Z
+#   End-to-end release: sync dev, ff main, dry-run preview, confirm, cut tag,
+#   push, resync dev. Wraps scripts/publish.sh. Pass YES=1 to skip the
+#   confirmation prompt (CI), WATCH=1 to tail the release workflow.
+publish:
+	@if [ -z "$(VERSION)" ] || [ "$(VERSION)" = "dev" ]; then \
+		echo "usage: make publish VERSION=X.Y.Z [YES=1] [WATCH=1]"; exit 2; \
+	fi
+	@flags=""; \
+	 if [ "$(YES)" = "1" ]; then flags="$$flags --yes"; fi; \
+	 if [ "$(WATCH)" = "1" ]; then flags="$$flags --watch"; fi; \
+	 ./scripts/publish.sh "$(VERSION)" $$flags
 
 # make release VERSION=X.Y.Z
 #   Bumps the VERSION file (read by docops update-check via raw.githubusercontent.com),
