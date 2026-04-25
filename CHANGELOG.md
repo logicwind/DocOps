@@ -2,6 +2,53 @@
 
 All notable changes to docops are recorded here. Dates are UTC.
 
+## v0.5.2 — 2026-04-25
+
+### Changed — Codex layout collapses to one skill bundle
+
+`docops upgrade` now writes Codex's docops surface as a single
+**skill bundle** instead of 17 separate per-command skills:
+
+```
+# Before (v0.4.x – v0.5.1)
+.codex/skills/
+  docops-audit/SKILL.md
+  docops-close/SKILL.md
+  docops-get/SKILL.md
+  ... (17 separate top-level skills)
+
+# After (v0.5.2)
+.codex/skills/docops/
+  SKILL.md          ← bundle entry: auto-loaded by description match
+  audit.md          ← per-subroutine files
+  close.md
+  get.md
+  ... (17 subroutines under one skill)
+```
+
+The original layout misread Codex's auto-trigger model. Codex picks
+skills by description matching, so 17 narrow descriptions
+("get a doc", "close a task", …) competed with each other instead of
+one cohesive `docops` skill describing the whole tool surface.
+Aligns with how every other Codex skill (`agforge`, `screenshot`,
+GSD's bundled skills) is structured. See ADR-0028 amendment.
+
+**No migration needed** if you're not yet on docops — pre-launch.
+If you have v0.4.x or v0.5.x with the old Codex layout, the next
+`docops upgrade` removes the 17 stale `docops-*` directories and
+writes the bundle. Other harnesses (Claude, Cursor, OpenCode) are
+unchanged — those use slash-command models, not skills.
+
+### Internal
+
+- New `LayoutSkillBundle` enum value in `internal/upgrader/`
+  replaces `LayoutNestedSkillDir`. The `Codex` adapter now uses it.
+- `templates/skills/docops/SKILL.md` shipped as a new template; it
+  is the bundle's entry-point and bypasses the per-harness frontmatter
+  transform.
+- `planSkillBundleHarness` replaces `planNestedSkillDirHarness` in
+  the upgrader.
+
 ## v0.5.1 — 2026-04-24
 
 ### Fixed

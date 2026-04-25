@@ -5,30 +5,32 @@ import (
 	"path/filepath"
 )
 
-// codexAdapter delivers /docops:* commands to Codex as nested skill directories.
+// codexAdapter delivers /docops:* subroutines to Codex as a single skill
+// bundle. The whole DocOps surface is one skill from Codex's point of view.
 //
-// LocalDir:  .codex/skills   (parent; no docops/ subdirectory)
-// FilenameFor("get") = "docops-get/SKILL.md"
-// ManifestDir: .codex/skills  (manifest sits in the parent, lists directory names)
-// Layout: LayoutNestedSkillDir — each command becomes a directory docops-<cmd>/
-// containing SKILL.md, so `/docops:get` maps to .codex/skills/docops-get/SKILL.md.
+// LocalDir:  .codex/skills        (parent of the bundle)
+// FilenameFor("get") = "docops/get.md"
+// ManifestDir: .codex/skills/docops   (the bundle itself)
+// Layout: LayoutSkillBundle — one bundle directory containing
 //
-// GlobalDir precedence (mirrors GSD lines 261–269):
-//  1. $CODEX_HOME/skills  (docops does not support --config-dir; omitted)
+//	docops/
+//	  SKILL.md     ← entry point, auto-loaded by description matching
+//	  audit.md     ← per-subroutine files referenced by SKILL.md
+//	  close.md
+//	  get.md
+//	  ... etc
+//
+// SKILL.md is shipped verbatim from templates/skills/docops/SKILL.md and
+// is the only file Codex auto-loads; the per-subroutine files are pulled
+// in by the agent on demand based on the index in SKILL.md.
+//
+// GlobalDir precedence:
+//  1. $CODEX_HOME/skills
 //  2. ~/.codex/skills
 //
-// Manifest entries are directory names (e.g. "docops-get"), not file paths.
-// Cleanup removes the whole docops-<cmd>/ subdirectory on de-ship.
-//
-// NOTE on name: injection (Phase 2b design):
-//
-// TransformFrontmatter is a pure function with no knowledge of the command name.
-// However, Codex skills require a name: field set to the skill directory name
-// (e.g. "docops-get"). This is injected by planNestedSkillDirHarness right
-// before serialization — after TransformFrontmatter runs — so TransformFrontmatter
-// itself stays pure and the interface stays stable. Future harnesses that need
-// per-command name injection should follow the same closure pattern in their
-// writer branch rather than extending the Harness interface.
+// TransformFrontmatter applies to the per-subroutine files (drops
+// allowed-tools and name; preserves description). SKILL.md is authored
+// in Codex format and is not transformed.
 type codexAdapter struct{}
 
 func (codexAdapter) Slug() string     { return "codex" }
@@ -47,39 +49,38 @@ func (codexAdapter) GlobalDir() (string, bool) {
 	return filepath.Join(home, ".codex", "skills"), true
 }
 
-func (codexAdapter) Layout() Layout { return LayoutNestedSkillDir }
+func (codexAdapter) Layout() Layout { return LayoutSkillBundle }
 
-// FilenameFor returns the path of the SKILL.md file relative to LocalDir().
-// For example, FilenameFor("get") = "docops-get/SKILL.md".
+// FilenameFor returns the path of the per-subroutine file relative to
+// LocalDir(). For example, FilenameFor("get") = "docops/get.md".
+//
+// SKILL.md is not a subroutine and is written separately by the
+// LayoutSkillBundle planner.
 func (codexAdapter) FilenameFor(cmd string) string {
-	return filepath.Join("docops-"+cmd, "SKILL.md")
+	return filepath.Join("docops", cmd+".md")
 }
 
-// ManifestDir returns LocalDir — the manifest sits in .codex/skills/.docops-manifest
-// and lists directory names (not file paths) so cleanup is per-subdirectory.
-func (codexAdapter) ManifestDir() string { return ".codex/skills" }
+// ManifestDir returns the bundle directory itself: the manifest sits at
+// .codex/skills/docops/.docops-manifest and lists the basenames of every
+// docops-owned file inside the bundle (SKILL.md plus each <cmd>.md).
+func (codexAdapter) ManifestDir() string {
+	return filepath.Join(".codex/skills", "docops")
+}
 
-// TransformFrontmatter converts Claude-canonical frontmatter into the Codex
-// skill dialect (per GSD convertClaudeCommandToCodexSkill):
+// TransformFrontmatter rewrites Claude-canonical frontmatter for a
+// per-subroutine file (e.g. get.md) into the Codex dialect:
 //
 //   - Drop "allowed-tools:" — Codex skills do not use this field.
-//   - Preserve "description:" verbatim.
-//   - Drop "name:" — the caller (planNestedSkillDirHarness) injects the correct
-//     name: "docops-<cmd>" after this transform runs. See the NOTE comment on
-//     codexAdapter for rationale.
-//   - Drop all other Claude-only keys (e.g. "argument-hint" is preserved if
-//     Codex could use it, but currently dropped along with unrecognised fields).
+//   - Drop "name:" — the bundle as a whole has a single name (set in
+//     SKILL.md); per-subroutine files do not need their own.
+//   - Preserve "description:" verbatim — useful when the agent reads a
+//     subroutine file directly.
 //
-// Only "description" survives verbatim; "name:" is injected by the writer.
+// SKILL.md itself is shipped pre-formatted and bypasses this transform.
 func (codexAdapter) TransformFrontmatter(src map[string]any) (map[string]any, error) {
-	out := make(map[string]any, 2)
-	// Preserve description if present.
+	out := make(map[string]any, 1)
 	if desc, ok := src["description"]; ok {
 		out["description"] = desc
 	}
-	// NOTE: "name:" is intentionally NOT set here.
-	// planNestedSkillDirHarness injects name: "docops-<cmd>" per-command
-	// after calling TransformFrontmatter, so this function stays pure.
-	// Dropped fields: allowed-tools, argument-hint, and any other Claude-only keys.
 	return out, nil
 }

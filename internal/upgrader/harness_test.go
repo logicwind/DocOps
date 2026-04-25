@@ -97,8 +97,8 @@ func TestFilenameForLayout(t *testing.T) {
 		{LayoutNestedFile, "audit", "docops/audit.md"},
 		{LayoutFlatPrefixFile, "get", "docops-get.md"},
 		{LayoutFlatPrefixFile, "audit", "docops-audit.md"},
-		{LayoutNestedSkillDir, "get", "docops-get/SKILL.md"},
-		{LayoutNestedSkillDir, "audit", "docops-audit/SKILL.md"},
+		{LayoutSkillBundle, "get", "docops/get.md"},
+		{LayoutSkillBundle, "audit", "docops/audit.md"},
 	}
 
 	for _, tc := range cases {

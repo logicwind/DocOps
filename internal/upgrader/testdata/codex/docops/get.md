@@ -1,5 +1,4 @@
 ---
-name: docops-get
 description: Look up a single DocOps doc by ID (ADR-nnnn, CTX-nnn, TP-nnn) and print its indexed record. Use when you need the frontmatter and edges for one doc without reading the full file.
 ---
 

@@ -39,10 +39,15 @@ func PreCommitHook() ([]byte, error) {
 	return tree.ReadFile("hooks/pre-commit")
 }
 
-// Skills returns a map of skill leaf filename (e.g. "init.md") to file body.
-// Callers write these into `.claude/commands/docops/` and
-// `.cursor/commands/docops/` — both are the slash-command directories
-// for their respective agent tools.
+// Skills returns a map of per-command leaf filename (e.g. "init.md") to
+// file body. Callers write these into the appropriate per-harness target
+// directory (`.claude/commands/docops/`, `.cursor/commands/docops/`,
+// `.opencode/command/`, or — for skill-bundle harnesses — alongside
+// SKILL.md inside the bundle directory).
+//
+// SKILL.md is intentionally excluded from this map: it is the
+// skill-bundle entry point, not a /docops:* command. Use
+// SkillBundleEntry() to fetch it.
 func Skills() (map[string][]byte, error) {
 	out := make(map[string][]byte)
 	entries, err := fs.ReadDir(tree, "skills/docops")
@@ -53,6 +58,9 @@ func Skills() (map[string][]byte, error) {
 		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
 			continue
 		}
+		if e.Name() == "SKILL.md" {
+			continue
+		}
 		body, err := tree.ReadFile("skills/docops/" + e.Name())
 		if err != nil {
 			return nil, err
@@ -60,4 +68,12 @@ func Skills() (map[string][]byte, error) {
 		out[e.Name()] = body
 	}
 	return out, nil
+}
+
+// SkillBundleEntry returns the body of templates/skills/docops/SKILL.md —
+// the entry-point file for skill-bundle harnesses (Codex). It is shipped
+// verbatim into the bundle directory and is the file Codex auto-loads when
+// it decides the docops skill is relevant.
+func SkillBundleEntry() ([]byte, error) {
+	return tree.ReadFile("skills/docops/SKILL.md")
 }

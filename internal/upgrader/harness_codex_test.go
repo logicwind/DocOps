@@ -11,12 +11,12 @@ import (
 )
 
 // TestCodexAdapter_TransformFrontmatter_GoldenFile feeds the Claude-format
-// fixture through the Codex transform (including name: injection, which mirrors
-// what planNestedSkillDirHarness does) and compares output byte-for-byte against
-// the committed golden file.
+// fixture through the Codex transform (used for per-subroutine files
+// inside the docops/ skill bundle) and compares the output byte-for-byte
+// against the committed golden file.
 func TestCodexAdapter_TransformFrontmatter_GoldenFile(t *testing.T) {
 	fixturePath := filepath.Join("testdata", "fixtures", "get-claude.md")
-	goldenPath := filepath.Join("testdata", "codex", "docops-get", "SKILL.md")
+	goldenPath := filepath.Join("testdata", "codex", "docops", "get.md")
 
 	src, err := os.ReadFile(fixturePath)
 	if err != nil {
@@ -27,22 +27,9 @@ func TestCodexAdapter_TransformFrontmatter_GoldenFile(t *testing.T) {
 		t.Fatalf("read golden: %v", err)
 	}
 
-	// Mirror the production path: parseFrontmatter → TransformFrontmatter →
-	// inject name → serializeFrontmatter.
-	h := codexAdapter{}
-	fm, node, body, err := parseFrontmatter(src)
+	got, err := applyTransform(src, codexAdapter{}.TransformFrontmatter)
 	if err != nil {
-		t.Fatalf("parseFrontmatter: %v", err)
-	}
-	outFM, err := h.TransformFrontmatter(fm)
-	if err != nil {
-		t.Fatalf("TransformFrontmatter: %v", err)
-	}
-	// Inject name: the per-command step performed by planNestedSkillDirHarness.
-	outFM["name"] = "docops-get"
-	got, err := serializeFrontmatter(outFM, node, body)
-	if err != nil {
-		t.Fatalf("serializeFrontmatter: %v", err)
+		t.Fatalf("applyTransform: %v", err)
 	}
 
 	if !bytes.Equal(got, golden) {
@@ -50,9 +37,10 @@ func TestCodexAdapter_TransformFrontmatter_GoldenFile(t *testing.T) {
 	}
 }
 
-// TestCodexAdapter_NameInjected verifies that the writer-injected name: field
-// is set to the skill directory name (e.g. "docops-get").
-func TestCodexAdapter_NameInjected(t *testing.T) {
+// TestCodexAdapter_NameDropped verifies TransformFrontmatter drops the
+// per-command name: field. The bundle as a whole has a single name set in
+// SKILL.md; subroutine files do not need their own.
+func TestCodexAdapter_NameDropped(t *testing.T) {
 	h := codexAdapter{}
 	src := map[string]any{
 		"name":          "get",
@@ -63,16 +51,8 @@ func TestCodexAdapter_NameInjected(t *testing.T) {
 	if err != nil {
 		t.Fatalf("TransformFrontmatter error: %v", err)
 	}
-
-	// TransformFrontmatter itself must NOT set name: — that is the writer's job.
 	if _, ok := got["name"]; ok {
-		t.Error("TransformFrontmatter must not set name: — caller injects it per-command")
-	}
-
-	// Simulate the writer injection.
-	got["name"] = "docops-get"
-	if got["name"] != "docops-get" {
-		t.Errorf("name: = %q; want %q", got["name"], "docops-get")
+		t.Error("name: must be dropped on per-subroutine files; only the bundle's SKILL.md carries name:")
 	}
 }
 
@@ -146,10 +126,10 @@ func TestCodexAdapter_GlobalDir_Precedence(t *testing.T) {
 	})
 }
 
-// TestCodexAdapter_WritesIntoNestedSkillDirs verifies that a dry-run of
-// docops upgrade (with an empty project) produces create actions for all
-// .codex/skills/docops-<cmd>/SKILL.md paths.
-func TestCodexAdapter_WritesIntoNestedSkillDirs(t *testing.T) {
+// TestCodexAdapter_WritesSkillBundle verifies that a dry-run of
+// docops upgrade on an empty project plans (a) one SKILL.md write at
+// the bundle root and (b) one <cmd>.md write per shipped subroutine.
+func TestCodexAdapter_WritesSkillBundle(t *testing.T) {
 	root := t.TempDir()
 
 	// Write a minimal docops.yaml so Run() doesn't reject the directory.
@@ -163,26 +143,41 @@ func TestCodexAdapter_WritesIntoNestedSkillDirs(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	// Find actions under .codex/skills/docops-*/SKILL.md.
-	const prefix = ".codex/skills/docops-"
-	var found []string
+	// Find file actions under .codex/skills/docops/.
+	const prefix = ".codex/skills/docops/"
+	var skill string
+	var subroutines []string
 	for _, a := range res.Actions {
-		if strings.HasPrefix(a.Rel, prefix) && strings.HasSuffix(a.Rel, "/SKILL.md") {
-			found = append(found, a.Rel)
-		}
-	}
-	if len(found) == 0 {
-		t.Error("no .codex/skills/docops-*/SKILL.md actions found in dry-run plan")
-	}
-	// All skill file actions should be creates (dir is empty).
-	for _, rel := range found {
-		a := findAction(res.Actions, rel)
-		if a == nil {
-			t.Errorf("could not find action for %s", rel)
+		if a.Kind != scaffold.KindWriteFile {
 			continue
 		}
-		if a.Kind != scaffold.KindWriteFile || a.Reason != "create" {
-			t.Errorf("%s: expected create write-file action, got kind=%s reason=%q", rel, a.Kind, a.Reason)
+		if !strings.HasPrefix(a.Rel, prefix) {
+			continue
+		}
+		base := strings.TrimPrefix(a.Rel, prefix)
+		if strings.Contains(base, "/") {
+			t.Errorf("unexpected nested path inside bundle: %s", a.Rel)
+			continue
+		}
+		if base == "SKILL.md" {
+			skill = a.Rel
+			continue
+		}
+		subroutines = append(subroutines, base)
+	}
+
+	if skill == "" {
+		t.Error("missing .codex/skills/docops/SKILL.md write action")
+	}
+	if len(subroutines) == 0 {
+		t.Error("no per-subroutine .md writes found inside .codex/skills/docops/")
+	}
+	for _, name := range subroutines {
+		if !strings.HasSuffix(name, ".md") {
+			t.Errorf("non-.md file in bundle: %s", name)
+		}
+		if name == "SKILL.md" {
+			t.Errorf("SKILL.md leaked into subroutine list")
 		}
 	}
 }

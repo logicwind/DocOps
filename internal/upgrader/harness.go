@@ -13,8 +13,11 @@ import (
 //     /<prefix>:<cmd>. Used by Claude Code and Cursor.
 //   - LayoutFlatPrefixFile — command lives at <prefix>-<cmd>.md, invoked
 //     as /<prefix>-<cmd>. Used by OpenCode and Kilo.
-//   - LayoutNestedSkillDir — command lives at <prefix>-<cmd>/SKILL.md,
-//     i.e. each command is a directory. Used by Codex.
+//   - LayoutSkillBundle — one bundle directory <prefix>/ containing a
+//     SKILL.md entry point plus per-subroutine <cmd>.md files. Used by
+//     skill-style harnesses (Codex). The agent auto-loads SKILL.md based
+//     on description matching and reads the per-subroutine files on
+//     demand. This is the standard skills.sh layout.
 type Layout int
 
 const (
@@ -26,9 +29,12 @@ const (
 	// OpenCode and Kilo use this layout.
 	LayoutFlatPrefixFile
 
-	// LayoutNestedSkillDir is the nested-skill-dir form: docops-get/SKILL.md.
-	// Codex uses this layout — each command becomes a directory containing SKILL.md.
-	LayoutNestedSkillDir
+	// LayoutSkillBundle is the skills.sh bundle form: one directory
+	// (<prefix>/) holds SKILL.md plus per-subroutine <cmd>.md files. Used
+	// by Codex. The whole bundle is one skill from the agent's point of
+	// view; SKILL.md is the auto-loaded entry point and the other files
+	// are subroutines it references.
+	LayoutSkillBundle
 )
 
 // Harness describes one agent tool's slash-command conventions. A
@@ -80,7 +86,8 @@ type Harness interface {
 	// FilenameFor returns the path of a command file relative to
 	// LocalDir(). For LayoutNestedFile it is "docops/<cmd>.md"; for
 	// LayoutFlatPrefixFile it is "docops-<cmd>.md"; for
-	// LayoutNestedSkillDir it is "docops-<cmd>/SKILL.md".
+	// LayoutSkillBundle it is "docops/<cmd>.md" (per-subroutine files
+	// inside the bundle directory, alongside SKILL.md).
 	//
 	// Full on-disk path: filepath.Join(h.LocalDir(), h.FilenameFor(cmd)).
 	FilenameFor(cmd string) string
@@ -277,8 +284,8 @@ func FilenameForLayout(layout Layout, cmd string) (string, error) {
 		return filepath.Join("docops", cmd+".md"), nil
 	case LayoutFlatPrefixFile:
 		return fmt.Sprintf("docops-%s.md", cmd), nil
-	case LayoutNestedSkillDir:
-		return filepath.Join(fmt.Sprintf("docops-%s", cmd), "SKILL.md"), nil
+	case LayoutSkillBundle:
+		return filepath.Join("docops", cmd+".md"), nil
 	default:
 		return "", fmt.Errorf("unknown layout %d", layout)
 	}

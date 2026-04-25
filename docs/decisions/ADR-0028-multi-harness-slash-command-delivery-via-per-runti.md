@@ -18,7 +18,7 @@ Dialect differences observed in production (sourced from GSD's installer):
 |---|---|---|---|---|
 | Claude Code | `.claude/commands/docops/` | `~/.claude/commands/docops/` | nested — `docops/get.md` → `/docops:get` | `allowed-tools:` list |
 | OpenCode | `.opencode/command/` | `$XDG_CONFIG_HOME/opencode/command/` → `~/.config/opencode/command/` | flat prefix — `docops-get.md` → `/docops-get` | `tools:` map (`read: true`, …) |
-| Codex | `.codex/skills/` | `$CODEX_HOME` → `~/.codex/skills/` | **nested skill dirs** — `docops-get/SKILL.md` | Codex skill dialect; agent sandbox map (`workspace-write`/`read-only`) in `config.toml` |
+| Codex | `.codex/skills/` | `$CODEX_HOME` → `~/.codex/skills/` | **skill bundle** — one `docops/` dir holding `SKILL.md` + per-subroutine `<cmd>.md` (was: per-command `docops-<cmd>/SKILL.md`; revised v0.5.2 — see Amendment) | Codex skill dialect; agent sandbox map (`workspace-write`/`read-only`) in `config.toml` |
 | Cursor | `.cursor/commands/docops/` | `~/.cursor/commands/docops/` | nested | Cursor slash-command dialect |
 | Kilo | `.kilo/` | `$XDG_CONFIG_HOME/kilo/` | flat | `permission:` object with ordered keys |
 | Antigravity | `.agent/` (singular — this harness only) | `~/.gemini/antigravity/` | per-harness | per-harness |
@@ -28,7 +28,7 @@ Dialect differences observed in production (sourced from GSD's installer):
 
 - **`.agent/`** (singular) is **Antigravity's** local dir. Nothing else uses it.
 - **`.agents/skills/`** (plural, with `/skills/`) is the **skills.sh ecosystem canonical store** — used only for *skills*, not slash commands. Cursor, Cline, Copilot, Gemini CLI, Kilo, Roo, and Codex's skill reader all consume `.agents/skills/` directly. ADR-0022 already puts docops skills there and symlinks out to `.claude/skills/` etc.
-- **`.codex/`** is Codex's own local dir (no relation to `.agent/`). Codex expresses commands **as skills**: each command is a directory `docops-<cmd>/` containing a `SKILL.md` file, not a flat `.md`.
+- **`.codex/`** is Codex's own local dir (no relation to `.agent/`). Codex expresses commands **as a skill bundle**: a single `docops/` directory containing `SKILL.md` (the auto-loaded entry point Codex matches on description) plus one `<cmd>.md` file per subroutine. (Original ADR specced per-command directories — `docops-<cmd>/SKILL.md` each — which would have created 17 separate skills competing for description match. Revised v0.5.2; see Amendment.)
 - There is **no cross-harness canonical store for slash commands.** Each harness has its own dir *and* its own YAML dialect, so a single file can't serve multiple harnesses even if we put it under `.agents/commands/`.
 
 Tool-name mappings also differ: `AskUserQuestion → question` (OpenCode), `Read → read_file` (Gemini), `Bash → bash` (Kilo permission set), MCP tools (`mcp__*`) preserved verbatim everywhere.
@@ -74,3 +74,56 @@ The skills.sh pattern (ADR-0022) works because every consumer reads the *same* s
 - ADR-0022 (`.agents/skills/` symlink model) is unchanged for skills. This ADR only covers slash commands, which live in a separate, per-harness dir.
 - Cursor path `.cursor/commands/docops/` predates the skills.sh era — confirm it's still the correct Cursor slash-command target during the refactor. If Cursor has moved, fix in this work.
 - Codex's nested-skill filename scheme (`docops-<cmd>/SKILL.md`) is different enough from the others that the `Harness` interface must accommodate both single-file and directory-per-command output. Design the interface with that in mind from the start.
+
+## Amendment 2026-04-25 — Codex switches to skill bundle (v0.5.2)
+
+Phase 2b shipped Codex with `LayoutNestedSkillDir` — each `/docops:*`
+command became its own top-level Codex skill (`docops-get/SKILL.md`,
+`docops-close/SKILL.md`, …, 17 directories). Reviewed against Codex's
+real-world skill ecosystem (`agforge/`, `screenshot/`, `find-skills/`,
+all of GSD's bundled skills): every other skill is **one directory
+containing one `SKILL.md` plus supporting files**. Our per-command
+fan-out was the outlier and it was wrong:
+
+- Codex's auto-trigger picks skills by description match. With 17
+  narrow descriptions ("get a doc", "close a task", "list docs") all
+  competing, the right-skill-wins probability was lower than one
+  cohesive `docops` skill that owns the whole tool surface.
+- It cluttered the skill registry — `~/.codex/skills/` now has 17
+  rows that all start with `docops-`, making the user's actual
+  skill list harder to scan.
+- It mismatched the skills.sh philosophy ADR-0022 already locked in
+  for the `.agents/skills/` store: one bundle per logical concept.
+
+**Revised layout (v0.5.2, this ADR's actual decision):**
+
+```
+.codex/skills/docops/
+  SKILL.md          ← bundle entry: name: docops, description triggers auto-load
+  audit.md          ← per-subroutine files referenced by SKILL.md
+  close.md
+  get.md
+  graph.md
+  ... (17 subroutines, one per /docops:* command)
+```
+
+`SKILL.md` is shipped verbatim from `templates/skills/docops/SKILL.md`
+(authored once, no per-harness frontmatter transform). Per-subroutine
+files run through `codexAdapter.TransformFrontmatter`, which now drops
+both `name:` (the bundle has one name, set in `SKILL.md`) and
+`allowed-tools:` (Codex doesn't use it), preserving only `description:`.
+
+**Code shape:** the `Layout` enum gains `LayoutSkillBundle` and loses
+`LayoutNestedSkillDir`. `planSkillBundleHarness` replaces
+`planNestedSkillDirHarness` and writes `SKILL.md` once + each subroutine
+once into the bundle dir; the manifest (`.docops-manifest`) sits at the
+bundle root and lists file basenames inside the bundle.
+
+**Migration:** pre-launch — no users on the old layout. Existing
+`.codex/skills/docops-*/` directories are removed once during the
+refactor commit; subsequent `docops upgrade` runs write the bundle
+clean.
+
+**Other harnesses unchanged.** Claude, Cursor, and OpenCode keep their
+slash-command shapes — those harnesses' models are command-driven, not
+skill-driven, and per-command files are correct there.
