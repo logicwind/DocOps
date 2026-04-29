@@ -1,11 +1,11 @@
 ---
 title: Amendments as first-class decision metadata
-status: draft
+status: accepted
 coverage: required
 date: "2026-04-23"
 supersedes: []
-related: [ADR-0019, ADR-0018]
-tags: []
+related: [ADR-0019, ADR-0018, ADR-0029]
+tags: [amendments, decision-metadata, doc-lifecycle]
 ---
 
 ## Context

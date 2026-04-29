@@ -39,4 +39,6 @@ docops new adr "Title" --body-file /path/to/body.md --json
 
 An ADR captures a decision. Default fields: `status: draft`, `coverage: required`, `date: <today>`. The user may change `coverage` to `not-needed` if no task will cite this ADR — but that requires a short justification in the ADR body.
 
+**Title naming.** Title the *pattern or decision*, not the first application — the ADR should still read well when Use #2 or #3 lands. Prefer "Provider capability registry" over "ZoomInfo as flagged provider"; "Background job queue" over "Resend nightly digest worker". Mention the triggering case in the Context section, not the title.
+
 Once the ADR is accepted, at least one task should cite it. Pair this skill with `/docops:new-task` to avoid an orphaned decision.
