@@ -206,3 +206,38 @@ func PrintPlan(w io.Writer, actions []Action, dry bool, label string) {
 func LoadShippedSkills() (map[string][]byte, error) {
 	return templates.Skills()
 }
+
+// SlashDeliverableCmds returns the subset of shipped commands that ship
+// as user-facing slash commands per ADR-0029. The full shipped set still
+// ships as skills (NL-dispatched) and CLI verbs; this only narrows the
+// slash-command surface.
+//
+// LayoutSkillBundle harnesses (Codex) deliver the full shipped set as
+// in-bundle subroutines and bypass this filter — the bundle is the
+// skill mechanism, not a slash mechanism.
+//
+// Update this set when adding or removing milestone-moment commands.
+// `baseline` will be added when ADR-0030's implementation lands.
+func SlashDeliverableCmds() map[string]bool {
+	return map[string]bool{
+		"init":     true,
+		"progress": true,
+		"next":     true,
+		"do":       true,
+		"plan":     true,
+	}
+}
+
+// FilterSlashDeliverable returns the input list filtered to commands in
+// SlashDeliverableCmds, preserving order. Used by initter and upgrader
+// to narrow slash-style harness writes per ADR-0029.
+func FilterSlashDeliverable(cmds []string) []string {
+	keep := SlashDeliverableCmds()
+	out := make([]string, 0, len(cmds))
+	for _, c := range cmds {
+		if keep[c] {
+			out = append(out, c)
+		}
+	}
+	return out
+}

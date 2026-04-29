@@ -151,15 +151,27 @@ func plan(opts Options) ([]Action, error) {
 	}
 	actions = append(actions, hookAction)
 
-	// 6. Agent skills — .claude/commands/docops/ and .cursor/commands/docops/.
-	// Skipped entirely when --no-skills is set; existing files are not touched.
+	// 6. Agent slash commands — .claude/commands/docops/ and
+	// .cursor/commands/docops/. Per ADR-0029, only the milestone-moment
+	// subset (SlashDeliverableCmds) ships as slashes; the full shipped
+	// set still lives as skills (NL-dispatched) and CLI verbs, so the
+	// granular surface is reachable without a slash. Skipped entirely
+	// when --no-skills is set; existing files are not touched.
 	if !opts.NoSkills {
 		skills, err := scaffold.LoadShippedSkills()
 		if err != nil {
 			return nil, fmt.Errorf("read skills: %w", err)
 		}
+		keep := scaffold.SlashDeliverableCmds()
 		skillNames := make([]string, 0, len(skills))
 		for name := range skills {
+			cmd := name
+			if i := len(name) - len(".md"); i > 0 && name[i:] == ".md" {
+				cmd = name[:i]
+			}
+			if !keep[cmd] {
+				continue
+			}
 			skillNames = append(skillNames, name)
 		}
 		sort.Strings(skillNames)

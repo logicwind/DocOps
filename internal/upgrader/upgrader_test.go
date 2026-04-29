@@ -32,16 +32,24 @@ func initted(t *testing.T) string {
 		t.Fatalf("write docops.yaml: %v", err)
 	}
 
-	// Seed the shipped skills into both docops-owned dirs.
+	// Seed the slash-deliverable subset (per ADR-0029) into both
+	// docops-owned dirs — this matches what `docops init` produces at
+	// the current version. Tests that simulate older installs can seed
+	// the full set on top of this baseline.
 	skills, err := scaffold.LoadShippedSkills()
 	if err != nil {
 		t.Fatalf("LoadShippedSkills: %v", err)
 	}
+	keep := scaffold.SlashDeliverableCmds()
 	for _, dir := range []string{".claude/commands/docops", ".cursor/commands/docops"} {
 		if err := os.MkdirAll(filepath.Join(root, dir), 0o755); err != nil {
 			t.Fatalf("mkdir %s: %v", dir, err)
 		}
 		for name, body := range skills {
+			cmd := strings.TrimSuffix(name, ".md")
+			if !keep[cmd] {
+				continue
+			}
 			if err := os.WriteFile(filepath.Join(root, dir, name), body, 0o644); err != nil {
 				t.Fatalf("write seed skill %s: %v", name, err)
 			}
@@ -108,8 +116,8 @@ func TestRun_AddsNewSkillRemovesStaleRefreshesChanged(t *testing.T) {
 	//  - delete one shipped skill so the upgrader will (re)create it.
 	//  - mutate one shipped skill so the upgrader will refresh it.
 	//  - add a stale skill that no longer ships.
-	pickAdd := "init.md"      // delete locally → upgrade should add (+)
-	pickRefresh := "audit.md" // mutate locally → upgrade should refresh (~)
+	pickAdd := "init.md"         // delete locally → upgrade should add (+)
+	pickRefresh := "progress.md" // mutate locally → upgrade should refresh (~)
 	if err := os.Remove(filepath.Join(dir, pickAdd)); err != nil {
 		t.Fatalf("remove %s: %v", pickAdd, err)
 	}
@@ -197,6 +205,70 @@ func TestRun_MigratesLegacyClaudeSkillsFolder(t *testing.T) {
 	for _, name := range []string{"init.md", "historic-command.md"} {
 		if _, err := os.Stat(filepath.Join(legacyDir, name)); !os.IsNotExist(err) {
 			t.Errorf("%s in legacy folder should be deleted; stat err = %v", name, err)
+		}
+	}
+}
+
+// TestRun_DeprecatesPreADR0029Slashes simulates an upgrade against a
+// pre-ADR-0029 install (v0.5.x) that has the full skill set sitting in
+// .claude/commands/docops/. The upgrader should leave the milestone-moment
+// commands in place and remove the now-skill-only ones, while the Codex
+// bundle (skill-mode harness) keeps the full set.
+func TestRun_DeprecatesPreADR0029Slashes(t *testing.T) {
+	root := initted(t)
+
+	// Seed the legacy slash files (everything that's NOT in the
+	// slash-deliverable subset) into both nested-file harness dirs.
+	skills, err := scaffold.LoadShippedSkills()
+	if err != nil {
+		t.Fatalf("LoadShippedSkills: %v", err)
+	}
+	keep := scaffold.SlashDeliverableCmds()
+	var legacyOnly []string
+	for name := range skills {
+		cmd := strings.TrimSuffix(name, ".md")
+		if !keep[cmd] {
+			legacyOnly = append(legacyOnly, name)
+		}
+	}
+	if len(legacyOnly) == 0 {
+		t.Fatal("legacyOnly should be non-empty — fixture broken")
+	}
+	for _, dir := range []string{".claude/commands/docops", ".cursor/commands/docops"} {
+		for _, name := range legacyOnly {
+			if err := os.WriteFile(filepath.Join(root, dir, name), skills[name], 0o644); err != nil {
+				t.Fatalf("seed legacy %s/%s: %v", dir, name, err)
+			}
+		}
+	}
+
+	if _, err := Run(Options{Root: root, DryRun: false, Out: io.Discard}); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	// Every deprecated slash should be gone from .claude and .cursor.
+	for _, dir := range []string{".claude/commands/docops", ".cursor/commands/docops"} {
+		for _, name := range legacyOnly {
+			if _, err := os.Stat(filepath.Join(root, dir, name)); !os.IsNotExist(err) {
+				t.Errorf("%s/%s should be deleted; stat err = %v", dir, name, err)
+			}
+		}
+	}
+
+	// Slash-deliverable commands must still be present.
+	for cmd := range keep {
+		for _, dir := range []string{".claude/commands/docops", ".cursor/commands/docops"} {
+			if _, err := os.Stat(filepath.Join(root, dir, cmd+".md")); err != nil {
+				t.Errorf("%s/%s.md should remain after upgrade: %v", dir, cmd, err)
+			}
+		}
+	}
+
+	// Codex bundle is skill-mode (LayoutSkillBundle) and must keep the
+	// full shipped set, including commands that are no longer slashes.
+	for name := range skills {
+		if _, err := os.Stat(filepath.Join(root, ".codex/skills/docops", name)); err != nil {
+			t.Errorf(".codex/skills/docops/%s should exist (skill-mode harness keeps full set): %v", name, err)
 		}
 	}
 }

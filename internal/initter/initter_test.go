@@ -41,9 +41,14 @@ func TestRun_BareRepo_CreatesAllArtifacts(t *testing.T) {
 		"docops.yaml",
 		"AGENTS.md",
 		".git/hooks/pre-commit",
+		// Per ADR-0029 only the milestone-moment slash commands are
+		// scaffolded; the granular surface (state, new-ctx, etc.) lives
+		// as skills + CLI verbs, not slashes.
 		".claude/commands/docops/init.md",
-		".claude/commands/docops/state.md",
-		".claude/commands/docops/new-ctx.md",
+		".claude/commands/docops/progress.md",
+		".claude/commands/docops/next.md",
+		".claude/commands/docops/do.md",
+		".claude/commands/docops/plan.md",
 		".cursor/commands/docops/init.md",
 	} {
 		if _, err := os.Stat(filepath.Join(root, rel)); err != nil {

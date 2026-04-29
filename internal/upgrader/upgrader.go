@@ -386,13 +386,22 @@ func planHook(opts Options, body []byte) (scaffold.Action, error) {
 // The file body is the shipped canonical bytes with
 // h.TransformFrontmatter applied to the YAML frontmatter block.
 func planHarness(opts Options, h Harness, shipped map[string][]byte, shippedCmds []string) ([]scaffold.Action, error) {
+	// ADR-0029: slash-style harnesses (Claude, Cursor, OpenCode) deliver
+	// only the milestone-moment subset as slash commands. Skill-bundle
+	// harnesses (Codex) deliver the full shipped set as in-bundle
+	// subroutines — the bundle is the skill mechanism, not a slash
+	// mechanism, so it bypasses the filter.
+	cmdsForHarness := shippedCmds
+	if h.Layout() != LayoutSkillBundle {
+		cmdsForHarness = scaffold.FilterSlashDeliverable(shippedCmds)
+	}
 	switch h.Layout() {
 	case LayoutNestedFile:
-		return planNestedFileHarness(opts, h, shipped, shippedCmds)
+		return planNestedFileHarness(opts, h, shipped, cmdsForHarness)
 	case LayoutFlatPrefixFile:
-		return planFlatPrefixHarness(opts, h, shipped, shippedCmds)
+		return planFlatPrefixHarness(opts, h, shipped, cmdsForHarness)
 	case LayoutSkillBundle:
-		return planSkillBundleHarness(opts, h, shipped, shippedCmds)
+		return planSkillBundleHarness(opts, h, shipped, cmdsForHarness)
 	default:
 		return nil, fmt.Errorf("planHarness: unknown layout %d for harness %q", h.Layout(), h.Slug())
 	}
