@@ -1,8 +1,8 @@
 ---
 title: Shrink /docops:* slash surface to 6 moments + deprecation pass in upgrader
-status: backlog
+status: done
 priority: p2
-assignee: unassigned
+assignee: claude
 requires: [ADR-0029, ADR-0028]
 depends_on: []
 ---

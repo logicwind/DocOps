@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-29T18:40:48Z",
+  "generated_at": "2026-04-29T19:05:17Z",
   "version": 1,
   "docs": [
     {
@@ -1065,7 +1065,7 @@
       "summary": "DocOps currently writes skills into two tool-specific directories during `docops init` and `docops upgrade`:",
       "word_count": 718,
       "last_touched": "2026-04-22T18:58:49Z",
-      "age_days": 6,
+      "age_days": 7,
       "referenced_by": [
         {
           "id": "ADR-0028",
@@ -1297,7 +1297,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "partial",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -1343,7 +1343,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "not-started",
+      "implementation": "partial",
       "stale": false
     },
     {
@@ -2047,7 +2047,7 @@
       "summary": "Update `docops init` and `docops upgrade` to adopt the skills.sh canonical layout: skill files live in `.agents/skills/docops/`; tool-specific dirs (e.g. `.claude/skills/docops`) become symlinks. Per …",
       "word_count": 618,
       "last_touched": "2026-04-22T18:58:49Z",
-      "age_days": 6,
+      "age_days": 7,
       "stale": false
     },
     {
@@ -2371,16 +2371,16 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-034-shrink-docops-slash-surface-to-6-moments-deprecati.md",
       "title": "Shrink /docops:* slash surface to 6 moments + deprecation pass in upgrader",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p2",
-      "assignee": "unassigned",
+      "assignee": "claude",
       "requires": [
         "ADR-0029",
         "ADR-0028"
       ],
       "summary": "Implement the slash-command tiering decision from ADR-0029. The user-facing slash surface drops from ~17 to ~6 milestone-moment commands; the rest become skill-only.",
       "word_count": 330,
-      "last_touched": "2026-04-29T18:40:18Z",
+      "last_touched": "2026-04-29T18:40:48Z",
       "age_days": 0,
       "stale": false
     },
@@ -2399,7 +2399,7 @@
       ],
       "summary": "With ADR-0029, `/docops:do` becomes the primary user-facing free-form entry point. The granular slashes that previously gave users a fallback (e.g., `/docops:get`, `/docops:search`) are gone — so disp…",
       "word_count": 360,
-      "last_touched": "2026-04-29T18:40:38Z",
+      "last_touched": "2026-04-29T18:40:48Z",
       "age_days": 0,
       "stale": false
     }

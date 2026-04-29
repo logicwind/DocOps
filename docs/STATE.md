@@ -6,7 +6,7 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 28 accepted · 2 draft · 0 superseded (29 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 7 backlog · 0 active · 0 blocked · 28 done
+- Tasks: 6 backlog · 0 active · 0 blocked · 29 done
 
 ## Needs attention
 
@@ -19,6 +19,7 @@
 ## Recent activity
 
 - 2026-04-30 f8b8d3d docs: ADR-0029/30 + accept ADR-0025; title-naming guidance for new-adr
+- 2026-04-30 12172df docs: add TP-034/TP-035 — implement ADR-0029 command-surface tiering
 - 2026-04-25 6458183 feat(upgrader): Codex layout collapses to one skill bundle
 - 2026-04-24 fc421e0 docs: add ADR-0027 + ADR-0028 with TP-030–TP-033
 - 2026-04-24 faa2bb7 docs: TP-033 Phase 4 — v0.4.0 CHANGELOG, README, status flips
@@ -37,5 +38,4 @@
 - 2026-04-23 7656d08 planning: ADR-0023 + TP-020/TP-021 — split TP-018 into refactor + upgrader + update-check
 - 2026-04-23 6f41758 TP-012: docops get/list/graph/next — focused read commands
 - 2026-04-23 32cc60b TP-011: docops search — substring/regex content search
-- 2026-04-23 325e547 planning: TP-023/024/025 — skills gap, taps, npm distribution
 
