@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-29T18:38:32Z",
+  "generated_at": "2026-04-29T18:40:48Z",
   "version": 1,
   "docs": [
     {
@@ -647,9 +647,13 @@
         {
           "id": "TP-033",
           "edge": "requires"
+        },
+        {
+          "id": "TP-035",
+          "edge": "requires"
         }
       ],
-      "implementation": "done",
+      "implementation": "partial",
       "stale": false
     },
     {
@@ -1164,8 +1168,8 @@
       ],
       "summary": "ADRs are immutable by convention. This is the right default — decision history must not be silently rewritten. But the convention creates a dead zone for the most common kind of post-acceptance change…",
       "word_count": 1188,
-      "last_touched": "2026-04-23T08:37:39Z",
-      "age_days": 6,
+      "last_touched": "2026-04-29T18:39:54Z",
+      "age_days": 0,
       "referenced_by": [
         {
           "id": "ADR-0029",
@@ -1287,9 +1291,13 @@
         {
           "id": "TP-033",
           "edge": "requires"
+        },
+        {
+          "id": "TP-034",
+          "edge": "requires"
         }
       ],
-      "implementation": "done",
+      "implementation": "partial",
       "stale": false
     },
     {
@@ -1315,7 +1323,7 @@
       ],
       "summary": "ADR-0028 standardized `/docops:*` as **slash commands** delivered per-harness, replacing the earlier skill-as-command model from ADR-0013. As of v0.5.x, ~17 slash commands exist — one per CLI verb (`g…",
       "word_count": 563,
-      "last_touched": "2026-04-29T18:37:47Z",
+      "last_touched": "2026-04-29T18:39:54Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1325,6 +1333,14 @@
         {
           "id": "ADR-0030",
           "edge": "related"
+        },
+        {
+          "id": "TP-034",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-035",
+          "edge": "requires"
         }
       ],
       "implementation": "not-started",
@@ -1346,7 +1362,7 @@
       ],
       "summary": "Users have asked for a way to \"lock version 1\" of a project's decision graph — a stable cut they can refer back to as truth at a point in time, especially when contrasting it against later changes. Th…",
       "word_count": 643,
-      "last_touched": "2026-04-29T18:38:27Z",
+      "last_touched": "2026-04-29T18:39:54Z",
       "age_days": 0,
       "implementation": "not-started",
       "stale": false
@@ -2347,6 +2363,44 @@
       "word_count": 1413,
       "last_touched": "2026-04-24T03:10:20Z",
       "age_days": 5,
+      "stale": false
+    },
+    {
+      "id": "TP-034",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-034-shrink-docops-slash-surface-to-6-moments-deprecati.md",
+      "title": "Shrink /docops:* slash surface to 6 moments + deprecation pass in upgrader",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0029",
+        "ADR-0028"
+      ],
+      "summary": "Implement the slash-command tiering decision from ADR-0029. The user-facing slash surface drops from ~17 to ~6 milestone-moment commands; the rest become skill-only.",
+      "word_count": 330,
+      "last_touched": "2026-04-29T18:40:18Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-035",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-035-tighten-docops-do-dispatcher-quality-nl-intent-rou.md",
+      "title": "Tighten /docops:do dispatcher quality — NL intent routing",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0029",
+        "ADR-0013"
+      ],
+      "summary": "With ADR-0029, `/docops:do` becomes the primary user-facing free-form entry point. The granular slashes that previously gave users a fallback (e.g., `/docops:get`, `/docops:search`) are gone — so disp…",
+      "word_count": 360,
+      "last_touched": "2026-04-29T18:40:38Z",
+      "age_days": 0,
       "stale": false
     }
   ]

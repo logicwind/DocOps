@@ -6,7 +6,7 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 28 accepted · 2 draft · 0 superseded (29 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 5 backlog · 0 active · 0 blocked · 28 done
+- Tasks: 7 backlog · 0 active · 0 blocked · 28 done
 
 ## Needs attention
 
@@ -18,6 +18,7 @@
 
 ## Recent activity
 
+- 2026-04-30 f8b8d3d docs: ADR-0029/30 + accept ADR-0025; title-naming guidance for new-adr
 - 2026-04-25 6458183 feat(upgrader): Codex layout collapses to one skill bundle
 - 2026-04-24 fc421e0 docs: add ADR-0027 + ADR-0028 with TP-030–TP-033
 - 2026-04-24 faa2bb7 docs: TP-033 Phase 4 — v0.4.0 CHANGELOG, README, status flips
@@ -37,5 +38,4 @@
 - 2026-04-23 6f41758 TP-012: docops get/list/graph/next — focused read commands
 - 2026-04-23 32cc60b TP-011: docops search — substring/regex content search
 - 2026-04-23 325e547 planning: TP-023/024/025 — skills gap, taps, npm distribution
-- 2026-04-23 1aa3e32 remove internal TP-xxx IDs from help output; fix AGENTS.md to not document unbuilt commands
 
