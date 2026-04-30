@@ -23,6 +23,5 @@ expressions and `--case` for case-sensitive matching.
 Filters narrow before text match, so `--kind TP --status active "foo"`
 is cheaper than searching and then filtering.
 
-Semantic/embedding search is out of scope (see ADR-0017) — use
-substring + filters, or let the user point at specific IDs via
-`/docops:get`.
+Semantic/embedding search is out of scope — use substring + filters, or
+let the user point at specific IDs via `/docops:get`.

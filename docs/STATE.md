@@ -21,6 +21,7 @@
 - 2026-04-30 f8b8d3d docs: ADR-0029/30 + accept ADR-0025; title-naming guidance for new-adr
 - 2026-04-30 e76d4ad feat(schema,validator): TP-026 phase 1 — amendments data layer + TP-027 backfill
 - 2026-04-30 ccd0781 docs(TP-034): close — slash surface narrowed to 5 moments per ADR-0029
+- 2026-04-30 858bc08 feat(skills): migrate to umbrella SKILL.md + cookbook layout (ADR-0031)
 - 2026-04-30 32ebb2a feat(htmlviewer,docs): v0.6.0 release prep — amendments in SPA + CHANGELOG + follow-up TPs
 - 2026-04-30 12172df docs: add TP-034/TP-035 — implement ADR-0029 command-surface tiering
 - 2026-04-30 09906e9 feat(htmlviewer): add Board (kanban) + Timeline views

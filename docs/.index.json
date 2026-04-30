@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-30T09:16:16Z",
+  "generated_at": "2026-04-30T10:14:33Z",
   "version": 1,
   "docs": [
     {
@@ -1429,7 +1429,7 @@
       ],
       "summary": "ADR-0029 (command-surface tiering) declared three audiences — slash, skills, CLI — and assigned skills to the LLM-NL-dispatch tier with the shape \"Many, granular.\" The implication taken at the time wa…",
       "word_count": 668,
-      "last_touched": "2026-04-30T09:08:12Z",
+      "last_touched": "2026-04-30T09:16:34Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1771,7 +1771,7 @@
       "summary": "Command that turns a bare repository into a DocOps-enabled one. Idempotent — safe to run twice.",
       "word_count": 222,
       "last_touched": "2026-04-22T09:33:17Z",
-      "age_days": 7,
+      "age_days": 8,
       "referenced_by": [
         {
           "id": "TP-010",
@@ -1823,7 +1823,7 @@
       "summary": "Commands that create new CTX, ADR, or Task documents with valid frontmatter, atomic ID allocation, and correct file naming.",
       "word_count": 180,
       "last_touched": "2026-04-22T09:42:49Z",
-      "age_days": 7,
+      "age_days": 8,
       "referenced_by": [
         {
           "id": "TP-010",
@@ -1858,7 +1858,7 @@
       "summary": "Emit the frontmatter schemas as JSON Schema so editors (VS Code YAML plugin, JetBrains, Zed) can validate in-editor without running the CLI.",
       "word_count": 124,
       "last_touched": "2026-04-22T09:51:55Z",
-      "age_days": 7,
+      "age_days": 8,
       "referenced_by": [
         {
           "id": "TP-018",
@@ -2583,7 +2583,7 @@
       ],
       "summary": "Land the structural shift declared in ADR-0031 and ship the three amendment-family cookbooks (`amend`, `supersede`, `revise`) called for by ADR-0025 + ADR-0029 §Skills tier.",
       "word_count": 287,
-      "last_touched": "2026-04-30T09:16:10Z",
+      "last_touched": "2026-04-30T09:16:34Z",
       "age_days": 0,
       "stale": false
     }

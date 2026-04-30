@@ -120,10 +120,9 @@ bin/docops                     ← product: built binary (gitignored)
 | The decision itself changes (different choice, reversal, scope flip) | **supersede** | new ADR with `supersedes: [<old>]` (the back-pointer is computed) |
 | Decision stands but its scope tightens or expands without flipping the call | **revise** | `docops amend ... --kind clarification --section "..."` + a follow-up task if load-bearing |
 
-Never silently edit a published ADR's body. Per ADR-0025 amendments are
-additive and machine-readable. The cookbook chapters at
-`templates/skills/docops/cookbook/{amend,supersede,revise}.md` carry the
-detailed steps.
+Never silently edit a published ADR's body. Amendments are additive and
+machine-readable. See the `amend` / `supersede` / `revise` cookbook
+chapters for detailed steps.
 
 ## CLI — the query and mutation API
 

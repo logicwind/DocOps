@@ -17,7 +17,7 @@ Flags precede the positional ID: `--depth N` (default 1) controls
 traversal depth; `--json` emits structured output. Depth 1 shows direct
 neighbours; higher depths show transitive closure. Each node in the
 JSON output carries a `referenced_by: [{id, edge}]` array — the
-computed reverse edges (per ADR-0006).
+computed reverse edges.
 
 ## Cheatsheet — 7 impact-map patterns
 
@@ -44,7 +44,7 @@ docops graph ADR-0028
 
 Human-readable view: outgoing edges (what this ADR cites) and incoming
 (what cites it). Run before superseding: incoming tasks/ADRs may need
-amendments (see ADR-0025) rather than silent rewrites.
+amendments rather than silent rewrites.
 
 ### 3. "Which open TPs would break if I revert this ADR?"
 

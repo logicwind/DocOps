@@ -7,7 +7,7 @@ description: Create a new DocOps task with required ADR/CTX citations. Use when 
 
 Create a new task file under `docs/tasks/`.
 
-Every task must cite ≥1 ADR or CTX in `requires:` (validator enforces this — ADR-0004).
+Every task must cite ≥1 ADR or CTX in `requires:` — the validator enforces this.
 
 Preferred pattern for agents — create and populate in one call:
 

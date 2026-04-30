@@ -7,7 +7,7 @@ description: Route a freeform natural-language intent to the right docops skill 
 
 Interpret the user's request and dispatch to one matching skill (or, when no skill matches, the right `docops` CLI verb). Never do the work yourself — confirm the match, then hand off.
 
-Per ADR-0029 the slash-command surface is small (`/docops:init`, `/docops:progress`, `/docops:next`, `/docops:do`, `/docops:plan`); granular capabilities live as **skills** (NL-dispatched, no slash) and **CLI verbs** (`docops <verb>`). When dispatching, prefer the skill name; fall back to the CLI verb only when no skill exists.
+The slash-command surface is small (`/docops:init`, `/docops:progress`, `/docops:next`, `/docops:do`, `/docops:plan`); granular capabilities live as **skills** (NL-dispatched, no slash) and **CLI verbs** (`docops <verb>`). When dispatching, prefer the skill name; fall back to the CLI verb only when no skill exists.
 
 Routing table (intent → target):
 
