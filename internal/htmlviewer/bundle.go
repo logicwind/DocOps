@@ -14,10 +14,11 @@ import (
 // inlined, and STATE.md is inlined at the top level. The SPA therefore
 // makes one network request and has everything it needs.
 type Bundle struct {
-	GeneratedAt string        `json:"generated_at"`
-	Version     int           `json:"version"`
-	StateMD     string        `json:"state_md,omitempty"`
-	Docs        []BundleDoc   `json:"docs"`
+	GeneratedAt      string                  `json:"generated_at"`
+	Version          int                     `json:"version"`
+	StateMD          string                  `json:"state_md,omitempty"`
+	Docs             []BundleDoc             `json:"docs"`
+	RecentAmendments []index.RecentAmendment `json:"recent_amendments,omitempty"`
 }
 
 // BundleDoc embeds IndexedDoc and adds the raw markdown body (with
@@ -56,10 +57,11 @@ func BuildBundle(idx *index.Index, cfg config.Config, root string) (*Bundle, err
 	}
 
 	return &Bundle{
-		GeneratedAt: idx.GeneratedAt,
-		Version:     idx.Version,
-		StateMD:     stateMD,
-		Docs:        docs,
+		GeneratedAt:      idx.GeneratedAt,
+		Version:          idx.Version,
+		StateMD:          stateMD,
+		Docs:             docs,
+		RecentAmendments: idx.RecentAmendments,
 	}, nil
 }
 

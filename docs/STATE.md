@@ -6,7 +6,7 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 28 accepted · 2 draft · 0 superseded (29 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 4 backlog · 0 active · 0 blocked · 31 done
+- Tasks: 8 backlog · 0 active · 0 blocked · 31 done
 
 ## Needs attention
 
@@ -22,6 +22,7 @@
 - 2026-04-30 e76d4ad feat(schema,validator): TP-026 phase 1 — amendments data layer + TP-027 backfill
 - 2026-04-30 ccd0781 docs(TP-034): close — slash surface narrowed to 5 moments per ADR-0029
 - 2026-04-30 12172df docs: add TP-034/TP-035 — implement ADR-0029 command-surface tiering
+- 2026-04-30 03bcaea feat(index,state): TP-026 phase 3 — amendments in index + STATE; close TP-026/TP-027
 - 2026-04-25 6458183 feat(upgrader): Codex layout collapses to one skill bundle
 - 2026-04-24 fc421e0 docs: add ADR-0027 + ADR-0028 with TP-030–TP-033
 - 2026-04-24 faa2bb7 docs: TP-033 Phase 4 — v0.4.0 CHANGELOG, README, status flips
@@ -37,7 +38,6 @@
 - 2026-04-23 afcd855 TP-023 phase 1: ship /docops:{next,get,list,graph,search} skills
 - 2026-04-23 aeb53b3 chore: enable tap/bucket auto-publish for v0.2.1
 - 2026-04-23 a131d95 planning: ADR-0024 + TP-022 — ship CLAUDE.md alongside AGENTS.md
-- 2026-04-23 325e547 planning: TP-023/024/025 — skills gap, taps, npm distribution
 
 ## Recent amendments
 

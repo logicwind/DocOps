@@ -195,6 +195,7 @@ async function renderHome() {
       <p class="text-sm text-gray-500 mb-4">Generated ${escapeHtml(state.index.generated_at || '')}</p>
       <div class="grid grid-cols-3 gap-3 mb-6">${tiles}</div>
       <article class="prose">${stateMd ? linkifyIds(renderMarkdown(stateMd)) : '<p class="text-gray-500">No STATE.md available.</p>'}</article>
+      ${renderRecentAmendments()}
     </div>
   `;
 }
@@ -241,6 +242,7 @@ function renderDoc(id) {
       ${renderFrontmatterTable(doc)}
       ${refs}
       <article class="prose mt-4">${linkified}</article>
+      ${renderAmendments(doc)}
       <footer class="mt-10 pt-4 border-t border-gray-100 text-xs text-gray-400">
         ${escapeHtml(doc.path)} · last touched ${escapeHtml(doc.last_touched || '')}
       </footer>
@@ -308,6 +310,51 @@ function renderReverseEdges(doc) {
   add('Blocks',       doc.blocks, x => linkifyIdString(x));
   if (groups.length === 0) return '';
   return `<div class="text-sm bg-indigo-50/50 border border-indigo-100 rounded p-3 mb-3 space-y-1">${groups.join('')}</div>`;
+}
+
+function renderAmendments(doc) {
+  const amends = doc.amendments;
+  if (!amends || amends.length === 0) return '';
+  const rows = amends.map(a => `
+    <li class="border-l-2 border-amber-300 pl-3 py-1">
+      <div class="text-xs text-gray-500 font-mono">
+        ${escapeHtml(a.date || '')}
+        <span class="ml-2 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] uppercase tracking-wide">${escapeHtml(a.kind || '')}</span>
+        ${a.by ? `<span class="ml-2">${escapeHtml(a.by)}</span>` : ''}
+        ${a.ref ? `<span class="ml-2">${linkifyIdString(a.ref)}</span>` : ''}
+      </div>
+      <div class="text-sm">${escapeHtml(a.summary || '')}</div>
+      ${a.affects_sections && a.affects_sections.length
+        ? `<div class="text-xs text-gray-500 mt-0.5">affects: ${a.affects_sections.map(s => `<code class="bg-gray-100 px-1 rounded">${escapeHtml(s)}</code>`).join(', ')}</div>`
+        : ''}
+    </li>
+  `).join('');
+  return `
+    <section class="mt-8">
+      <h2 class="text-sm font-semibold text-gray-700 mb-2">Amendments <span class="text-gray-400 font-normal">(${amends.length})</span></h2>
+      <ul class="space-y-2">${rows}</ul>
+    </section>
+  `;
+}
+
+function renderRecentAmendments() {
+  const list = state.index.recent_amendments;
+  if (!list || list.length === 0) return '';
+  const rows = list.slice(0, 10).map(a => `
+    <li class="text-sm">
+      <span class="text-xs text-gray-400 font-mono">${escapeHtml(a.date || '')}</span>
+      ${linkifyIdString(a.adr)}
+      <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] uppercase tracking-wide">${escapeHtml(a.kind || '')}</span>
+      ${escapeHtml(a.summary || '')}
+      ${a.by ? `<span class="text-xs text-gray-500">— ${escapeHtml(a.by)}</span>` : ''}
+    </li>
+  `).join('');
+  return `
+    <section class="mt-6">
+      <h2 class="text-sm font-semibold text-gray-700 mb-2">Recent amendments</h2>
+      <ul class="space-y-1">${rows}</ul>
+    </section>
+  `;
 }
 
 /* ---------------------------------------------------------- state view */

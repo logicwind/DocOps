@@ -2,6 +2,141 @@
 
 All notable changes to docops are recorded here. Dates are UTC.
 
+## v0.6.0 — 2026-04-30
+
+### Added — Amendments as first-class decision metadata (ADR-0025)
+
+ADRs can now carry a structured, append-only `amendments:` log for
+editorial fixes, errata, clarifications, and late-binding patches that
+don't warrant a full superseding ADR. Validator, CLI, index, STATE.md,
+and the static HTML viewer are all amendment-aware.
+
+```yaml
+# docs/decisions/ADR-0019-...md
+amendments:
+  - date: 2026-04-23
+    kind: editorial            # editorial | errata | clarification | late-binding
+    by: nix
+    summary: "Tap/bucket repo names: per-tool → org-wide convention"
+    affects_sections: ["v0.1.0 scope"]
+    ref: TP-024
+```
+
+- **Schema + validator** — `kind` enum (4 values) is the single source
+  of truth for both the Go validator and `decision.schema.json`. Inline
+  `[AMENDED YYYY-MM-DD kind]` markers in the body are correlated with
+  frontmatter entries; mismatches are validation errors. Markers inside
+  fenced code blocks are skipped. Amendments on `superseded` ADRs emit
+  warnings rather than errors.
+- **`docops amend` CLI** — non-interactive mutation. Mirrors ADR-0025's
+  flag surface (`--kind`, `--summary`, `--section`, `--ref`, `--by`,
+  `--body`/`--body-file`, `--marker-at`). yaml.Node-based frontmatter
+  edits preserve comments, key order, and quoting on unrelated fields.
+  Atomic tmp+rename write.
+- **Index + STATE.md** — `docs/.index.json` gains `amendments` per ADR
+  plus a top-level `recent_amendments` list (newest-first, windowed by
+  `recent_activity_window_days`, UTC-midnight comparison).
+  STATE.md gains a "Recent amendments" section.
+- **Static viewer (`docops html` / `docops serve`)** — ADR detail pages
+  render an Amendments section under the body; the Home view shows a
+  Recent amendments panel after STATE.md. The viewer bundle now carries
+  `recent_amendments` in addition to per-doc `amendments`.
+- **TP-027 backfill** — ADR-0019's HTML-comment amendment stub is
+  promoted to a proper frontmatter entry.
+
+Audit rules from ADR-0025 (≥5 amendments threshold, hand-edit drift,
+stale-ref) are deferred to TP-039.
+
+### Changed — Slash command surface narrows to 5 milestone moments (ADR-0029)
+
+Slash-style harnesses (Claude, Cursor, OpenCode) now ship a focused set
+of `/docops:*` commands instead of one slash per CLI verb:
+
+```
+init      progress      next      do      plan
+```
+
+Granular operations (`get`, `list`, `graph`, `search`, `audit`, `close`,
+`new-adr`, `new-ctx`, `new-task`, `refresh`, `state`, `upgrade`) remain
+available as **skills** for natural-language dispatch by the LLM, and
+as CLI verbs. The `/docops:do` skill routes free-form intents to the
+right skill or CLI invocation.
+
+`docops upgrade` removes the 12 deprecated slash files from
+`.claude/commands/docops/` and `.cursor/commands/docops/` automatically
+on next run. **Codex bundle is unchanged** — it uses skill-bundle
+delivery (not slashes), so the full surface stays in-bundle as
+subroutines.
+
+### Added — ADR-0030 (draft) — named baselines
+
+Drafted but not implemented: a baseline is a name + git tag + frozen
+index pointer (`docs/baselines/<name>.json`). Future work will add
+`docops baseline create|list|show|diff|current` and
+`docops get <ID> --at <baseline>`. No code change in this release.
+
+### Changed — Status enum literals surfaced where LLMs read
+
+LLMs were guessing `in_progress`, `wip`, `todo` for task status and
+hitting validator errors. The canonical enums are now inline in the
+docops block in `AGENTS.md`/`CLAUDE.md` (and templates), in the
+`new-task`, `new-adr`, and `close` skill files, with the common wrong
+guesses called out. JSON Schema remains canonical; these are read-side
+hints to short-circuit the trial-and-error loop.
+
+The `new-task` skill no longer references the nonexistent
+`docops status TP-xxx active` command — replaced with explicit
+edit-frontmatter + `docops refresh`.
+
+### Changed — CI runtimes bumped to Node 24
+
+`actions/checkout v4 → v6`, `actions/setup-go v5 → v6`,
+`goreleaser/goreleaser-action v6 → v7` to clear GitHub's 2026-06-02
+Node 20 deprecation.
+
+### Internal
+
+- New `internal/amender/` package; `cmd/docops/cmd_amend.go`.
+- `schema.Amendment` + `ADR.Amendments` (yaml `omitempty`); validator
+  gains `ValidateAmendmentMarkers`; `loader.Doc` gains `Body []byte`
+  for ADRs so the validator can correlate markers.
+- `index.IndexedDoc.Amendments`, `index.Index.RecentAmendments`,
+  `index.IndexedAmendment`, `index.RecentAmendment`.
+- `state.Snapshot` threads `RecentAmendments` through; renderer emits
+  the section only when non-empty.
+- `htmlviewer.Bundle.RecentAmendments` (was silently dropped).
+- `scaffold.SlashDeliverableCmds` defines the milestone-moment subset;
+  upgrader auto-removes deprecated slash files via the existing
+  "no-longer-shipped" cleanup path. New
+  `TestRun_DeprecatesPreADR0029Slashes` covers the migration.
+- `templates/skills/docops/do.md` routing table updated to skill names
+  (or CLI fallback) rather than defunct slashes.
+- `skill-lint` allowlist gains `amend`.
+
+### Known gaps (tracked)
+
+- TP-035 — `/docops:do` dispatcher fixture suite (≥95% routing
+  accuracy bar). Load-bearing under ADR-0029 long-term; ships shortly
+  after.
+- TP-037 — Timeline view in static HTML viewer.
+- TP-038 — Graph node annotations (amended/draft/stale).
+- TP-039 — Deferred amendment audit rules from ADR-0025.
+- ADR-0030 implementation — pending design ideation.
+- TP-034 deferred behavior — "preserve user-modified slash files with
+  warning" rather than always overwriting on upgrade.
+
+### Migration
+
+Pre-launch — no migration needed. If you have an in-flight DocOps repo,
+running `docops upgrade` will:
+
+1. Remove 12 deprecated `/docops:*` slash files from Claude/Cursor
+   command directories.
+2. Refresh `AGENTS.md` / `CLAUDE.md` docops blocks with Invariant #6
+   (status enums).
+
+ADRs without `amendments:` continue to validate; the field is additive.
+
 ## v0.5.2 — 2026-04-25
 
 ### Changed — Codex layout collapses to one skill bundle

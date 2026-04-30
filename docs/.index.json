@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-30T02:57:42Z",
+  "generated_at": "2026-04-30T03:28:22Z",
   "version": 1,
   "docs": [
     {
@@ -1198,9 +1198,21 @@
         {
           "id": "TP-027",
           "edge": "requires"
+        },
+        {
+          "id": "TP-036",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-038",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-039",
+          "edge": "requires"
         }
       ],
-      "implementation": "done",
+      "implementation": "partial",
       "stale": false
     },
     {
@@ -1265,9 +1277,21 @@
         {
           "id": "TP-032",
           "edge": "requires"
+        },
+        {
+          "id": "TP-036",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-037",
+          "edge": "requires"
+        },
+        {
+          "id": "TP-038",
+          "edge": "requires"
         }
       ],
-      "implementation": "done",
+      "implementation": "partial",
       "stale": false
     },
     {
@@ -2218,8 +2242,8 @@
       ],
       "summary": "Ship the machine layer behind ADR-0025: the `amendments:` frontmatter field, the `docops amend` CLI, validator + audit + index + state integration, and the JSON Schema extension.",
       "word_count": 602,
-      "last_touched": "2026-04-23T08:37:39Z",
-      "age_days": 6,
+      "last_touched": "2026-04-30T02:58:00Z",
+      "age_days": 0,
       "referenced_by": [
         {
           "id": "TP-027",
@@ -2243,8 +2267,8 @@
       ],
       "summary": "Once TP-026 ships the `amendments:` schema and `docops amend` CLI, convert ADR-0019's HTML-comment amendment stub into a proper frontmatter entry using the new machinery. ADR-0019 is the live motivati…",
       "word_count": 354,
-      "last_touched": "2026-04-23T08:37:39Z",
-      "age_days": 6,
+      "last_touched": "2026-04-30T02:58:00Z",
+      "age_days": 0,
       "stale": false
     },
     {
@@ -2374,7 +2398,7 @@
       "summary": "- Phase 1 (`cf3a2c7`) — `Harness` interface + registry; Claude/Cursor   adapters. Byte-identical output. - Phase 2 (`daa00b6`) — OpenCode adapter + layout-aware writer   (`planHarness`, frontmatter pa…",
       "word_count": 1413,
       "last_touched": "2026-04-24T03:10:20Z",
-      "age_days": 5,
+      "age_days": 6,
       "stale": false
     },
     {
@@ -2412,6 +2436,80 @@
       "summary": "With ADR-0029, `/docops:do` becomes the primary user-facing free-form entry point. The granular slashes that previously gave users a fallback (e.g., `/docops:get`, `/docops:search`) are gone — so disp…",
       "word_count": 360,
       "last_touched": "2026-04-29T18:40:48Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-036",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-036-render-amendment-aware-ui-in-static-viewer-adr-det.md",
+      "title": "Render amendment-aware UI in static viewer (ADR detail + Home recent)",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0027",
+        "ADR-0025"
+      ],
+      "summary": "Surface ADR-0025 amendments in the `docops html` / `docops serve` SPA — both on the per-ADR detail page and on the Home view — sourced from `recent_amendments` and per-doc `amendments` in the viewer b…",
+      "word_count": 158,
+      "last_touched": "2026-04-30T03:28:10Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-037",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-037-add-timeline-view-to-static-html-viewer.md",
+      "title": "Add timeline view to static HTML viewer",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0027"
+      ],
+      "summary": "A chronological \"Timeline\" tab in the SPA that surfaces project events on a single time axis: ADR transitions, amendments, task closes. Helps humans and LLMs reason about *when* decisions and work hap…",
+      "word_count": 241,
+      "last_touched": "2026-04-30T03:28:16Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-038",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-038-annotate-graph-nodes-amended-adrs-draft-stale.md",
+      "title": "Annotate graph nodes — amended ADRs, draft, stale",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0027",
+        "ADR-0025"
+      ],
+      "summary": "Enrich the Cytoscape graph in the SPA with per-node visual cues drawn from data already in the bundle:",
+      "word_count": 174,
+      "last_touched": "2026-04-30T03:18:30Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-039",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-039-implement-deferred-amendment-audit-rules-from-adr.md",
+      "title": "Implement deferred amendment audit rules from ADR-0025",
+      "task_status": "backlog",
+      "priority": "p2",
+      "assignee": "unassigned",
+      "requires": [
+        "ADR-0025"
+      ],
+      "summary": "Implement the three audit rules ADR-0025 §\"Audit rules\" specified but that TP-026 phase 3 deferred:",
+      "word_count": 222,
+      "last_touched": "2026-04-30T03:20:47Z",
       "age_days": 0,
       "stale": false
     }
