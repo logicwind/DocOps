@@ -11,8 +11,11 @@ stands but its boundaries have moved — usually a narrowing or widening.
 Mechanically: a `clarification`-kind amendment with `--section` flags,
 plus a follow-up task if the shift is load-bearing.
 
-If user describes a typo / dead link → `cookbook/amend.md`. If user
-describes a different decision → `cookbook/supersede.md`.
+Lane self-test before acting:
+
+- Decision still says "do X" → **revise** (this chapter).
+- Decision now says "do Y instead of X" → **supersede**.
+- Decision is fine, only the text is wrong → **amend**.
 
 ## Input
 - **ADR ID**.

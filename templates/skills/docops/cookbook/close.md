@@ -19,8 +19,10 @@ Task ID (`TP-NNN`). Ask once if missing.
    docops get <TP-ID>
    ```
 
-   Compare `## Goal` / `## Acceptance` against the diff and remaining TODOs.
-   If incomplete, **stop** and surface what's missing.
+   Compare `## Goal` / `## Acceptance` against the diff, remaining TODOs,
+   and (if tests were called for) whether they exist and pass. The
+   acceptance list is the contract — never flip `done` just because citing
+   files changed. If incomplete, **stop** and surface what's missing.
 
 2. Flip frontmatter `task_status: done` via `Edit` on the task file. Enum is
    literal — `backlog | active | blocked | done`. Do not edit
