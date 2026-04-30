@@ -1,8 +1,8 @@
 ---
 title: Add timeline view to static HTML viewer
-status: backlog
+status: done
 priority: p2
-assignee: unassigned
+assignee: nix
 requires: [ADR-0027]
 depends_on: []
 ---

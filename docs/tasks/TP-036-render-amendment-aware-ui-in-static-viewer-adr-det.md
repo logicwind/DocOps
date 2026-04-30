@@ -1,6 +1,6 @@
 ---
 title: Render amendment-aware UI in static viewer (ADR detail + Home recent)
-status: backlog
+status: done
 priority: p2
 assignee: unassigned
 requires: [ADR-0027, ADR-0025]

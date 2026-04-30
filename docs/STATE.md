@@ -6,7 +6,7 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 28 accepted · 2 draft · 0 superseded (29 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 8 backlog · 0 active · 0 blocked · 31 done
+- Tasks: 6 backlog · 0 active · 0 blocked · 34 done
 
 ## Needs attention
 
@@ -21,6 +21,7 @@
 - 2026-04-30 f8b8d3d docs: ADR-0029/30 + accept ADR-0025; title-naming guidance for new-adr
 - 2026-04-30 e76d4ad feat(schema,validator): TP-026 phase 1 — amendments data layer + TP-027 backfill
 - 2026-04-30 ccd0781 docs(TP-034): close — slash surface narrowed to 5 moments per ADR-0029
+- 2026-04-30 32ebb2a feat(htmlviewer,docs): v0.6.0 release prep — amendments in SPA + CHANGELOG + follow-up TPs
 - 2026-04-30 12172df docs: add TP-034/TP-035 — implement ADR-0029 command-surface tiering
 - 2026-04-30 03bcaea feat(index,state): TP-026 phase 3 — amendments in index + STATE; close TP-026/TP-027
 - 2026-04-25 6458183 feat(upgrader): Codex layout collapses to one skill bundle
@@ -34,10 +35,8 @@
 - 2026-04-23 dc91851 TP-023 phase 2: ship orchestration skills; close TP-023
 - 2026-04-23 d811d75 docs(adr): promote ADR-0023 and ADR-0024 to accepted
 - 2026-04-23 d0cbd50 fix(release): pass HOMEBREW_TAP_GITHUB_TOKEN explicitly to tap/bucket publishers
-- 2026-04-23 c038a01 chore: mark TP-018/020/021/022 done; ignore /docops smoke binary
 - 2026-04-23 afcd855 TP-023 phase 1: ship /docops:{next,get,list,graph,search} skills
 - 2026-04-23 aeb53b3 chore: enable tap/bucket auto-publish for v0.2.1
-- 2026-04-23 a131d95 planning: ADR-0024 + TP-022 — ship CLAUDE.md alongside AGENTS.md
 
 ## Recent amendments
 

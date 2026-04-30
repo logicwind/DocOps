@@ -48,6 +48,8 @@
   <a href="#/" class="font-semibold tracking-tight">DocOps</a>
   <nav class="flex gap-1 text-sm">
     <a href="#/" class="px-2 py-1 rounded hover:bg-gray-100">Home</a>
+    <a href="#/board" class="px-2 py-1 rounded hover:bg-gray-100">Board</a>
+    <a href="#/timeline" class="px-2 py-1 rounded hover:bg-gray-100">Timeline</a>
     <a href="#/graph" class="px-2 py-1 rounded hover:bg-gray-100">Graph</a>
   </nav>
   <div class="flex-1"></div>
@@ -67,6 +69,12 @@ const state = {
   index: null,        // full index.json
   byId: new Map(),    // ID → IndexedDoc
   baseUrl: document.querySelector('base')?.getAttribute('href') || '',
+  ui: {
+    boardShowAllDone: false,
+    boardFilterPriority: '',  // '' | 'p1' | 'p2' | 'p3'
+    boardFilterTag: '',
+    timelineFilterKind: '',   // '' | 'CTX' | 'ADR' | 'TP' | 'amendment'
+  },
 };
 
 function url(p) { return (state.baseUrl || '') + p; }
@@ -159,6 +167,8 @@ function currentRoute() {
   if (parts.length === 0) return { view: 'home' };
   if (parts[0] === 'graph') return { view: 'graph' };
   if (parts[0] === 'state') return { view: 'state' };
+  if (parts[0] === 'board') return { view: 'board' };
+  if (parts[0] === 'timeline') return { view: 'timeline' };
   if (['CTX', 'ADR', 'TP'].includes(parts[0]) && parts[1]) {
     return { view: 'doc', kind: parts[0], id: parts[1] };
   }
@@ -168,10 +178,12 @@ function currentRoute() {
 async function route() {
   const r = currentRoute();
   renderSidebar();
-  if (r.view === 'home')  return renderHome();
-  if (r.view === 'graph') return renderGraph();
-  if (r.view === 'state') return renderState();
-  if (r.view === 'doc')   return renderDoc(r.id);
+  if (r.view === 'home')     return renderHome();
+  if (r.view === 'graph')    return renderGraph();
+  if (r.view === 'state')    return renderState();
+  if (r.view === 'board')    return renderBoard();
+  if (r.view === 'timeline') return renderTimeline();
+  if (r.view === 'doc')      return renderDoc(r.id);
 }
 
 /* ---------------------------------------------------------- home view */
@@ -197,7 +209,12 @@ async function renderHome() {
     <div class="max-w-4xl mx-auto p-6">
       <h1 class="text-2xl font-bold mb-1">Project state</h1>
       <p class="text-sm text-gray-500 mb-4">Generated ${escapeHtml(state.index.generated_at || '')}</p>
-      <div class="grid grid-cols-3 gap-3 mb-6">${tiles}</div>
+      <div class="grid grid-cols-3 gap-3 mb-3">${tiles}</div>
+      <div class="flex gap-2 mb-6">
+        <a href="#/board" class="text-sm px-3 py-1.5 rounded border border-gray-200 bg-white hover:bg-gray-50 hover:shadow-sm transition">Board →</a>
+        <a href="#/timeline" class="text-sm px-3 py-1.5 rounded border border-gray-200 bg-white hover:bg-gray-50 hover:shadow-sm transition">Timeline →</a>
+        <a href="#/graph" class="text-sm px-3 py-1.5 rounded border border-gray-200 bg-white hover:bg-gray-50 hover:shadow-sm transition">Graph →</a>
+      </div>
       <article class="prose">${stateMd ? linkifyIds(renderMarkdown(stateMd)) : '<p class="text-gray-500">No STATE.md available.</p>'}</article>
       ${renderRecentAmendments()}
     </div>
@@ -375,6 +392,205 @@ function renderState() {
       <article class="prose">${md ? linkifyIds(renderMarkdown(md)) : '<p class="text-gray-500">No STATE.md found.</p>'}</article>
     </div>
   `;
+}
+
+/* ---------------------------------------------------------- board view */
+
+const BOARD_COLUMNS = [
+  { status: 'backlog', label: 'Backlog', cls: 'bg-gray-50 border-gray-200' },
+  { status: 'active',  label: 'Active',  cls: 'bg-indigo-50 border-indigo-200' },
+  { status: 'blocked', label: 'Blocked', cls: 'bg-orange-50 border-orange-200' },
+  { status: 'done',    label: 'Done',    cls: 'bg-green-50 border-green-200' },
+];
+
+function renderBoard() {
+  const ui = state.ui;
+  const tasks = state.index.docs.filter(d => d.kind === 'TP');
+
+  const allTags = new Set();
+  for (const t of tasks) (t.tags || []).forEach(x => allTags.add(x));
+
+  const matchesFilters = t => {
+    if (ui.boardFilterPriority && t.priority !== ui.boardFilterPriority) return false;
+    if (ui.boardFilterTag && !(t.tags || []).includes(ui.boardFilterTag)) return false;
+    return true;
+  };
+
+  const cardHtml = t => {
+    const tagChips = (t.tags || []).map(x => `<span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">${escapeHtml(x)}</span>`).join(' ');
+    const pri = t.priority ? `<span class="text-[10px] font-mono bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">${escapeHtml(t.priority)}</span>` : '';
+    const assignee = t.assignee && t.assignee !== 'unassigned'
+      ? `<span class="text-[10px] text-gray-500">@${escapeHtml(t.assignee)}</span>` : '';
+    return `
+      <a href="#/TP/${t.id}" class="block bg-white border border-gray-200 rounded p-2.5 hover:shadow-sm hover:border-gray-300 transition no-underline">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-[11px] font-mono text-gray-500">${escapeHtml(t.id)}</span>
+          ${pri}
+          ${assignee}
+        </div>
+        <div class="text-sm text-gray-900 leading-snug">${escapeHtml(t.title || '(untitled)')}</div>
+        ${tagChips ? `<div class="mt-1.5 flex flex-wrap gap-1">${tagChips}</div>` : ''}
+      </a>
+    `;
+  };
+
+  const columns = BOARD_COLUMNS.map(col => {
+    let items = tasks
+      .filter(t => (t.task_status || t.status || 'backlog') === col.status)
+      .filter(matchesFilters)
+      .sort((a, b) => (b.last_touched || '').localeCompare(a.last_touched || ''));
+    const total = items.length;
+    let truncated = false;
+    if (col.status === 'done' && !ui.boardShowAllDone && items.length > 10) {
+      items = items.slice(0, 10);
+      truncated = true;
+    }
+    const cards = items.map(cardHtml).join('') || `<div class="text-xs text-gray-400 italic px-1 py-2">empty</div>`;
+    const showAllToggle = col.status === 'done' && total > 10
+      ? `<button id="board-toggle-done" class="text-xs text-indigo-600 hover:underline mt-2">${ui.boardShowAllDone ? 'show last 10' : `show all ${total}`}</button>`
+      : '';
+    return `
+      <section class="flex-1 min-w-[16rem] border ${col.cls} rounded p-2.5">
+        <header class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-semibold text-gray-700">${col.label}</h2>
+          <span class="text-xs text-gray-500">${total}${truncated ? ` · showing 10` : ''}</span>
+        </header>
+        <div class="space-y-2">${cards}</div>
+        ${showAllToggle}
+      </section>
+    `;
+  }).join('');
+
+  const priorityChips = ['', 'p1', 'p2', 'p3'].map(p => {
+    const on = ui.boardFilterPriority === p;
+    const lbl = p || 'all';
+    return `<button data-board-pri="${p}" class="text-xs px-2 py-0.5 rounded border ${on ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}">${lbl}</button>`;
+  }).join(' ');
+
+  const tagOptions = ['', ...Array.from(allTags).sort()].map(t =>
+    `<option value="${escapeHtml(t)}" ${ui.boardFilterTag === t ? 'selected' : ''}>${t === '' ? 'all tags' : escapeHtml(t)}</option>`
+  ).join('');
+
+  document.getElementById('main').innerHTML = `
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-bold">Board</h1>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1"><span class="text-xs text-gray-500 mr-1">priority</span>${priorityChips}</div>
+          <select id="board-tag" class="text-xs px-2 py-1 rounded border border-gray-300 bg-white">${tagOptions}</select>
+        </div>
+      </div>
+      <div class="flex gap-3 items-start">${columns}</div>
+    </div>
+  `;
+
+  document.querySelectorAll('[data-board-pri]').forEach(b => {
+    b.addEventListener('click', () => {
+      state.ui.boardFilterPriority = b.getAttribute('data-board-pri');
+      renderBoard();
+    });
+  });
+  const tagSel = document.getElementById('board-tag');
+  if (tagSel) tagSel.addEventListener('change', () => {
+    state.ui.boardFilterTag = tagSel.value;
+    renderBoard();
+  });
+  const toggle = document.getElementById('board-toggle-done');
+  if (toggle) toggle.addEventListener('click', () => {
+    state.ui.boardShowAllDone = !state.ui.boardShowAllDone;
+    renderBoard();
+  });
+}
+
+/* ---------------------------------------------------------- timeline view */
+
+function timelineEvents() {
+  const events = [];
+  for (const d of state.index.docs) {
+    if (d.kind === 'ADR' && d.date) {
+      events.push({ date: d.date, kind: 'ADR', doc: d, label: `ADR ${d.status || 'accepted'}` });
+    }
+    if (d.kind === 'TP' && (d.task_status === 'done') && d.last_touched) {
+      events.push({ date: d.last_touched, kind: 'TP', doc: d, label: 'task closed' });
+    }
+    if (d.kind === 'CTX' && d.last_touched) {
+      events.push({ date: d.last_touched, kind: 'CTX', doc: d, label: `ctx ${d.type || ''}`.trim() });
+    }
+    for (const a of (d.amendments || [])) {
+      events.push({ date: a.date || '', kind: 'amendment', doc: d, amendment: a, label: `amendment · ${a.kind || ''}`.trim() });
+    }
+  }
+  return events
+    .filter(e => e.date)
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function renderTimeline() {
+  const ui = state.ui;
+  const all = timelineEvents();
+  const events = ui.timelineFilterKind ? all.filter(e => e.kind === ui.timelineFilterKind) : all;
+
+  const groups = new Map();  // YYYY-MM → events[]
+  for (const e of events) {
+    const ym = e.date.slice(0, 7);
+    if (!groups.has(ym)) groups.set(ym, []);
+    groups.get(ym).push(e);
+  }
+
+  const kindIcon = k => ({
+    CTX: `<span class="inline-block w-1.5 h-1.5 rounded-full" style="background:var(--ctx)"></span>`,
+    ADR: `<span class="inline-block w-1.5 h-1.5 rounded-full" style="background:var(--adr)"></span>`,
+    TP:  `<span class="inline-block w-1.5 h-1.5 rounded-full" style="background:var(--tp)"></span>`,
+    amendment: `<span class="inline-block px-1 rounded bg-amber-100 text-amber-800 text-[9px] uppercase tracking-wide">amend</span>`,
+  })[k] || '';
+
+  const renderEvent = e => {
+    const d = e.doc;
+    const id = `<a href="#/${d.kind}/${d.id}" class="docref-${d.kind}"><span class="docref-id">${escapeHtml(d.id)}</span></a>`;
+    const title = escapeHtml(d.title || '');
+    const meta = e.kind === 'amendment'
+      ? `<span class="text-xs text-gray-500">${escapeHtml(e.amendment.summary || '')}${e.amendment.by ? ' — ' + escapeHtml(e.amendment.by) : ''}</span>`
+      : (d.kind === 'TP' ? statusBadge(d) : (d.kind === 'ADR' ? statusBadge(d) : ''));
+    return `
+      <li class="flex items-baseline gap-2 py-1">
+        <span class="text-[11px] font-mono text-gray-400 w-20 shrink-0">${escapeHtml(e.date)}</span>
+        <span class="shrink-0">${kindIcon(e.kind)}</span>
+        <span class="text-xs text-gray-500 w-28 shrink-0">${escapeHtml(e.label)}</span>
+        <span class="flex-1 min-w-0">${id} <span class="text-gray-700">${title}</span></span>
+        <span class="shrink-0">${meta}</span>
+      </li>
+    `;
+  };
+
+  const sections = Array.from(groups.entries()).map(([ym, evs]) => `
+    <section class="mb-5">
+      <h2 class="text-sm font-semibold text-gray-500 mb-1 sticky top-0 bg-white py-1 border-b border-gray-100">${escapeHtml(ym)} <span class="text-gray-400 font-normal">(${evs.length})</span></h2>
+      <ul class="divide-y divide-gray-100">${evs.map(renderEvent).join('')}</ul>
+    </section>
+  `).join('') || `<p class="text-sm text-gray-500">No events.</p>`;
+
+  const filterChips = ['', 'CTX', 'ADR', 'TP', 'amendment'].map(k => {
+    const on = ui.timelineFilterKind === k;
+    const lbl = k || 'all';
+    return `<button data-timeline-kind="${k}" class="text-xs px-2 py-0.5 rounded border ${on ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}">${lbl}</button>`;
+  }).join(' ');
+
+  document.getElementById('main').innerHTML = `
+    <div class="max-w-4xl mx-auto p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-bold">Timeline</h1>
+        <div class="flex items-center gap-1">${filterChips}</div>
+      </div>
+      ${sections}
+    </div>
+  `;
+
+  document.querySelectorAll('[data-timeline-kind]').forEach(b => {
+    b.addEventListener('click', () => {
+      state.ui.timelineFilterKind = b.getAttribute('data-timeline-kind');
+      renderTimeline();
+    });
+  });
 }
 
 /* ---------------------------------------------------------- graph view */
