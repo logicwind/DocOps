@@ -3,42 +3,52 @@ name: new-adr
 description: Create a new ADR (Architecture Decision Record) for a design or process decision. Use when the user is about to write code that encodes a decision not yet recorded.
 ---
 
-# /docops:new-adr
+# Cookbook: new-adr
 
-Create a new ADR under `docs/decisions/`.
-
-Preferred pattern for agents — create and populate in one call:
-
-```
-docops new adr "Title" [--related ADR-xxxx,CTX-yyy] --body - <<'EOF'
 ## Context
+Capture a decision under `docs/decisions/`. Default fields on creation:
+`status: draft`, `coverage: required`, `date: <today>`. Status enum:
+`draft | accepted | superseded`. `coverage: not-needed` is allowed but
+requires a short justification in the body.
 
-What problem forced this decision.
+**Title the *pattern or decision*, not the first application** — the
+ADR should still read well when use #2 or #3 lands. Prefer "Provider
+capability registry" over "ZoomInfo as flagged provider". Mention the
+triggering case in the Context section, not the title.
 
-## Decision
+## Input
+Title (always); optional `--related <CSV of IDs>`; body via `--body -`
+heredoc or `--body-file <path>` (mutually exclusive; both imply
+`--no-open`).
 
-What will be done.
+## Steps
+1. Create and populate in one call:
 
-## Rationale
+   ```
+   docops new adr "Title" --related ADR-xxxx,CTX-yyy --body - <<'EOF'
+   ## Context
+   What problem forced this decision.
 
-Why this option.
+   ## Decision
+   What will be done.
 
-## Consequences
+   ## Rationale
+   Why this option.
 
-What this enables or restricts.
-EOF
-```
+   ## Consequences
+   What this enables or restricts.
+   EOF
+   ```
 
-If you already have the body in a file:
+   Or from a file:
 
-```
-docops new adr "Title" --body-file /path/to/body.md --json
-```
+   ```
+   docops new adr "Title" --body-file /path/to/body.md --json
+   ```
 
-`--body` and `--body-file` are mutually exclusive. Both imply `--no-open`.
+2. Pair with `/docops:new-task` so the decision isn't orphaned. At
+   least one task should cite the new ADR once accepted.
 
-An ADR captures a decision. Default fields: `status: draft`, `coverage: required`, `date: <today>`. **ADR status enum:** `draft | accepted | superseded`. The user may change `coverage` to `not-needed` if no task will cite this ADR — but that requires a short justification in the ADR body.
-
-**Title naming.** Title the *pattern or decision*, not the first application — the ADR should still read well when Use #2 or #3 lands. Prefer "Provider capability registry" over "ZoomInfo as flagged provider"; "Background job queue" over "Resend nightly digest worker". Mention the triggering case in the Context section, not the title.
-
-Once the ADR is accepted, at least one task should cite it. Pair this skill with `/docops:new-task` to avoid an orphaned decision.
+## Confirm
+ADR ID created, default status (`draft`) and coverage, and the paired
+task IDs (if any) that will cite it.

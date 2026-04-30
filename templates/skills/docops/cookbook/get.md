@@ -1,21 +1,26 @@
 ---
 name: get
-description: Look up a single DocOps doc by ID (ADR-nnnn, CTX-nnn, TP-nnn) and print its indexed record. Use when you need the frontmatter and edges for one doc without reading the full file.
+description: Look up a single DocOps doc by ID (ADR-NNNN, CTX-NNN, TP-NNN) and print its indexed record. Use when you need the frontmatter and edges for one doc without reading the full file.
 ---
 
-# /docops:get
+# Cookbook: get
 
-Fetch one indexed doc by ID.
+## Context
+Fetch one indexed doc. Run before reading the full file when you only
+need title, status, and edges. `--json` returns the full `IndexedDoc`
+for scripting or exact edge inspection.
 
-```
-docops get ADR-0010
-docops get TP-029 --json
-```
+## Input
+A doc ID (`ADR-NNNN`, `CTX-NNN`, `TP-NNN`).
 
-The plain output shows title, status, coverage/priority, dates, and both
-forward and reverse edges (computed). `--json` returns the full
-`IndexedDoc` — use it when scripting or when you need the exact edge
-shape.
+## Steps
+1. Run:
 
-When a user pastes an ID into chat, run `docops get <ID>` first to
-orient before reading the full file.
+   ```
+   docops get <ID>
+   docops get <ID> --json
+   ```
+
+## Confirm
+Title, status, coverage/priority, dates, forward and reverse edges. Use
+this to orient before reading the full file.

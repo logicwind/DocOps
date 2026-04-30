@@ -3,26 +3,34 @@ name: refresh
 description: Run validate + index + state in one pass after any doc edit. Replaces the three-command chain. Use this after every document change.
 ---
 
-# /docops:refresh
+# Cookbook: refresh
 
-Run after every document edit to keep the project state consistent.
+## Context
+Post-edit chain: validate → index → state. If validate fails, the rest
+is skipped. Run after every document change.
 
-```
-docops refresh
-```
+## Input
+None.
 
-Collapses the three-command post-edit chain into one:
+## Steps
+1. Run:
 
-1. **validate** — schema + graph invariants (stops here on failure).
-2. **index** — rebuilds `docs/.index.json`.
-3. **state** — regenerates `docs/STATE.md`.
+   ```
+   docops refresh
+   ```
 
-If validate fails, index and state are skipped. Fix the validation errors first, then re-run.
+   For CI / scripted output:
 
-For CI or structured output:
+   ```
+   docops refresh --json
+   ```
 
-```
-docops refresh --json
-```
+   `--json` emits `{"ok": true, "steps": [...]}`. Exit codes: 0 on full
+   pass, 1 on validate failure, 2 on bootstrap error.
 
-The `--json` flag emits `{"ok": true, "steps": [...]}` with per-step details. Exit code is 0 when all steps pass, 1 when validate fails, 2 on bootstrap error.
+2. If validate fails, surface the errors and **stop**. Do not flip on
+   to indexing — fix the source first, then re-run.
+
+## Confirm
+Per-step OK / failure counts. If anything failed, the failing step's
+error verbatim.

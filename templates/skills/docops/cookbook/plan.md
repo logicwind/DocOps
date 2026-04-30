@@ -3,49 +3,59 @@ name: plan
 description: Given a CTX (PRD, memo, research note), draft one ADR and one or more tasks that cite it. Human-confirmed before write. Use when turning stakeholder input into actionable work.
 ---
 
-# /docops:plan
+# Cookbook: plan
 
-Convert context into a decision plus tasks.
-
-Ask for the CTX ID if not provided. Read it, then draft:
-
-1. **One ADR** capturing the decision the CTX implies or demands. Propose
-   title, Context/Decision/Rationale/Consequences body. Confirm with the
-   user before writing.
-
-2. **One or more tasks** that cite the ADR. Each task should carry
-   priority, an acceptance checklist, and (if relevant) a depends-on
-   reference to other tasks. Confirm the full set before writing.
-
-Write via `--body -` heredocs so drafts land populated on creation (no
-stub-then-rewrite round-trip):
-
-```
-docops new adr "Title" --related ADR-xxxx --body - <<'EOF'
 ## Context
-...
-## Decision
-...
-## Rationale
-...
-## Consequences
-...
-EOF
+Convert a CTX into an ADR + tasks. Always human-confirmed before any
+write — show proposed frontmatter and body summary, then ask. Keep the
+ADR `status: draft` unless the user explicitly accepts it.
 
-docops new task "Title" --requires ADR-0026 --priority p1 --body - <<'EOF'
-## Goal
-...
-## Acceptance
-- ...
-EOF
-```
+## Input
+A CTX ID. Ask once if missing.
 
-After all writes, run `docops refresh` to regenerate index and STATE.md.
+## Steps
+1. Read the CTX:
 
-Rules:
+   ```
+   docops get <CTX-ID>
+   ```
 
-- Every task must cite ≥1 ADR or CTX in `requires:`. If the user cannot
-  name a citation, stop and draft the missing ADR/CTX first.
-- Keep ADR `status: draft` unless the user explicitly accepts it.
-- Don't write anything the user hasn't confirmed. Show proposed
-  frontmatter and body summary, then ask.
+2. Draft **one ADR** capturing the decision the CTX implies. Propose
+   title, Context / Decision / Rationale / Consequences body. Confirm
+   before writing.
+
+3. Draft **one or more tasks** that cite the ADR. Each carries
+   priority, an acceptance checklist, and (if relevant) `depends_on`.
+   Confirm the full set before writing.
+
+4. Write via heredocs so drafts land populated on creation:
+
+   ```
+   docops new adr "Title" --related <CTX-ID> --body - <<'EOF'
+   ## Context
+   ...
+   ## Decision
+   ...
+   ## Rationale
+   ...
+   ## Consequences
+   ...
+   EOF
+
+   docops new task "Title" --requires <ADR-ID> --priority p1 --body - <<'EOF'
+   ## Goal
+   ...
+   ## Acceptance
+   - ...
+   EOF
+   ```
+
+5. Refresh:
+
+   ```
+   docops refresh
+   ```
+
+## Confirm
+ADR ID + draft status, the TP IDs that cite it, the priority/assignee
+assignments, and that `refresh` returned OK.

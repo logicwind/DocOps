@@ -3,32 +3,40 @@ name: init
 description: Scaffold DocOps into a bare repository — creates docs/ folders, docops.yaml, JSON Schemas, AGENTS.md and CLAUDE.md blocks, and a pre-commit hook. Safe to run twice; use --dry-run to preview.
 ---
 
-# /docops:init
+# Cookbook: init
 
-Scaffold DocOps into this repository (or a specific directory).
+## Context
+First-time scaffolding into a repo (or specific directory). On a TTY,
+init prints the plan and prompts `Proceed? [y/N]` before writing.
+Non-TTY stdin and `--yes` skip the prompt; `--dry-run` also skips.
 
-```
-docops init [dir] [--dry-run] [--force] [--no-skills] [--yes]
-```
+What it writes:
+- `docs/{context,decisions,tasks}/` if absent.
+- `docops.yaml` at the repo root with sensible defaults.
+- `docs/.docops/schema/*.schema.json` for in-editor validation.
+- `<!-- docops:start -->` block in `AGENTS.md` and `CLAUDE.md`.
+- A language-agnostic `pre-commit` hook running `docops validate`.
+- Slash commands into `.claude/commands/docops/` and
+  `.cursor/commands/docops/`.
 
-`[dir]` is optional. When given, init targets that directory (creating it if absent) instead of cwd.
+## Input
+Optional positional `[dir]` (defaults to cwd). Optional flags:
+`--dry-run`, `--force`, `--no-skills`, `--yes`.
 
-What it does:
+## Steps
+1. Run:
 
-- Creates `docs/context/`, `docs/decisions/`, `docs/tasks/` if absent.
-- Writes `docops.yaml` at the repo root with sensible defaults.
-- Writes JSON Schemas to `docs/.docops/schema/` for in-editor validation.
-- Writes or refreshes the `<!-- docops:start -->` block inside `AGENTS.md` and `CLAUDE.md` (both files share the same docops block; Claude Code reads CLAUDE.md by default while other agents read AGENTS.md).
-- Installs a language-agnostic pre-commit hook that runs `docops validate`.
-- Scaffolds `/docops:*` slash commands into `.claude/commands/docops/` and `.cursor/commands/docops/`.
+   ```
+   docops init [dir]
+   docops init --dry-run        # preview
+   docops init --force          # overwrite drifted files
+   docops init --no-skills      # skip skill scaffolding
+   docops init --yes            # CI / non-interactive
+   ```
 
-Flags:
+2. After init, run `docops validate` to confirm everything parses, then
+   `/docops:new-ctx` or `/docops:new-adr` to start capturing state.
 
-- `--dry-run` — print what would change, write nothing.
-- `--force` — overwrite files that have drifted from the shipped templates.
-- `--no-skills` — skip scaffolding the agent skill files.
-- `--yes` / `-y` — skip the interactive confirm prompt (required in CI and scripts).
-
-On a TTY, init prints the plan and prompts `Proceed? [y/N]` before writing. Non-TTY stdin (CI, pipes) and `--yes` both skip the prompt. `--dry-run` also skips the prompt.
-
-After init, run `docops validate` to confirm everything parses, then `/docops:new-ctx` / `/docops:new-adr` to start capturing the project's state.
+## Confirm
+List of files/folders written, whether the pre-commit hook landed, and
+the next step (validate + first CTX/ADR).

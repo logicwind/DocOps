@@ -3,25 +3,31 @@ name: next
 description: Ask DocOps which task to pick up next. Uses assignee, priority, status, and depends_on to recommend one task. Use at session start or after finishing a task.
 ---
 
-# /docops:next
+# Cookbook: next
 
-Find the next task to work on.
+## Context
+Pick one task to work on. The CLI ranks by descending priority, then
+ascending ID, among tasks with no unmet `depends_on`. Non-zero exit
+when nothing matches.
 
-```
-docops next
-```
+## Input
+Optional filters: `--assignee <handle>`, `--priority <p0|p1|p2>`,
+`--json`.
 
-Filter when the project has multiple contributors or priority bands:
+## Steps
+1. Run:
 
-```
-docops next --assignee nachiket
-docops next --priority p0
-docops next --json
-```
+   ```
+   docops next
+   docops next --assignee nachiket
+   docops next --priority p0 --json
+   ```
 
-The CLI picks one task by descending priority (p0 → p2), then ascending
-ID among tasks with no unmet `depends_on`. If no task matches, exit code
-is non-zero and stderr says `no task matches`.
+2. After selection, **read every doc in the chosen task's `requires:`
+   and `depends_on:`** before writing code. This is non-negotiable —
+   the citations encode the constraints the task must respect.
 
-After selecting a task, read every doc in its `requires:` and
-`depends_on:` before writing code.
+## Confirm
+Chosen task ID + title, its `requires:` IDs, and what to read first. If
+nothing matches, surface the message verbatim and suggest
+`/docops:audit` or `/docops:new-task`.

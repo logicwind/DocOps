@@ -3,28 +3,37 @@ name: new-ctx
 description: Create a new CTX (Context) document — PRD, memo, research, design brief, constraints, or interview notes. Use when capturing stakeholder input or guardrails.
 ---
 
-# /docops:new-ctx
+# Cookbook: new-ctx
 
-Create a new CTX under `docs/context/`.
+## Context
+Capture the *why* — stakeholder intent, constraints, research — under
+`docs/context/`. Each CTX should be focused: one PRD per feature, one
+memo per guardrail, one research note per investigation. CTX docs are
+the raw material ADRs cite when justifying a decision.
 
-Preferred pattern for agents — create and populate in one call:
+## Input
+Title, `--type <kind>`, body. Allowed `--type` values come from
+`docops.yaml` → `context_types`. Defaults shipped with init: `prd`,
+`design`, `research`, `notes`, `memo`, `spec`, `brief`. Body via
+`--body -` heredoc or `--body-file <path>` (mutually exclusive; both
+imply `--no-open`).
 
-```
-docops new ctx "Title" --type memo --body - <<'EOF'
-## Summary
+## Steps
+1. Create and populate in one call:
 
-Capture the stakeholder input or constraint here.
-EOF
-```
+   ```
+   docops new ctx "Title" --type memo --body - <<'EOF'
+   ## Summary
+   Capture the stakeholder input or constraint here.
+   EOF
+   ```
 
-If you already have the body in a file:
+   Or from a file:
 
-```
-docops new ctx "Title" --type brief --body-file /path/to/body.md --json
-```
+   ```
+   docops new ctx "Title" --type brief --body-file /path/to/body.md --json
+   ```
 
-`--body` and `--body-file` are mutually exclusive. Both imply `--no-open`.
-
-`--type` must be one of the values listed in `docops.yaml` → `context_types`. Defaults shipped with init: `prd`, `design`, `research`, `notes`, `memo`, `spec`, `brief`. Projects may add their own types.
-
-CTX docs capture the *why* — stakeholder intent, constraints, research. They are the raw material ADRs cite when justifying a decision. Keep each CTX focused: one PRD per feature, one memo per guardrail, one research note per investigation.
+## Confirm
+CTX ID created, type used, and (if applicable) which ADR or task should
+cite it next.
