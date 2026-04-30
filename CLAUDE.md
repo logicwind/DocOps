@@ -36,6 +36,10 @@ Codex, Copilot, Windsurf, Zed); both files are auto-maintained by
 3. Don't edit `docs/STATE.md` or `docs/.index.json` — regenerated from source.
 4. Don't edit reverse-edge fields in frontmatter — computed in the index.
 5. Filename is the ID. `ADR-0020-whatever.md` is `ADR-0020`. No `id:` field.
+6. Status enums (use these literal values — validator rejects anything else):
+   - **Task:** `backlog` | `active` | `blocked` | `done`. (Not `in_progress`, `in-progress`, `wip`, `todo`.)
+   - **ADR:** `draft` | `accepted` | `superseded`.
+   - **Amendment kind:** `editorial` | `errata` | `clarification` | `late-binding`.
 
 ## CLI — the query and mutation API
 

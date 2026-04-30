@@ -40,4 +40,4 @@ If the user cannot name a citation, stop and help them find or write one:
 - Structural decision? Draft an ADR first via `/docops:new-adr`.
 - Stakeholder input? Capture it as CTX via `/docops:new-ctx`.
 
-After creating, remind the user that the default status is `backlog` — `docops status TP-xxx active` starts the work.
+**Task status enum:** `backlog` | `active` | `blocked` | `done` (literal values; not `in_progress`, `wip`, etc.). Default on creation is `backlog`. To start work, edit the task's `status:` frontmatter to `active` and run `docops refresh`.

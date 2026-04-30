@@ -13,7 +13,8 @@ Ask for the task ID if not provided. Then:
    task body, check for remaining TODOs, and (if code changed)
    eyeball the diff. If something is incomplete, stop and tell the user.
 
-2. Flip the task's `status:` frontmatter to `done` via `Edit` on the
+2. Flip the task's `status:` frontmatter to `done` (literal value;
+   the enum is `backlog | active | blocked | done`) via `Edit` on the
    source file — do not hand-edit the index.
 
 3. Run:
