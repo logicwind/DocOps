@@ -28,9 +28,13 @@
   .prose th { background: #f9fafb; font-weight: 600; }
   .prose blockquote { border-left: 3px solid #d1d5db; padding: 0.1rem 0.8rem; color: #4b5563; font-style: italic; margin: 0.75rem 0; }
   .prose a { color: var(--ctx); text-decoration: underline; text-underline-offset: 2px; }
-  .prose a.docref-CTX { color: var(--ctx); }
-  .prose a.docref-ADR { color: var(--adr); }
-  .prose a.docref-TP  { color: var(--tp);  }
+  a.docref-CTX, a.docref-ADR, a.docref-TP { text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(0,0,0,0.18); }
+  a.docref-CTX:hover, a.docref-ADR:hover, a.docref-TP:hover { text-decoration-color: currentColor; }
+  a.docref-CTX .docref-id, a.docref-ADR .docref-id, a.docref-TP .docref-id { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85em; }
+  a.docref-CTX { color: var(--ctx); }
+  a.docref-ADR { color: var(--adr); }
+  a.docref-TP  { color: var(--tp);  }
+  a.docref-CTX .docref-title, a.docref-ADR .docref-title, a.docref-TP .docref-title { color: #374151; }
   .kind-dot-CTX { background: var(--ctx); }
   .kind-dot-ADR { background: var(--adr); }
   .kind-dot-TP  { background: var(--tp);  }
@@ -292,6 +296,9 @@ function renderFrontmatterTable(doc) {
 
 function formatValue(v) {
   if (Array.isArray(v)) {
+    if (v.length > 0 && v.every(x => /^(CTX|ADR|TP)-\d+$/.test(String(x)))) {
+      return `<ul class="space-y-0.5">${v.map(x => `<li>${linkifyIdWithTitle(String(x))}</li>`).join('')}</ul>`;
+    }
     return v.map(x => linkifyIdString(String(x))).join(', ');
   }
   return linkifyIdString(String(v));
@@ -301,15 +308,16 @@ function renderReverseEdges(doc) {
   const groups = [];
   const add = (label, items, mapper) => {
     if (!items || items.length === 0) return;
-    groups.push(`<div><span class="text-gray-500">${label}:</span> ${items.map(mapper).join(', ')}</div>`);
+    const lis = items.map(i => `<li>${mapper(i)}</li>`).join('');
+    groups.push(`<div><div class="text-gray-500 text-xs uppercase tracking-wide mb-0.5">${label}</div><ul class="space-y-0.5 ml-1">${lis}</ul></div>`);
   };
-  add('Referenced by', doc.referenced_by, r => linkifyIdString(r.id) + ` <span class="text-gray-400 text-xs">(${escapeHtml(r.edge)})</span>`);
-  add('Superseded by', doc.superseded_by, x => linkifyIdString(x));
-  add('Derived ADRs', doc.derived_adrs, x => linkifyIdString(x));
-  add('Active tasks', doc.active_tasks, x => linkifyIdString(x));
-  add('Blocks',       doc.blocks, x => linkifyIdString(x));
+  add('Referenced by', doc.referenced_by, r => linkifyIdWithTitle(r.id) + ` <span class="text-gray-400 text-xs">(${escapeHtml(r.edge)})</span>`);
+  add('Superseded by', doc.superseded_by, x => linkifyIdWithTitle(x));
+  add('Derived ADRs', doc.derived_adrs, x => linkifyIdWithTitle(x));
+  add('Active tasks', doc.active_tasks, x => linkifyIdWithTitle(x));
+  add('Blocks',       doc.blocks, x => linkifyIdWithTitle(x));
   if (groups.length === 0) return '';
-  return `<div class="text-sm bg-indigo-50/50 border border-indigo-100 rounded p-3 mb-3 space-y-1">${groups.join('')}</div>`;
+  return `<div class="text-sm bg-indigo-50/50 border border-indigo-100 rounded p-3 mb-3 space-y-2">${groups.join('')}</div>`;
 }
 
 function renderAmendments(doc) {
@@ -645,6 +653,19 @@ function linkifyIdString(s) {
   if (!m) return escapeHtml(String(s));
   const kind = m[1];
   return `<a href="#/${kind}/${s}" class="docref-${kind}">${escapeHtml(s)}</a>`;
+}
+
+function linkifyIdWithTitle(s) {
+  const id = String(s);
+  const m = id.match(/^(CTX|ADR|TP)-\d+$/);
+  if (!m) return escapeHtml(id);
+  const kind = m[1];
+  const d = state.byId.get(id);
+  const title = d && d.title ? d.title : '';
+  const titleHtml = title ? ` <span class="docref-title">${escapeHtml(title)}</span>` : '';
+  const badge = d ? statusBadge(d) : '';
+  const badgeHtml = badge ? ` ${badge}` : '';
+  return `<a href="#/${kind}/${id}" class="docref-${kind}"><span class="docref-id">${escapeHtml(id)}</span>${titleHtml}</a>${badgeHtml}`;
 }
 
 function kindLabel(k) {
