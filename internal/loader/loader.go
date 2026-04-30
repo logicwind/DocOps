@@ -24,6 +24,11 @@ type Doc struct {
 	ADR     *schema.ADR
 	Task    *schema.Task
 
+	// Body is the post-frontmatter markdown bytes. Captured for ADRs only
+	// today (needed for amendment marker correlation per ADR-0025); other
+	// kinds leave it nil to avoid retaining file content unnecessarily.
+	Body []byte
+
 	// ParseErr is non-nil when frontmatter could not be decoded. The Doc
 	// is still retained (with ID from filename) so callers can report
 	// the problem without losing the file from the set.
@@ -164,7 +169,7 @@ func loadFile(absPath, relPath string, expected schema.Kind) (*Doc, error) {
 	if err != nil {
 		return nil, fmt.Errorf("read %s: %w", relPath, err)
 	}
-	fm, _, err := schema.SplitFrontmatter(raw)
+	fm, body, err := schema.SplitFrontmatter(raw)
 	if err != nil {
 		return &Doc{Kind: kind, ID: id, Path: relPath, ParseErr: err}, nil
 	}
@@ -184,6 +189,7 @@ func loadFile(absPath, relPath string, expected schema.Kind) (*Doc, error) {
 			doc.ParseErr = err
 		} else {
 			doc.ADR = &a
+			doc.Body = body
 		}
 	case schema.KindTask:
 		t, err := schema.ParseTask(fm)

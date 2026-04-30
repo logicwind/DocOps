@@ -90,6 +90,32 @@ func Validate(set *loader.DocSet, cfg config.Config) Report {
 				Message:  fe.Message,
 			})
 		}
+
+		// Amendment marker correlation (ADR-0025) — needs body access.
+		// Demoted to warnings on superseded ADRs (editorial fixes on
+		// archived decisions are allowed).
+		if doc.Kind == schema.KindADR && doc.ADR != nil {
+			markerErrs := schema.ValidateAmendmentMarkers(doc.ADR.Amendments, doc.Body)
+			sev := SeverityError
+			if doc.ADR.Status == "superseded" {
+				sev = SeverityWarn
+			}
+			for _, fe := range markerErrs {
+				f := Finding{
+					Severity: sev,
+					Path:     doc.Path,
+					ID:       doc.ID,
+					Field:    fe.Field,
+					Rule:     "amendment-markers",
+					Message:  fe.Message,
+				}
+				if sev == SeverityWarn {
+					r.Warnings = append(r.Warnings, f)
+				} else {
+					r.Errors = append(r.Errors, f)
+				}
+			}
+		}
 	}
 
 	// Pass 2: reference resolution — every ID in every edge field must

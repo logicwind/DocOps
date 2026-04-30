@@ -6,19 +6,14 @@ date: 2026-04-22
 supersedes: []
 related: [ADR-0011, ADR-0012, ADR-0013, ADR-0014]
 tags: [release, distribution, org, scope]
+amendments:
+  - date: 2026-04-23
+    kind: editorial
+    by: nix
+    summary: "Tap/bucket repo names: per-tool → org-wide convention"
+    affects_sections: ["v0.1.0 scope"]
+    ref: TP-024
 ---
-
-<!--
-AMENDMENTS (body-only until ADR-0025 / TP-026 land the frontmatter schema):
-  - 2026-04-23 editorial — tap/bucket repo names migrated from
-    per-tool (homebrew-docops, scoop-docops) to org-wide
-    (homebrew-tap, scoop-bucket). Pre-launch, no external users
-    pinned to the old path; the deferral decision itself is
-    unchanged. See the "Amendments" section at the end of this ADR
-    for the human-readable record, and TP-027 for the backfill to
-    structured frontmatter once ADR-0025 ships.
--->
-
 
 # Ship v0.1.0 from logicwind/DocOps
 

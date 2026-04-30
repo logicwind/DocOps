@@ -186,3 +186,94 @@ func TestValidationErrors_ReportsAll(t *testing.T) {
 		t.Fatalf("expected ≥3 field errors, got %d: %v", len(ve), ve)
 	}
 }
+
+// --- ADR-0025 amendments ---------------------------------------------------
+
+func validADR() ADR {
+	return ADR{Title: "x", Status: "accepted", Coverage: "required", Date: "2026-04-22"}
+}
+
+func TestValidateADR_AmendmentHappy(t *testing.T) {
+	a := validADR()
+	a.Amendments = []Amendment{{Date: "2026-04-23", Kind: "editorial", By: "nix", Summary: "fix typo"}}
+	if err := ValidateADR(a); err != nil {
+		t.Fatalf("err = %v", err)
+	}
+}
+
+func TestValidateADR_AmendmentBadKind(t *testing.T) {
+	a := validADR()
+	a.Amendments = []Amendment{{Date: "2026-04-23", Kind: "rewrite", By: "nix", Summary: "x"}}
+	err := ValidateADR(a)
+	if err == nil || !strings.Contains(err.Error(), "amendments[0].kind") {
+		t.Fatalf("expected amendments[0].kind error, got %v", err)
+	}
+	for _, want := range AmendmentKinds {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("expected %q in message: %v", want, err)
+		}
+	}
+}
+
+func TestValidateADR_AmendmentMissingFields(t *testing.T) {
+	a := validADR()
+	a.Amendments = []Amendment{{}} // everything empty
+	err := ValidateADR(a)
+	if err == nil {
+		t.Fatal("expected errors")
+	}
+	for _, want := range []string{"amendments[0].date", "amendments[0].kind", "amendments[0].by", "amendments[0].summary"} {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("expected %q in message: %v", want, err)
+		}
+	}
+}
+
+func TestValidateAmendmentMarkers_HappyMatch(t *testing.T) {
+	body := []byte("the foo [AMENDED 2026-04-23 editorial] is now bar.\n")
+	amends := []Amendment{{Date: "2026-04-23", Kind: "editorial", By: "nix", Summary: "x"}}
+	if errs := ValidateAmendmentMarkers(amends, body); len(errs) != 0 {
+		t.Fatalf("expected no errors, got %v", errs)
+	}
+}
+
+func TestValidateAmendmentMarkers_StrayMarker(t *testing.T) {
+	body := []byte("the foo [AMENDED 2026-04-23 editorial] is now bar.\n")
+	errs := ValidateAmendmentMarkers(nil, body)
+	if len(errs) == 0 || !strings.Contains(errs.Error(), "no matching frontmatter entry") {
+		t.Fatalf("expected stray-marker error, got %v", errs)
+	}
+}
+
+func TestValidateAmendmentMarkers_FrontmatterWithoutMarkerOrSections(t *testing.T) {
+	body := []byte("nothing relevant here.\n")
+	amends := []Amendment{{Date: "2026-04-23", Kind: "editorial", By: "nix", Summary: "x"}}
+	errs := ValidateAmendmentMarkers(amends, body)
+	if len(errs) == 0 || !strings.Contains(errs.Error(), "neither an inline [AMENDED] marker nor affects_sections") {
+		t.Fatalf("expected unanchored-entry error, got %v", errs)
+	}
+}
+
+func TestValidateAmendmentMarkers_AffectsSectionsAnchorOK(t *testing.T) {
+	body := []byte("nothing inline here.\n")
+	amends := []Amendment{{Date: "2026-04-23", Kind: "editorial", By: "nix", Summary: "x", AffectsSections: []string{"Decision"}}}
+	if errs := ValidateAmendmentMarkers(amends, body); len(errs) != 0 {
+		t.Fatalf("expected no errors with affects_sections, got %v", errs)
+	}
+}
+
+func TestValidateAmendmentMarkers_SkipsFencedCodeBlocks(t *testing.T) {
+	body := []byte("```\nexample: foo [AMENDED 2026-04-23 editorial] bar\n```\n\nactual prose.\n")
+	if errs := ValidateAmendmentMarkers(nil, body); len(errs) != 0 {
+		t.Fatalf("expected no errors (marker is in fenced code), got %v", errs)
+	}
+}
+
+func TestValidateAmendmentMarkers_KindMismatch(t *testing.T) {
+	body := []byte("foo [AMENDED 2026-04-23 errata] bar.\n")
+	amends := []Amendment{{Date: "2026-04-23", Kind: "editorial", By: "nix", Summary: "x"}}
+	errs := ValidateAmendmentMarkers(amends, body)
+	if len(errs) < 2 {
+		t.Fatalf("expected stray-marker + unanchored-entry errors, got %v", errs)
+	}
+}

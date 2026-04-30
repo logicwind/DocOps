@@ -22,6 +22,12 @@ var (
 	ADRCoverages   = []string{"required", "not-needed"}
 	TaskStatuses   = []string{"backlog", "active", "blocked", "done"}
 	TaskPriorities = []string{"p0", "p1", "p2"}
+
+	// AmendmentKinds enumerates the four allowed amendment classes per
+	// ADR-0025. `editorial` and `late-binding` are non-semantic;
+	// `errata` and `clarification` are semantic-adjacent but must not
+	// re-decide anything (tooling enforces mechanical correlates only).
+	AmendmentKinds = []string{"editorial", "errata", "clarification", "late-binding"}
 )
 
 // IDPattern is the regex every ID reference must match (ADR-0003).
@@ -38,14 +44,30 @@ type Context struct {
 }
 
 // ADR (ADR-*) — architecture decision records. Seven source fields (ADR-0002).
+// Plus `amendments`, an additive append-only log of post-acceptance edits
+// per ADR-0025 — orthogonal to status/implementation; absence is fine.
 type ADR struct {
-	Title      string   `yaml:"title"`
-	Status     string   `yaml:"status"`
-	Coverage   string   `yaml:"coverage"`
-	Date       string   `yaml:"date"`
-	Supersedes []string `yaml:"supersedes"`
-	Related    []string `yaml:"related"`
-	Tags       []string `yaml:"tags"`
+	Title      string      `yaml:"title"`
+	Status     string      `yaml:"status"`
+	Coverage   string      `yaml:"coverage"`
+	Date       string      `yaml:"date"`
+	Supersedes []string    `yaml:"supersedes"`
+	Related    []string    `yaml:"related"`
+	Tags       []string    `yaml:"tags"`
+	Amendments []Amendment `yaml:"amendments,omitempty"`
+}
+
+// Amendment is one post-acceptance edit to an ADR per ADR-0025. Amendments
+// must not change the decision itself — only correct, clarify, or pin
+// late-binding details. The hard rule is enforced socially; the validator
+// enforces mechanical correlates (kind enum, ISO date, marker correspondence).
+type Amendment struct {
+	Date            string   `yaml:"date"`
+	Kind            string   `yaml:"kind"`
+	By              string   `yaml:"by"`
+	Summary         string   `yaml:"summary"`
+	AffectsSections []string `yaml:"affects_sections,omitempty"`
+	Ref             string   `yaml:"ref,omitempty"`
 }
 
 // Task (TP-*) — work units. Six source fields (ADR-0002).

@@ -4,6 +4,55 @@
   "additionalProperties": false,
   "description": "Architecture Decision Records. File prefix ADR-. See ADR-0002.",
   "properties": {
+    "amendments": {
+      "default": [],
+      "description": "Post-acceptance edits per ADR-0025. Append-only; must not change the decision itself.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "affects_sections": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "by": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "date": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string"
+          },
+          "kind": {
+            "description": "editorial = typo/dead link/rename; errata = factual correction; clarification = same decision new framing; late-binding = placeholder now concrete.",
+            "enum": [
+              "editorial",
+              "errata",
+              "clarification",
+              "late-binding"
+            ],
+            "type": "string"
+          },
+          "ref": {
+            "description": "ADR id, PR URL, issue ref, or task id.",
+            "type": "string"
+          },
+          "summary": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "kind",
+          "by",
+          "summary"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
     "coverage": {
       "description": "required = a completed task must cite this ADR; not-needed = opt-out documented in the ADR body.",
       "enum": [

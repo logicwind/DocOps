@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-29T19:05:17Z",
+  "generated_at": "2026-04-30T02:46:28Z",
   "version": 1,
   "docs": [
     {
@@ -907,8 +907,8 @@
         "org",
         "scope"
       ],
-      "summary": "\u003c!-- AMENDMENTS (body-only until ADR-0025 / TP-026 land the frontmatter schema):   - 2026-04-23 editorial — tap/bucket repo names migrated from     per-tool (homebrew-docops, scoop-docops) to org-wide…",
-      "word_count": 1095,
+      "summary": "The phase-1 CLI surface (`init`, `validate`, `index`, `state`, `audit`, `new`, `schema`) has landed across TP-001…TP-009. The project has so far been developed under the placeholder module path `githu…",
+      "word_count": 1027,
       "last_touched": "2026-04-23T08:37:39Z",
       "age_days": 6,
       "referenced_by": [
@@ -1841,7 +1841,7 @@
       "summary": "Ship a single command that answers \"has this been discussed before?\" — substring or regex match over title / tags / body, composable with structured frontmatter filters. Output is the focused slice an…",
       "word_count": 345,
       "last_touched": "2026-04-22T19:24:00Z",
-      "age_days": 6,
+      "age_days": 7,
       "stale": false
     },
     {
@@ -1865,7 +1865,7 @@
       "summary": "Close the query-surface gap identified in ADR-0018 so agents never need to `cat docs/.index.json` to answer routine questions. Each command returns a focused slice of the index, not the whole graph.",
       "word_count": 494,
       "last_touched": "2026-04-22T19:13:03Z",
-      "age_days": 6,
+      "age_days": 7,
       "stale": false
     },
     {
@@ -2380,7 +2380,7 @@
       ],
       "summary": "Implement the slash-command tiering decision from ADR-0029. The user-facing slash surface drops from ~17 to ~6 milestone-moment commands; the rest become skill-only.",
       "word_count": 330,
-      "last_touched": "2026-04-29T18:40:48Z",
+      "last_touched": "2026-04-29T19:05:18Z",
       "age_days": 0,
       "stale": false
     },

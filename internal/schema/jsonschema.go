@@ -124,6 +124,43 @@ func decisionSchema() object {
 				"items":   object{"type": "string"},
 				"default": []any{},
 			},
+			"amendments": object{
+				"type":        "array",
+				"description": "Post-acceptance edits per ADR-0025. Append-only; must not change the decision itself.",
+				"default":     []any{},
+				"items": object{
+					"type":                 "object",
+					"additionalProperties": false,
+					"required":             []string{"date", "kind", "by", "summary"},
+					"properties": object{
+						"date": object{
+							"type":    "string",
+							"pattern": `^\d{4}-\d{2}-\d{2}$`,
+						},
+						"kind": object{
+							"type":        "string",
+							"enum":        AmendmentKinds,
+							"description": "editorial = typo/dead link/rename; errata = factual correction; clarification = same decision new framing; late-binding = placeholder now concrete.",
+						},
+						"by": object{
+							"type":      "string",
+							"minLength": 1,
+						},
+						"summary": object{
+							"type":      "string",
+							"minLength": 1,
+						},
+						"affects_sections": object{
+							"type":  "array",
+							"items": object{"type": "string"},
+						},
+						"ref": object{
+							"type":        "string",
+							"description": "ADR id, PR URL, issue ref, or task id.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
