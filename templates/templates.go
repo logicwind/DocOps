@@ -40,17 +40,23 @@ func PreCommitHook() ([]byte, error) {
 }
 
 // Skills returns a map of per-command leaf filename (e.g. "init.md") to
-// file body. Callers write these into the appropriate per-harness target
+// file body. Per ADR-0031 the source layout is
+// `templates/skills/docops/cookbook/<verb>.md` — this function flattens
+// the cookbook subtree so callers continue to receive basename-keyed
+// entries.
+//
+// Callers write these into the appropriate per-harness target
 // directory (`.claude/commands/docops/`, `.cursor/commands/docops/`,
-// `.opencode/command/`, or — for skill-bundle harnesses — alongside
-// SKILL.md inside the bundle directory).
+// `.opencode/command/`, or — for skill-bundle harnesses —
+// `<bundle>/cookbook/<verb>.md` inside the bundle directory; the
+// per-harness FilenameFor controls placement).
 //
 // SKILL.md is intentionally excluded from this map: it is the
 // skill-bundle entry point, not a /docops:* command. Use
 // SkillBundleEntry() to fetch it.
 func Skills() (map[string][]byte, error) {
 	out := make(map[string][]byte)
-	entries, err := fs.ReadDir(tree, "skills/docops")
+	entries, err := fs.ReadDir(tree, "skills/docops/cookbook")
 	if err != nil {
 		return nil, err
 	}
@@ -58,10 +64,7 @@ func Skills() (map[string][]byte, error) {
 		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
 			continue
 		}
-		if e.Name() == "SKILL.md" {
-			continue
-		}
-		body, err := tree.ReadFile("skills/docops/" + e.Name())
+		body, err := tree.ReadFile("skills/docops/cookbook/" + e.Name())
 		if err != nil {
 			return nil, err
 		}

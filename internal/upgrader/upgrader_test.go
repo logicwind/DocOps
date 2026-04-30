@@ -266,9 +266,10 @@ func TestRun_DeprecatesPreADR0029Slashes(t *testing.T) {
 
 	// Codex bundle is skill-mode (LayoutSkillBundle) and must keep the
 	// full shipped set, including commands that are no longer slashes.
+	// Per ADR-0031 chapters live under cookbook/.
 	for name := range skills {
-		if _, err := os.Stat(filepath.Join(root, ".codex/skills/docops", name)); err != nil {
-			t.Errorf(".codex/skills/docops/%s should exist (skill-mode harness keeps full set): %v", name, err)
+		if _, err := os.Stat(filepath.Join(root, ".codex/skills/docops/cookbook", name)); err != nil {
+			t.Errorf(".codex/skills/docops/cookbook/%s should exist (skill-mode harness keeps full set): %v", name, err)
 		}
 	}
 }

@@ -133,14 +133,17 @@ func legacyDocopsSkillDirs() []string {
 	return []string{".claude/skills/docops"}
 }
 
-// shippedSkillNames returns the basenames of files currently present
-// (write or refresh actions) in the given manifestDir, derived from
-// the action set. Used to write the post-upgrade manifest.
+// shippedSkillNames returns the names of files currently present
+// (write or refresh actions) inside the given manifestDir, derived
+// from the action set. Used to write the post-upgrade manifest.
 //
 // For LayoutNestedFile harnesses, manifestDir is LocalDir()+"/docops";
-// for LayoutFlatPrefixFile it is LocalDir() itself. Only the
-// immediately-nested filenames (no path separators) are returned so
-// the manifest stays a flat list.
+// for LayoutFlatPrefixFile it is LocalDir() itself; for
+// LayoutSkillBundle (Codex) it is the bundle directory. Names are
+// recorded relative to manifestDir — so for a Codex bundle a chapter
+// at `<bundle>/cookbook/get.md` shows up in the manifest as
+// `cookbook/get.md`. Slash-command harnesses still produce flat
+// basenames since they don't ship nested files.
 func shippedSkillNames(actions []scaffold.Action, manifestDir string) []string {
 	prefix := manifestDir + string(filepath.Separator)
 	var names []string
@@ -148,26 +151,13 @@ func shippedSkillNames(actions []scaffold.Action, manifestDir string) []string {
 		if a.Kind == scaffold.KindRemove {
 			continue
 		}
-		// Only top-level files under the manifestDir count — skip the
-		// dir itself and any deeper nested paths.
 		if rel := a.Rel; len(rel) > len(prefix) && rel[:len(prefix)] == prefix {
 			name := rel[len(prefix):]
-			if !containsSep(name) {
-				names = append(names, name)
-			}
+			names = append(names, filepath.ToSlash(name))
 		}
 	}
 	sort.Strings(names)
 	return names
-}
-
-func containsSep(s string) bool {
-	for i := 0; i < len(s); i++ {
-		if s[i] == filepath.Separator || s[i] == '/' {
-			return true
-		}
-	}
-	return false
 }
 
 // plan assembles the full upgrade action set. Reads the project's
@@ -583,11 +573,14 @@ func planSkillBundleHarness(opts Options, h Harness, shipped map[string][]byte, 
 		return nil, err
 	}
 
-	// Shipped basenames inside the bundle: SKILL.md + one <cmd>.md per command.
+	// Shipped paths inside the bundle, relative to the bundle root:
+	// SKILL.md at the top level + cookbook/<cmd>.md per command (per
+	// ADR-0031). Slashed paths are normalised; manifest comparison and
+	// removal walk subdirectories.
 	shippedBasenames := make([]string, 0, len(shippedCmds)+1)
 	shippedBasenames = append(shippedBasenames, "SKILL.md")
 	for _, cmd := range shippedCmds {
-		shippedBasenames = append(shippedBasenames, cmd+".md")
+		shippedBasenames = append(shippedBasenames, "cookbook/"+cmd+".md")
 	}
 
 	// Safety belt: reject unknown files in the bundle that are neither
@@ -629,7 +622,7 @@ func planSkillBundleHarness(opts Options, h Harness, shipped map[string][]byte, 
 		if err != nil {
 			return nil, fmt.Errorf("transform frontmatter for %s/%s: %w", h.Slug(), cmd, err)
 		}
-		rel := filepath.Join(h.LocalDir(), h.FilenameFor(cmd)) // e.g. .codex/skills/docops/get.md
+		rel := filepath.Join(h.LocalDir(), h.FilenameFor(cmd)) // e.g. .codex/skills/docops/cookbook/get.md
 		actions = append(actions, scaffold.FileAction(opts.Root, rel, outBody, 0o644, true))
 	}
 
@@ -679,27 +672,46 @@ func listFlatPrefixFiles(dir string) (names []string, dirExists bool, err error)
 	return names, true, nil
 }
 
-// listSkillFiles returns the basenames of regular files directly
-// inside dir (no recursion, no dotfiles). dirExists distinguishes a
-// missing directory from an empty one so callers can choose to mkdir
-// vs scan.
+// listSkillFiles returns regular files inside dir, walking nested
+// subdirectories (e.g. `cookbook/`). Names are returned relative to
+// dir, with forward slashes. Dotfiles at any level are skipped (so
+// the .docops-manifest sentinel is excluded). dirExists
+// distinguishes a missing directory from an empty one.
 func listSkillFiles(dir string) (names []string, dirExists bool, err error) {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		if os.IsNotExist(err) {
+	if fi, statErr := os.Stat(dir); statErr != nil {
+		if os.IsNotExist(statErr) {
 			return nil, false, nil
 		}
-		return nil, false, err
+		return nil, false, statErr
+	} else if !fi.IsDir() {
+		return nil, false, nil
 	}
-	for _, e := range entries {
-		if !e.Type().IsRegular() {
-			continue
+	walkErr := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
 		}
-		name := e.Name()
-		if len(name) > 0 && name[0] == '.' {
-			continue
+		base := d.Name()
+		if d.IsDir() {
+			if path != dir && strings.HasPrefix(base, ".") {
+				return filepath.SkipDir
+			}
+			return nil
 		}
-		names = append(names, name)
+		if !d.Type().IsRegular() {
+			return nil
+		}
+		if strings.HasPrefix(base, ".") {
+			return nil
+		}
+		rel, relErr := filepath.Rel(dir, path)
+		if relErr != nil {
+			return relErr
+		}
+		names = append(names, filepath.ToSlash(rel))
+		return nil
+	})
+	if walkErr != nil {
+		return nil, true, walkErr
 	}
 	sort.Strings(names)
 	return names, true, nil

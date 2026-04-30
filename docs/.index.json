@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-30T08:22:15Z",
+  "generated_at": "2026-04-30T09:16:16Z",
   "version": 1,
   "docs": [
     {
@@ -1210,6 +1210,10 @@
         {
           "id": "TP-039",
           "edge": "requires"
+        },
+        {
+          "id": "TP-041",
+          "edge": "requires"
         }
       ],
       "implementation": "partial",
@@ -1264,7 +1268,7 @@
       "summary": "Agents and humans browsing a DocOps repository today see markdown files in a terminal or file tree. Raw markdown is functional but lacks the cross-referencing, navigation, and readability of rendered …",
       "word_count": 1864,
       "last_touched": "2026-04-24T09:03:28Z",
-      "age_days": 5,
+      "age_days": 6,
       "referenced_by": [
         {
           "id": "TP-030",
@@ -1375,6 +1379,10 @@
           "edge": "related"
         },
         {
+          "id": "ADR-0031",
+          "edge": "related"
+        },
+        {
           "id": "TP-034",
           "edge": "requires"
         },
@@ -1405,6 +1413,31 @@
       "last_touched": "2026-04-29T18:39:54Z",
       "age_days": 0,
       "implementation": "not-started",
+      "stale": false
+    },
+    {
+      "id": "ADR-0031",
+      "kind": "ADR",
+      "folder": "docs/decisions",
+      "path": "docs/decisions/ADR-0031-skill-bundle-uses-umbrella-skill-md-plus-cookbook.md",
+      "title": "Skill bundle uses umbrella SKILL.md plus cookbook chapters",
+      "status": "draft",
+      "coverage": "required",
+      "date": "2026-04-30",
+      "related": [
+        "ADR-0029"
+      ],
+      "summary": "ADR-0029 (command-surface tiering) declared three audiences — slash, skills, CLI — and assigned skills to the LLM-NL-dispatch tier with the shape \"Many, granular.\" The implication taken at the time wa…",
+      "word_count": 668,
+      "last_touched": "2026-04-30T09:08:12Z",
+      "age_days": 0,
+      "referenced_by": [
+        {
+          "id": "TP-041",
+          "edge": "requires"
+        }
+      ],
+      "implementation": "done",
       "stale": false
     },
     {
@@ -2199,7 +2232,7 @@
       "summary": "\u003e **2026-04-24 closed.** v0.5.1 release (run 24881180704) pushed \u003e `docops.rb` to `logicwind/homebrew-tap` and `docops.json` to \u003e `logicwind/scoop-bucket` end-to-end via goreleaser in 54 s. All \u003e acce…",
       "word_count": 665,
       "last_touched": "2026-04-24T09:03:28Z",
-      "age_days": 5,
+      "age_days": 6,
       "referenced_by": [
         {
           "id": "TP-025",
@@ -2326,7 +2359,7 @@
       "summary": "Implementation lives in `internal/htmlviewer/` (`spa.go`, `bundle.go`, `emit.go`, `index.html`) and `cmd/docops/cmd_html.go`. `docops html [--output PATH] [--base-url URL] [--json]` emits exactly two …",
       "word_count": 860,
       "last_touched": "2026-04-24T09:03:28Z",
-      "age_days": 5,
+      "age_days": 6,
       "referenced_by": [
         {
           "id": "TP-031",
@@ -2361,7 +2394,7 @@
       "summary": "Implementation lives in `internal/htmlviewer/serve.go` + `cmd/docops/cmd_serve.go`. `docops serve [--port N] [--open] [--json]` listens on `127.0.0.1:8484` by default, serves the embedded SPA plus a f…",
       "word_count": 512,
       "last_touched": "2026-04-24T09:03:28Z",
-      "age_days": 5,
+      "age_days": 6,
       "stale": false
     },
     {
@@ -2458,7 +2491,7 @@
       ],
       "summary": "Surface ADR-0025 amendments in the `docops html` / `docops serve` SPA — both on the per-ADR detail page and on the Home view — sourced from `recent_amendments` and per-doc `amendments` in the viewer b…",
       "word_count": 158,
-      "last_touched": "2026-04-30T03:31:45Z",
+      "last_touched": "2026-04-30T08:22:30Z",
       "age_days": 0,
       "stale": false
     },
@@ -2476,7 +2509,7 @@
       ],
       "summary": "A chronological \"Timeline\" tab in the SPA that surfaces project events on a single time axis: ADR transitions, amendments, task closes. Helps humans and LLMs reason about *when* decisions and work hap…",
       "word_count": 241,
-      "last_touched": "2026-04-30T03:31:45Z",
+      "last_touched": "2026-04-30T08:22:30Z",
       "age_days": 0,
       "stale": false
     },
@@ -2531,7 +2564,26 @@
       ],
       "summary": "A \"Board\" tab in the SPA that surfaces `docs/tasks/` as a kanban-style column grid: `backlog` | `active` | `blocked` | `done`. Complements the existing list/graph/timeline views — gives humans (and LL…",
       "word_count": 211,
-      "last_touched": "2026-04-30T08:22:08Z",
+      "last_touched": "2026-04-30T08:22:30Z",
+      "age_days": 0,
+      "stale": false
+    },
+    {
+      "id": "TP-041",
+      "kind": "TP",
+      "folder": "docs/tasks",
+      "path": "docs/tasks/TP-041-migrate-skills-bundle-to-cookbook-layout-add-amend.md",
+      "title": "Migrate skills bundle to cookbook layout + add amend/supersede/revise",
+      "task_status": "done",
+      "priority": "p2",
+      "assignee": "nix",
+      "requires": [
+        "ADR-0031",
+        "ADR-0025"
+      ],
+      "summary": "Land the structural shift declared in ADR-0031 and ship the three amendment-family cookbooks (`amend`, `supersede`, `revise`) called for by ADR-0025 + ADR-0029 §Skills tier.",
+      "word_count": 287,
+      "last_touched": "2026-04-30T09:16:10Z",
       "age_days": 0,
       "stale": false
     }

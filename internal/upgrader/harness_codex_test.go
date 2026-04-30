@@ -128,7 +128,8 @@ func TestCodexAdapter_GlobalDir_Precedence(t *testing.T) {
 
 // TestCodexAdapter_WritesSkillBundle verifies that a dry-run of
 // docops upgrade on an empty project plans (a) one SKILL.md write at
-// the bundle root and (b) one <cmd>.md write per shipped subroutine.
+// the bundle root and (b) one cookbook/<cmd>.md write per shipped
+// subroutine (per ADR-0031).
 func TestCodexAdapter_WritesSkillBundle(t *testing.T) {
 	root := t.TempDir()
 
@@ -145,6 +146,7 @@ func TestCodexAdapter_WritesSkillBundle(t *testing.T) {
 
 	// Find file actions under .codex/skills/docops/.
 	const prefix = ".codex/skills/docops/"
+	const cookbookPrefix = "cookbook/"
 	var skill string
 	var subroutines []string
 	for _, a := range res.Actions {
@@ -154,13 +156,18 @@ func TestCodexAdapter_WritesSkillBundle(t *testing.T) {
 		if !strings.HasPrefix(a.Rel, prefix) {
 			continue
 		}
-		base := strings.TrimPrefix(a.Rel, prefix)
-		if strings.Contains(base, "/") {
-			t.Errorf("unexpected nested path inside bundle: %s", a.Rel)
+		rel := strings.TrimPrefix(a.Rel, prefix)
+		if rel == "SKILL.md" {
+			skill = a.Rel
 			continue
 		}
-		if base == "SKILL.md" {
-			skill = a.Rel
+		if !strings.HasPrefix(rel, cookbookPrefix) {
+			t.Errorf("unexpected path inside bundle (expected SKILL.md or cookbook/*): %s", a.Rel)
+			continue
+		}
+		base := strings.TrimPrefix(rel, cookbookPrefix)
+		if strings.Contains(base, "/") {
+			t.Errorf("unexpected deep-nested path inside cookbook: %s", a.Rel)
 			continue
 		}
 		subroutines = append(subroutines, base)
@@ -170,14 +177,14 @@ func TestCodexAdapter_WritesSkillBundle(t *testing.T) {
 		t.Error("missing .codex/skills/docops/SKILL.md write action")
 	}
 	if len(subroutines) == 0 {
-		t.Error("no per-subroutine .md writes found inside .codex/skills/docops/")
+		t.Error("no per-subroutine writes found in .codex/skills/docops/cookbook/")
 	}
 	for _, name := range subroutines {
 		if !strings.HasSuffix(name, ".md") {
-			t.Errorf("non-.md file in bundle: %s", name)
+			t.Errorf("non-.md file in cookbook: %s", name)
 		}
 		if name == "SKILL.md" {
-			t.Errorf("SKILL.md leaked into subroutine list")
+			t.Errorf("SKILL.md leaked into cookbook list")
 		}
 	}
 }

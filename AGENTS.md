@@ -112,6 +112,19 @@ bin/docops                     ← product: built binary (gitignored)
    - **ADR:** `draft` | `accepted` | `superseded`.
    - **Amendment kind:** `editorial` | `errata` | `clarification` | `late-binding`.
 
+## Changing a published ADR — pick the right lane
+
+| Change shape | Lane | What runs |
+|---|---|---|
+| Typo, dead link, rename pass-through, late-binding fact, errata, clarification | **amend** | `docops amend <ADR> --kind <kind> --summary "..."` |
+| The decision itself changes (different choice, reversal, scope flip) | **supersede** | new ADR with `supersedes: [<old>]` (the back-pointer is computed) |
+| Decision stands but its scope tightens or expands without flipping the call | **revise** | `docops amend ... --kind clarification --section "..."` + a follow-up task if load-bearing |
+
+Never silently edit a published ADR's body. Per ADR-0025 amendments are
+additive and machine-readable. The cookbook chapters at
+`templates/skills/docops/cookbook/{amend,supersede,revise}.md` carry the
+detailed steps.
+
 ## CLI — the query and mutation API
 
 All commands support `--json`.
