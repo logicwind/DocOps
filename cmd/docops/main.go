@@ -31,6 +31,8 @@ func main() {
 		os.Exit(cmdAudit(args[1:]))
 	case "new":
 		os.Exit(cmdNew(args[1:]))
+	case "amend":
+		os.Exit(cmdAmend(args[1:]))
 	case "schema":
 		os.Exit(cmdSchema(args[1:]))
 	case "refresh":
@@ -74,6 +76,7 @@ func topLevelUsage(w *os.File) {
 	fmt.Fprintln(w, "  state       regenerate docs/STATE.md snapshot")
 	fmt.Fprintln(w, "  audit       structural gap punch list")
 	fmt.Fprintln(w, "  new         scaffold a new CTX/ADR/Task document")
+	fmt.Fprintln(w, "  amend       append a post-acceptance amendment to an ADR (ADR-0025)")
 	fmt.Fprintln(w, "  schema      (re)write docs/.docops/schema/*.schema.json")
 	fmt.Fprintln(w, "  refresh     validate + index + state in one pass")
 	fmt.Fprintln(w, "  get         look up one doc by ID")
