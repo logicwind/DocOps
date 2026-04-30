@@ -11,9 +11,23 @@ const IndexVersion = 1
 
 // Index is the top-level .index.json structure.
 type Index struct {
-	GeneratedAt string       `json:"generated_at"` // RFC3339
-	Version     int          `json:"version"`
-	Docs        []IndexedDoc `json:"docs"`
+	GeneratedAt      string             `json:"generated_at"` // RFC3339
+	Version          int                `json:"version"`
+	Docs             []IndexedDoc       `json:"docs"`
+	RecentAmendments []RecentAmendment  `json:"recent_amendments,omitempty"`
+}
+
+// RecentAmendment is a flattened amendment entry for the top-level
+// `recent_amendments` list — one row per amendment within the activity
+// window, sorted newest-first. Each row carries the ADR id so callers
+// don't have to walk back into Docs.
+type RecentAmendment struct {
+	ADRID   string `json:"adr"`
+	Date    string `json:"date"`
+	Kind    string `json:"kind"`
+	By      string `json:"by"`
+	Summary string `json:"summary"`
+	Ref     string `json:"ref,omitempty"`
 }
 
 // Reference is an inbound edge: some other doc pointed at this one via `edge`.
@@ -76,8 +90,21 @@ type IndexedDoc struct {
 	Blocks []string `json:"blocks,omitempty"`
 
 	// Computed fields — ADR only
-	Implementation string `json:"implementation,omitempty"`
+	Implementation string             `json:"implementation,omitempty"`
+	Amendments     []IndexedAmendment `json:"amendments,omitempty"`
 
 	// Computed staleness — all kinds
 	Stale bool `json:"stale"`
+}
+
+// IndexedAmendment mirrors schema.Amendment with JSON tags so callers
+// (HTML viewer, CLI consumers) get a stable shape without depending on
+// the schema package's YAML tags.
+type IndexedAmendment struct {
+	Date            string   `json:"date"`
+	Kind            string   `json:"kind"`
+	By              string   `json:"by"`
+	Summary         string   `json:"summary"`
+	AffectsSections []string `json:"affects_sections,omitempty"`
+	Ref             string   `json:"ref,omitempty"`
 }

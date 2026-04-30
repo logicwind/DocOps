@@ -177,6 +177,20 @@ func Build(set *loader.DocSet, cfg config.Config, root string, now time.Time) (*
 				if len(doc.ADR.Tags) > 0 {
 					idoc.ADRTags = doc.ADR.Tags
 				}
+				if len(doc.ADR.Amendments) > 0 {
+					ams := make([]IndexedAmendment, len(doc.ADR.Amendments))
+					for i, a := range doc.ADR.Amendments {
+						ams[i] = IndexedAmendment{
+							Date:            a.Date,
+							Kind:            a.Kind,
+							By:              a.By,
+							Summary:         a.Summary,
+							AffectsSections: a.AffectsSections,
+							Ref:             a.Ref,
+						}
+					}
+					idoc.Amendments = ams
+				}
 			}
 
 		case schema.KindTask:
@@ -235,11 +249,60 @@ func Build(set *loader.DocSet, cfg config.Config, root string, now time.Time) (*
 		docs = append(docs, idoc)
 	}
 
+	recent := recentAmendments(set, cfg, now)
+
 	return &Index{
-		GeneratedAt: now.UTC().Format(time.RFC3339),
-		Version:     IndexVersion,
-		Docs:        docs,
+		GeneratedAt:      now.UTC().Format(time.RFC3339),
+		Version:          IndexVersion,
+		Docs:             docs,
+		RecentAmendments: recent,
 	}, nil
+}
+
+// recentAmendments collects every amendment across every ADR whose date
+// falls within cfg.RecentActivityWindowDays from now, sorted newest-first.
+// Comparison is date-only (UTC midnight) so the wall-clock time of the
+// run doesn't shift the boundary. Amendments with malformed dates are
+// skipped (validator catches them).
+func recentAmendments(set *loader.DocSet, cfg config.Config, now time.Time) []RecentAmendment {
+	window := cfg.RecentActivityWindowDays
+	if window <= 0 {
+		return nil
+	}
+	nowDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	cutoff := nowDay.AddDate(0, 0, -window)
+	var out []RecentAmendment
+	for _, id := range set.Order {
+		doc := set.Docs[id]
+		if doc.Kind != schema.KindADR || doc.ADR == nil {
+			continue
+		}
+		for _, a := range doc.ADR.Amendments {
+			t, err := time.Parse("2006-01-02", a.Date)
+			if err != nil {
+				continue
+			}
+			if t.Before(cutoff) {
+				continue
+			}
+			out = append(out, RecentAmendment{
+				ADRID:   id,
+				Date:    a.Date,
+				Kind:    a.Kind,
+				By:      a.By,
+				Summary: a.Summary,
+				Ref:     a.Ref,
+			})
+		}
+	}
+	// Newest first; ADR id breaks ties for determinism.
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].Date != out[j].Date {
+			return out[i].Date > out[j].Date
+		}
+		return out[i].ADRID < out[j].ADRID
+	})
+	return out
 }
 
 // citingTasksFor returns all Task docs whose requires list contains targetID.

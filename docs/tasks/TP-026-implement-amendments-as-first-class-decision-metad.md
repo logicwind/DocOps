@@ -1,8 +1,8 @@
 ---
 title: Implement amendments as first-class decision metadata
-status: backlog
+status: done
 priority: p2
-assignee: unassigned
+assignee: claude
 requires: [ADR-0025]
 depends_on: []
 ---

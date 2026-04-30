@@ -15,11 +15,12 @@ import (
 // Snapshot is the fully-computed project state. It can be marshalled
 // directly to JSON or rendered as Markdown via Markdown().
 type Snapshot struct {
-	GeneratedAt    string          `json:"generated_at"` // RFC3339
-	Counts         Counts          `json:"counts"`
-	NeedsAttention []Attention     `json:"needs_attention"`
-	ActiveWork     []ActiveTask    `json:"active_work"`
-	RecentActivity []ActivityEntry `json:"recent_activity"`
+	GeneratedAt      string                   `json:"generated_at"` // RFC3339
+	Counts           Counts                   `json:"counts"`
+	NeedsAttention   []Attention              `json:"needs_attention"`
+	ActiveWork       []ActiveTask             `json:"active_work"`
+	RecentActivity   []ActivityEntry          `json:"recent_activity"`
+	RecentAmendments []index.RecentAmendment  `json:"recent_amendments,omitempty"`
 }
 
 // Counts holds per-kind document status tallies.
@@ -92,6 +93,7 @@ func Compute(idx *index.Index, cfg config.Config, gitActivity []ActivityEntry, n
 	s.NeedsAttention = computeAttention(idx, cfg, byID)
 	s.ActiveWork = computeActiveWork(idx)
 	s.RecentActivity = computeRecentActivity(gitActivity, idx, cfg, now)
+	s.RecentAmendments = idx.RecentAmendments
 	return s
 }
 

@@ -76,6 +76,20 @@ func (s *Snapshot) Markdown() string {
 	}
 	b.WriteString("\n")
 
+	// Recent amendments (ADR-0025) — only emit when present so projects
+	// without amendments aren't bloated with empty sections.
+	if len(s.RecentAmendments) > 0 {
+		fmt.Fprintf(&b, "## Recent amendments\n\n")
+		for _, a := range s.RecentAmendments {
+			ref := ""
+			if a.Ref != "" {
+				ref = " (" + a.Ref + ")"
+			}
+			fmt.Fprintf(&b, "- %s %s [%s] %s — %s%s\n", a.Date, a.ADRID, a.Kind, a.Summary, a.By, ref)
+		}
+		b.WriteString("\n")
+	}
+
 	return b.String()
 }
 

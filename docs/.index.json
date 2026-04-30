@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-30T02:46:28Z",
+  "generated_at": "2026-04-30T02:57:42Z",
   "version": 1,
   "docs": [
     {
@@ -909,8 +909,8 @@
       ],
       "summary": "The phase-1 CLI surface (`init`, `validate`, `index`, `state`, `audit`, `new`, `schema`) has landed across TP-001…TP-009. The project has so far been developed under the placeholder module path `githu…",
       "word_count": 1027,
-      "last_touched": "2026-04-23T08:37:39Z",
-      "age_days": 6,
+      "last_touched": "2026-04-30T02:47:46Z",
+      "age_days": 0,
       "referenced_by": [
         {
           "id": "ADR-0023",
@@ -942,6 +942,18 @@
         }
       ],
       "implementation": "done",
+      "amendments": [
+        {
+          "date": "2026-04-23",
+          "kind": "editorial",
+          "by": "nix",
+          "summary": "Tap/bucket repo names: per-tool → org-wide convention",
+          "affects_sections": [
+            "v0.1.0 scope"
+          ],
+          "ref": "TP-024"
+        }
+      ],
       "stale": false
     },
     {
@@ -1188,7 +1200,7 @@
           "edge": "requires"
         }
       ],
-      "implementation": "not-started",
+      "implementation": "done",
       "stale": false
     },
     {
@@ -2198,9 +2210,9 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-026-implement-amendments-as-first-class-decision-metad.md",
       "title": "Implement amendments as first-class decision metadata",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p2",
-      "assignee": "unassigned",
+      "assignee": "claude",
       "requires": [
         "ADR-0025"
       ],
@@ -2222,9 +2234,9 @@
       "folder": "docs/tasks",
       "path": "docs/tasks/TP-027-backfill-adr-0019-amendment-once-schema-lands.md",
       "title": "Backfill ADR-0019 tap-rename amendment once the schema lands",
-      "task_status": "backlog",
+      "task_status": "done",
       "priority": "p2",
-      "assignee": "unassigned",
+      "assignee": "claude",
       "requires": [
         "ADR-0025",
         "TP-026"
@@ -2402,6 +2414,16 @@
       "last_touched": "2026-04-29T18:40:48Z",
       "age_days": 0,
       "stale": false
+    }
+  ],
+  "recent_amendments": [
+    {
+      "adr": "ADR-0019",
+      "date": "2026-04-23",
+      "kind": "editorial",
+      "by": "nix",
+      "summary": "Tap/bucket repo names: per-tool → org-wide convention",
+      "ref": "TP-024"
     }
   ]
 }

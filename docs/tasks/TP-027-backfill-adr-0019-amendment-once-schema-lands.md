@@ -1,8 +1,8 @@
 ---
 title: Backfill ADR-0019 tap-rename amendment once the schema lands
-status: backlog
+status: done
 priority: p2
-assignee: unassigned
+assignee: claude
 requires: [ADR-0025, TP-026]
 depends_on: []
 ---

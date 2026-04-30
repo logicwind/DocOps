@@ -26,6 +26,7 @@ var knownSubcmds = map[string]bool{
 	"state":        true,
 	"audit":        true,
 	"new":          true,
+	"amend":        true,
 	"schema":       true,
 	"refresh":      true,
 	"update-check": true,
