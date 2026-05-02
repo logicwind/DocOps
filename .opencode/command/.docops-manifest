@@ -1,0 +1,7 @@
+# docops manifest — files in this directory owned by `docops upgrade`.
+# Do not hand-edit; rerun `docops upgrade` to regenerate.
+docops-do.md
+docops-init.md
+docops-next.md
+docops-plan.md
+docops-progress.md

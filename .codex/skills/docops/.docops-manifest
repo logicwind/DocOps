@@ -1,0 +1,23 @@
+# docops manifest — files in this directory owned by `docops upgrade`.
+# Do not hand-edit; rerun `docops upgrade` to regenerate.
+SKILL.md
+cookbook/amend.md
+cookbook/audit.md
+cookbook/close.md
+cookbook/do.md
+cookbook/get.md
+cookbook/graph.md
+cookbook/init.md
+cookbook/list.md
+cookbook/new-adr.md
+cookbook/new-ctx.md
+cookbook/new-task.md
+cookbook/next.md
+cookbook/plan.md
+cookbook/progress.md
+cookbook/refresh.md
+cookbook/revise.md
+cookbook/search.md
+cookbook/state.md
+cookbook/supersede.md
+cookbook/upgrade.md
