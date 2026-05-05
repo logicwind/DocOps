@@ -284,3 +284,73 @@ func TestCmdRefresh_HumanOutputContainsOK(t *testing.T) {
 		t.Errorf("expected 'docops refresh: OK' in output, got:\n%s", output)
 	}
 }
+
+// TestCmdRefresh_AffordanceBlock verifies refresh prints the closing
+// next-step block on success.
+func TestCmdRefresh_AffordanceBlock(t *testing.T) {
+	root := makeDocopsRoot(t)
+	plantDoc(t, root, "docs/decisions/ADR-0001-some-decision.md", validADR)
+	plantDoc(t, root, "docs/tasks/TP-001-some-task.md", validTask)
+
+	out := captureStdout(t, func() {
+		if code := cmdRefresh(nil); code != 0 {
+			t.Fatalf("cmdRefresh returned %d", code)
+		}
+	})
+	if !strings.Contains(out, "→ Next:") {
+		t.Errorf("missing affordance header; got:\n%s", out)
+	}
+	if !strings.Contains(out, "docops audit") {
+		t.Errorf("expected audit suggestion; got:\n%s", out)
+	}
+}
+
+// TestCmdRefresh_QuietSuppresses verifies --quiet drops the affordance.
+func TestCmdRefresh_QuietSuppresses(t *testing.T) {
+	root := makeDocopsRoot(t)
+	plantDoc(t, root, "docs/decisions/ADR-0001-some-decision.md", validADR)
+	plantDoc(t, root, "docs/tasks/TP-001-some-task.md", validTask)
+
+	out := captureStdout(t, func() {
+		if code := cmdRefresh([]string{"--quiet"}); code != 0 {
+			t.Fatalf("cmdRefresh returned %d", code)
+		}
+	})
+	if strings.Contains(out, "→ Next:") {
+		t.Errorf("--quiet should suppress affordance; got:\n%s", out)
+	}
+	if !strings.Contains(out, "docops refresh: OK") {
+		t.Errorf("--quiet should still print the body; got:\n%s", out)
+	}
+}
+
+// TestCmdRefresh_JSONIncludesNextSteps verifies --json carries
+// next_steps in the envelope on success.
+func TestCmdRefresh_JSONIncludesNextSteps(t *testing.T) {
+	root := makeDocopsRoot(t)
+	plantDoc(t, root, "docs/decisions/ADR-0001-some-decision.md", validADR)
+	plantDoc(t, root, "docs/tasks/TP-001-some-task.md", validTask)
+
+	out := captureStdout(t, func() {
+		if code := cmdRefresh([]string{"--json"}); code != 0 {
+			t.Fatalf("cmdRefresh returned %d", code)
+		}
+	})
+
+	var got struct {
+		OK        bool `json:"ok"`
+		NextSteps []struct {
+			Label   string `json:"label"`
+			Command string `json:"command"`
+		} `json:"next_steps"`
+	}
+	if err := json.Unmarshal([]byte(out), &got); err != nil {
+		t.Fatalf("unmarshal: %v\nout: %s", err, out)
+	}
+	if !got.OK {
+		t.Errorf("expected ok=true")
+	}
+	if len(got.NextSteps) == 0 {
+		t.Errorf("expected non-empty next_steps")
+	}
+}

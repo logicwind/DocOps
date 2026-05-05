@@ -241,3 +241,30 @@ func TestLoadShippedSkills_NonEmpty(t *testing.T) {
 		}
 	}
 }
+
+func TestSlashDeliverableCmds_IncludesOnboard(t *testing.T) {
+	got := SlashDeliverableCmds()
+	for _, want := range []string{"init", "onboard", "do", "plan", "next", "progress"} {
+		if !got[want] {
+			t.Errorf("SlashDeliverableCmds missing %q (got %v)", want, got)
+		}
+	}
+	// Sanity: the slash surface stays a small subset, not the full CLI.
+	if len(got) > 10 {
+		t.Errorf("slash surface ballooning: %d entries — review ADR-0029", len(got))
+	}
+}
+
+func TestFilterSlashDeliverable_DropsNonMoments(t *testing.T) {
+	in := []string{"audit", "init", "get", "onboard", "amend", "plan"}
+	got := FilterSlashDeliverable(in)
+	want := []string{"init", "onboard", "plan"}
+	if len(got) != len(want) {
+		t.Fatalf("FilterSlashDeliverable(%v) = %v, want %v", in, got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("at %d: got %q, want %q", i, got[i], want[i])
+		}
+	}
+}

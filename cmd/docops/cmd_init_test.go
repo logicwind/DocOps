@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -134,6 +136,117 @@ func TestCmdInit_YesFlagSkipsPrompt(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(root, "docops.yaml")); err != nil {
 		t.Errorf("docops.yaml missing after --yes init: %v", err)
+	}
+}
+
+// TestCmdInit_GreenfieldNextSteps verifies init prints the greenfield
+// affordance block when there is no existing code.
+func TestCmdInit_GreenfieldNextSteps(t *testing.T) {
+	root := t.TempDir()
+	withGitDir(t, root)
+	chdirTo(t, root)
+
+	out := captureStdout(t, func() {
+		if code := cmdInit([]string{"--yes"}); code != 0 {
+			t.Fatalf("cmdInit returned %d", code)
+		}
+	})
+	if !strings.Contains(out, "→ Next:") {
+		t.Errorf("missing affordance header in output:\n%s", out)
+	}
+	if !strings.Contains(out, "/docops:plan") {
+		t.Errorf("greenfield should suggest /docops:plan; got:\n%s", out)
+	}
+	if strings.Contains(out, "/docops:onboard") {
+		t.Errorf("greenfield should not suggest onboard; got:\n%s", out)
+	}
+}
+
+// TestCmdInit_BrownfieldNextSteps verifies init prints the brownfield
+// affordance block when a manifest signal is present.
+func TestCmdInit_BrownfieldNextSteps(t *testing.T) {
+	root := t.TempDir()
+	withGitDir(t, root)
+	if err := os.WriteFile(filepath.Join(root, "go.mod"), []byte("module foo\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	chdirTo(t, root)
+
+	out := captureStdout(t, func() {
+		if code := cmdInit([]string{"--yes"}); code != 0 {
+			t.Fatalf("cmdInit returned %d", code)
+		}
+	})
+	if !strings.Contains(out, "Existing code detected") {
+		t.Errorf("expected detection summary, got:\n%s", out)
+	}
+	if !strings.Contains(out, "/docops:onboard") {
+		t.Errorf("brownfield should suggest /docops:onboard; got:\n%s", out)
+	}
+	if !strings.Contains(out, "go.mod") {
+		t.Errorf("brownfield summary should name go.mod; got:\n%s", out)
+	}
+}
+
+// TestCmdInit_QuietSuppressesAffordance verifies --quiet drops the
+// next-step block on both greenfield and brownfield paths.
+func TestCmdInit_QuietSuppressesAffordance(t *testing.T) {
+	root := t.TempDir()
+	withGitDir(t, root)
+	chdirTo(t, root)
+
+	out := captureStdout(t, func() {
+		if code := cmdInit([]string{"--yes", "--quiet"}); code != 0 {
+			t.Fatalf("cmdInit returned %d", code)
+		}
+	})
+	if strings.Contains(out, "→ Next:") {
+		t.Errorf("--quiet should suppress the affordance block; got:\n%s", out)
+	}
+}
+
+// TestCmdInit_JSONEmitsModeAndNextSteps verifies --json swaps the
+// human block for a structured envelope.
+func TestCmdInit_JSONEmitsModeAndNextSteps(t *testing.T) {
+	root := t.TempDir()
+	withGitDir(t, root)
+	if err := os.WriteFile(filepath.Join(root, "package.json"), []byte("{}"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	chdirTo(t, root)
+
+	out := captureStdout(t, func() {
+		if code := cmdInit([]string{"--yes", "--json"}); code != 0 {
+			t.Fatalf("cmdInit returned %d", code)
+		}
+	})
+
+	// Find the JSON line — last non-empty line.
+	var jsonLine string
+	for _, ln := range strings.Split(out, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(ln), "{") {
+			jsonLine = ln
+		}
+	}
+	if jsonLine == "" {
+		t.Fatalf("no JSON envelope in output:\n%s", out)
+	}
+	var got struct {
+		Mode      string `json:"mode"`
+		Signals   []string
+		NextSteps []struct {
+			Label   string
+			Command string
+		} `json:"next_steps"`
+	}
+	if err := json.Unmarshal([]byte(jsonLine), &got); err != nil {
+		t.Fatalf("unmarshal: %v\nline: %s", err, jsonLine)
+	}
+	if got.Mode != "brownfield" {
+		t.Errorf("Mode = %q, want brownfield", got.Mode)
+	}
+	if len(got.NextSteps) == 0 {
+		t.Errorf("next_steps array empty")
 	}
 }
 
