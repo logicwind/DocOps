@@ -12,6 +12,7 @@ import (
 	"github.com/logicwind/docops/internal/config"
 	"github.com/logicwind/docops/internal/index"
 	"github.com/logicwind/docops/internal/loader"
+	"github.com/logicwind/docops/internal/nextsteps"
 	"github.com/logicwind/docops/internal/validator"
 )
 
@@ -27,8 +28,9 @@ func cmdAudit(args []string) int {
 	asJSON := fs.Bool("json", false, "emit findings as JSON")
 	only := fs.String("only", "", "emit findings from this rule only")
 	includeNotNeeded := fs.Bool("include-not-needed", false, "include adr-coverage-review info findings")
+	quiet := fs.Bool("quiet", false, "suppress the closing next-step block")
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: docops audit [--json] [--only <rule>] [--include-not-needed]")
+		fmt.Fprintln(os.Stderr, "usage: docops audit [--json] [--only <rule>] [--include-not-needed] [--quiet]")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(args); err != nil {
@@ -78,17 +80,31 @@ func cmdAudit(args []string) int {
 		result = result.FilterByRule(*only)
 	}
 
+	steps := nextsteps.ForAudit(nextsteps.Outcome{HasGaps: result.HasErrors()})
+
 	if *asJSON {
 		b, err := result.JSON()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "docops audit: encode: %v\n", err)
 			return 2
 		}
-		// MarshalIndent does not append a newline; add one for clean shell output.
-		os.Stdout.Write(b)
-		fmt.Println()
+		// Splice next_steps into the existing JSON envelope.
+		var doc map[string]interface{}
+		if err := json.Unmarshal(b, &doc); err != nil {
+			os.Stdout.Write(b)
+			fmt.Println()
+		} else {
+			doc["next_steps"] = steps
+			out, _ := json.MarshalIndent(doc, "", "  ")
+			os.Stdout.Write(out)
+			fmt.Println()
+		}
 	} else {
 		fmt.Print(result.Human())
+		if !*quiet {
+			fmt.Fprintln(os.Stdout)
+			nextsteps.Render(os.Stdout, steps)
+		}
 	}
 
 	if result.HasErrors() {

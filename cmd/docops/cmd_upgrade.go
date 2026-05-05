@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/logicwind/docops/internal/nextsteps"
 	"github.com/logicwind/docops/internal/scaffold"
 	"github.com/logicwind/docops/internal/updatecheck"
 	"github.com/logicwind/docops/internal/upgrader"
@@ -31,6 +32,7 @@ func cmdUpgrade(args []string) int {
 	asJSON := fs.Bool("json", false, "emit a JSON action plan instead of human output")
 	yes := fs.Bool("yes", false, "skip the interactive confirm prompt")
 	fs.BoolVar(yes, "y", false, "skip the interactive confirm prompt (short form)")
+	quiet := fs.Bool("quiet", false, "suppress the closing next-step block")
 	harnessesFlag := fs.String("harnesses", "", "comma-separated list of harness slugs to write to (default: auto-detect). Known: "+strings.Join(upgrader.KnownHarnessSlugs(), ","))
 	noFlags := make(map[string]*bool, len(upgrader.KnownHarnessSlugs()))
 	for _, slug := range upgrader.KnownHarnessSlugs() {
@@ -125,6 +127,11 @@ func cmdUpgrade(args []string) int {
 		Harnesses: selected,
 	}); err != nil {
 		return reportUpgradeError(err)
+	}
+
+	if !*asJSON && !*quiet {
+		fmt.Fprintln(os.Stdout)
+		nextsteps.Render(os.Stdout, nextsteps.ForUpgrade(nextsteps.Outcome{}))
 	}
 	return 0
 }

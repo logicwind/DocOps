@@ -267,25 +267,9 @@ func planHook(opts Options, body []byte) (Action, error) {
 	return a, nil
 }
 
-// printPlan adds the init-specific "next steps" footer to scaffold's
-// generic plan summary.
+// printPlan emits the scaffold action summary. The closing next-step
+// block is rendered by the CLI layer (cmd_init) via the nextsteps
+// package, which can route greenfield vs brownfield.
 func printPlan(w io.Writer, actions []Action, dry bool) {
 	scaffold.PrintPlan(w, actions, dry, "docops init")
-	if dry {
-		return
-	}
-	var changed int
-	for _, a := range actions {
-		if a.Kind != scaffold.KindSkip {
-			changed++
-		}
-	}
-	if changed == 0 {
-		return
-	}
-	fmt.Fprintln(w, "")
-	fmt.Fprintln(w, "next steps:")
-	fmt.Fprintln(w, "  docops validate           # confirm the scaffolded docs parse")
-	fmt.Fprintln(w, "  docops new ctx \"…\" --type brief")
-	fmt.Fprintln(w, "  docops new adr \"…\"")
 }

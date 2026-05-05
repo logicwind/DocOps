@@ -82,15 +82,31 @@ From the root of any git repo:
 
 ```sh
 docops init                                        # scaffold everything
-docops new ctx "Product vision" --type brief        # first context document
-docops new adr "Pick a database"                    # first decision
+```
+
+DocOps detects whether the repo is **greenfield** (empty) or
+**brownfield** (existing code) and points you at the right next move.
+
+- **Greenfield:** `docops new ctx "Product vision" --type brief` to capture
+  the brief, then `/docops:plan` to drive the first ADR + tasks.
+- **Brownfield:** run `/docops:onboard` — the agent scans the codebase,
+  asks 3–5 clarifying questions, and drafts CTX-001 + 1–3 ADRs from
+  load-bearing decisions visible in the code.
+
+After that, the loop is the same:
+
+```sh
+docops new adr "Pick a database"                    # capture a decision
 docops new task "Wire up SQLite" --requires ADR-0001 # task citing the decision
-docops validate                                     # check everything is sound
 docops refresh                                      # validate + index + state in one pass
 docops audit                                        # find structural gaps
 ```
 
-`docops init` flags: `--dry-run` (preview), `--force` (re-sync drifted files), `--no-skills` (skip agent skill scaffolding).
+Every mutating command ends with a `→ Next:` block of suggested
+follow-ups. Add `--quiet` to suppress, or `--json` for programmatic
+output (which carries the suggestions in a `next_steps` array).
+
+`docops init` flags: `--dry-run` (preview), `--force` (re-sync drifted files), `--no-skills` (skip agent skill scaffolding), `--json` (structured output).
 
 ### Upgrading
 

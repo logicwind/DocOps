@@ -12,6 +12,7 @@ import (
 	"github.com/logicwind/docops/internal/config"
 	"github.com/logicwind/docops/internal/index"
 	"github.com/logicwind/docops/internal/loader"
+	"github.com/logicwind/docops/internal/nextsteps"
 	"github.com/logicwind/docops/internal/state"
 	"github.com/logicwind/docops/internal/validator"
 )
@@ -38,8 +39,9 @@ func cmdRefresh(args []string) int {
 	fs := flag.NewFlagSet("refresh", flag.ContinueOnError)
 	fs.SetOutput(os.Stderr)
 	asJSON := fs.Bool("json", false, "emit aggregate JSON status instead of human output")
+	quiet := fs.Bool("quiet", false, "suppress the closing next-step block")
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: docops refresh [--json]")
+		fmt.Fprintln(os.Stderr, "usage: docops refresh [--json] [--quiet]")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(args); err != nil {
@@ -102,7 +104,7 @@ func cmdRefresh(args []string) int {
 		iStep := refreshStep{Name: "index", OK: false, Skipped: true}
 		sStep := refreshStep{Name: "state", OK: false, Skipped: true}
 		if *asJSON {
-			printRefreshJSON(false, []refreshStep{vStep, iStep, sStep})
+			printRefreshJSON(false, []refreshStep{vStep, iStep, sStep}, nil)
 		} else {
 			fmt.Fprintln(os.Stdout, "index:    SKIP (validate failed)")
 			fmt.Fprintln(os.Stdout, "state:    SKIP (validate failed)")
@@ -118,7 +120,7 @@ func cmdRefresh(args []string) int {
 		iStep := refreshStep{Name: "index", OK: false}
 		sStep := refreshStep{Name: "state", OK: false, Skipped: true}
 		if *asJSON {
-			printRefreshJSON(false, []refreshStep{vStep, iStep, sStep})
+			printRefreshJSON(false, []refreshStep{vStep, iStep, sStep}, nil)
 		} else {
 			fmt.Fprintf(os.Stderr, "docops refresh: index build: %v\n", err)
 			fmt.Fprintln(os.Stdout, "index:    FAIL")
@@ -175,21 +177,27 @@ func cmdRefresh(args []string) int {
 	}
 
 	sStep := refreshStep{Name: "state", OK: true, Path: cfg.Paths.State}
-	if !*asJSON {
-		fmt.Fprintf(os.Stdout, "state:    OK (wrote %s)\n", cfg.Paths.State)
-		fmt.Fprintln(os.Stdout, "docops refresh: OK")
-	} else {
-		printRefreshJSON(true, []refreshStep{vStep, iStep, sStep})
+	steps := nextsteps.ForRefresh(nextsteps.Outcome{})
+	if *asJSON {
+		printRefreshJSON(true, []refreshStep{vStep, iStep, sStep}, steps)
+		return 0
+	}
+	fmt.Fprintf(os.Stdout, "state:    OK (wrote %s)\n", cfg.Paths.State)
+	fmt.Fprintln(os.Stdout, "docops refresh: OK")
+	if !*quiet {
+		fmt.Fprintln(os.Stdout)
+		nextsteps.Render(os.Stdout, steps)
 	}
 	return 0
 }
 
 // printRefreshJSON emits the aggregate JSON report to stdout.
-func printRefreshJSON(ok bool, steps []refreshStep) {
+func printRefreshJSON(ok bool, steps []refreshStep, next []nextsteps.Step) {
 	out := struct {
-		OK    bool          `json:"ok"`
-		Steps []refreshStep `json:"steps"`
-	}{OK: ok, Steps: steps}
+		OK        bool             `json:"ok"`
+		Steps     []refreshStep    `json:"steps"`
+		NextSteps []nextsteps.Step `json:"next_steps,omitempty"`
+	}{OK: ok, Steps: steps, NextSteps: next}
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "  ")
 	_ = enc.Encode(out)

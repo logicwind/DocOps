@@ -12,6 +12,7 @@ import (
 
 	"github.com/logicwind/docops/internal/config"
 	"github.com/logicwind/docops/internal/newdoc"
+	"github.com/logicwind/docops/internal/nextsteps"
 )
 
 // cmdNew implements `docops new <ctx|adr|task> "title" [flags]`.
@@ -59,8 +60,9 @@ func cmdNewCtx(args []string) int {
 	asJSON := fs.Bool("json", false, "emit {id, path} JSON instead of human output")
 	body := fs.String("body", "", "read the document body from stdin (-) or literal string; replaces the default stub")
 	bodyFile := fs.String("body-file", "", "read the document body from <path>; replaces the default stub")
+	quiet := fs.Bool("quiet", false, "suppress the closing next-step block")
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: docops new ctx \"title\" [--type <type>] [--no-open] [--json] [--body -|text] [--body-file <path>]")
+		fmt.Fprintln(os.Stderr, "usage: docops new ctx \"title\" [--type <type>] [--no-open] [--json] [--body -|text] [--body-file <path>] [--quiet]")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(flagArgs); err != nil {
@@ -90,7 +92,7 @@ func cmdNewCtx(args []string) int {
 		NoOpen:     *noOpen,
 		JSON:       *asJSON,
 		BodyReader: bodyReader,
-	}, *asJSON)
+	}, *asJSON, *quiet)
 }
 
 func cmdNewADR(args []string) int {
@@ -103,8 +105,9 @@ func cmdNewADR(args []string) int {
 	asJSON := fs.Bool("json", false, "emit {id, path} JSON instead of human output")
 	body := fs.String("body", "", "read the document body from stdin (-) or literal string; replaces the default stub")
 	bodyFile := fs.String("body-file", "", "read the document body from <path>; replaces the default stub")
+	quiet := fs.Bool("quiet", false, "suppress the closing next-step block")
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: docops new adr \"title\" [--related ADR-0010,ADR-0004] [--no-open] [--json] [--body -|text] [--body-file <path>]")
+		fmt.Fprintln(os.Stderr, "usage: docops new adr \"title\" [--related ADR-0010,ADR-0004] [--no-open] [--json] [--body -|text] [--body-file <path>] [--quiet]")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(flagArgs); err != nil {
@@ -142,7 +145,7 @@ func cmdNewADR(args []string) int {
 		NoOpen:     *noOpen,
 		JSON:       *asJSON,
 		BodyReader: bodyReader,
-	}, *asJSON)
+	}, *asJSON, *quiet)
 }
 
 func cmdNewTask(args []string) int {
@@ -157,8 +160,9 @@ func cmdNewTask(args []string) int {
 	asJSON := fs.Bool("json", false, "emit {id, path} JSON instead of human output")
 	body := fs.String("body", "", "read the document body from stdin (-) or literal string; replaces the default stub")
 	bodyFile := fs.String("body-file", "", "read the document body from <path>; replaces the default stub")
+	quiet := fs.Bool("quiet", false, "suppress the closing next-step block")
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: docops new task \"title\" --requires ADR-0020,CTX-003 [--priority p1] [--assignee claude] [--no-open] [--json] [--body -|text] [--body-file <path>]")
+		fmt.Fprintln(os.Stderr, "usage: docops new task \"title\" --requires ADR-0020,CTX-003 [--priority p1] [--assignee claude] [--no-open] [--json] [--body -|text] [--body-file <path>] [--quiet]")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(flagArgs); err != nil {
@@ -198,7 +202,7 @@ func cmdNewTask(args []string) int {
 		NoOpen:     *noOpen,
 		JSON:       *asJSON,
 		BodyReader: bodyReader,
-	}, *asJSON)
+	}, *asJSON, *quiet)
 }
 
 // resolveBody resolves the --body / --body-file flag pair into an io.Reader.
@@ -259,7 +263,7 @@ func extractTitle(args []string) (title string, flagArgs []string) {
 }
 
 // runNewDoc resolves cwd, calls newdoc.Run, and handles output + exit codes.
-func runNewDoc(opts newdoc.Options, asJSON bool) int {
+func runNewDoc(opts newdoc.Options, asJSON, quiet bool) int {
 	cwd, err := os.Getwd()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "docops new: %v\n", err)
@@ -284,15 +288,38 @@ func runNewDoc(opts newdoc.Options, asJSON bool) int {
 		return 2
 	}
 
+	steps := suggestForNew(opts.Type, res.ID)
+
 	if asJSON {
 		out := struct {
-			ID   string `json:"id"`
-			Path string `json:"path"`
-		}{res.ID, res.Rel}
+			ID        string           `json:"id"`
+			Path      string           `json:"path"`
+			NextSteps []nextsteps.Step `json:"next_steps,omitempty"`
+		}{res.ID, res.Rel, steps}
 		enc := json.NewEncoder(os.Stdout)
 		_ = enc.Encode(out)
-	} else {
-		fmt.Fprintf(os.Stdout, "created %s  %s\n", res.ID, res.Rel)
+		return 0
+	}
+
+	fmt.Fprintf(os.Stdout, "created %s  %s\n", res.ID, res.Rel)
+	if !quiet {
+		fmt.Fprintln(os.Stdout)
+		nextsteps.Render(os.Stdout, steps)
 	}
 	return 0
+}
+
+// suggestForNew picks the affordance set keyed off the doc type just
+// created. Task ID is the most useful payload to thread through.
+func suggestForNew(t newdoc.DocType, id string) []nextsteps.Step {
+	switch t {
+	case newdoc.DocTypeCtx:
+		return nextsteps.ForNewCTX(nextsteps.Outcome{ID: id})
+	case newdoc.DocTypeADR:
+		return nextsteps.ForNewADR(nextsteps.Outcome{ID: id})
+	case newdoc.DocTypeTask:
+		return nextsteps.ForNewTask(nextsteps.Outcome{ID: id})
+	default:
+		return nil
+	}
 }

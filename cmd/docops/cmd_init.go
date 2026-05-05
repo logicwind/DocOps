@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -10,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/logicwind/docops/internal/initter"
+	"github.com/logicwind/docops/internal/nextsteps"
+	"github.com/logicwind/docops/internal/scaffold"
 	"golang.org/x/term"
 )
 
@@ -31,8 +34,10 @@ func cmdInit(args []string) int {
 	noSkills := fs.Bool("no-skills", false, "skip scaffolding .claude/commands/docops/ and .cursor/commands/docops/")
 	yes := fs.Bool("yes", false, "skip the interactive confirm prompt")
 	fs.BoolVar(yes, "y", false, "skip the interactive confirm prompt (short form)")
+	asJSON := fs.Bool("json", false, "emit a JSON summary (mode + next_steps) instead of human output")
+	quiet := fs.Bool("quiet", false, "suppress the closing next-step block")
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: docops init [dir] [--dry-run] [--force] [--no-skills] [--yes]")
+		fmt.Fprintln(os.Stderr, "usage: docops init [dir] [--dry-run] [--force] [--no-skills] [--yes] [--json] [--quiet]")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(flagArgs); err != nil {
@@ -136,6 +141,34 @@ func cmdInit(args []string) int {
 		fmt.Fprintf(os.Stderr, "docops init: %v\n", err)
 		return 2
 	}
+
+	// Brownfield/greenfield routing for the closing block.
+	det := scaffold.DetectBrownfield(absTarget)
+	steps := nextsteps.ForInit(nextsteps.Outcome{Brownfield: det.Brownfield})
+
+	if *asJSON {
+		mode := "greenfield"
+		if det.Brownfield {
+			mode = "brownfield"
+		}
+		out := struct {
+			Mode      string           `json:"mode"`
+			Signals   []string         `json:"signals"`
+			NextSteps []nextsteps.Step `json:"next_steps"`
+		}{mode, det.Signals, steps}
+		_ = json.NewEncoder(os.Stdout).Encode(out)
+		return 0
+	}
+
+	if *quiet {
+		return 0
+	}
+
+	fmt.Fprintln(os.Stdout)
+	if det.Brownfield {
+		fmt.Fprintf(os.Stdout, "Existing code detected (%s).\n", strings.Join(det.Signals, ", "))
+	}
+	nextsteps.Render(os.Stdout, steps)
 	return 0
 }
 

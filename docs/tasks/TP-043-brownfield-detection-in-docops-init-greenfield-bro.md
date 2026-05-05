@@ -1,8 +1,8 @@
 ---
 title: Brownfield detection in docops init + greenfield/brownfield closing message
-status: backlog
+status: done
 priority: p2
-assignee: unassigned
+assignee: claude
 requires: [ADR-0033]
 depends_on: []
 ---

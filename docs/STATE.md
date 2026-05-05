@@ -6,7 +6,7 @@
 
 - Context: 4 active · 0 superseded
 - ADRs: 29 accepted · 4 draft · 0 superseded (32 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 10 backlog · 0 active · 0 blocked · 35 done
+- Tasks: 8 backlog · 0 active · 0 blocked · 37 done
 
 ## Needs attention
 
@@ -18,6 +18,7 @@
 
 ## Recent activity
 
+- 2026-05-05 2328e4b docs(onboarding): ADR-0033 + TP-043/044/045 — onboarding ergonomics
 - 2026-05-04 40b7bcb docs(release): ADR-0032 + TP-042 — defer @beta tap-formula channel
 - 2026-04-30 f8b8d3d docs: ADR-0029/30 + accept ADR-0025; title-naming guidance for new-adr
 - 2026-04-30 e76d4ad feat(schema,validator): TP-026 phase 1 — amendments data layer + TP-027 backfill

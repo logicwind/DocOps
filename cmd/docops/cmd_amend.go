@@ -13,6 +13,7 @@ import (
 
 	"github.com/logicwind/docops/internal/amender"
 	"github.com/logicwind/docops/internal/config"
+	"github.com/logicwind/docops/internal/nextsteps"
 	"github.com/logicwind/docops/internal/schema"
 )
 
@@ -46,6 +47,7 @@ func cmdAmend(args []string) int {
 	bodyFile := fs.String("body-file", "", "amendment body read from <path>")
 	noOpen := fs.Bool("no-open", false, "skip opening $EDITOR after writing")
 	asJSON := fs.Bool("json", false, "emit {adr, amendment_index, path} JSON instead of human output")
+	quiet := fs.Bool("quiet", false, "suppress the closing next-step block")
 	dateOverride := fs.String("date", "", "override amendment date (YYYY-MM-DD); defaults to today")
 	var sectionsFlag stringSliceFlag
 	fs.Var(&sectionsFlag, "section", "repeatable; affects_sections entry")
@@ -113,14 +115,17 @@ func cmdAmend(args []string) int {
 		return 2
 	}
 
+	steps := nextsteps.ForAmend(nextsteps.Outcome{ID: res.ADRID})
+
 	if *asJSON {
 		out := struct {
-			ADR             string `json:"adr"`
-			AmendmentIndex  int    `json:"amendment_index"`
-			Path            string `json:"path"`
-			MarkerInserted  bool   `json:"marker_inserted"`
-			SectionCreated  bool   `json:"section_created"`
-		}{res.ADRID, res.AmendmentIndex, res.Rel, res.MarkerInserted, res.SectionCreated}
+			ADR            string           `json:"adr"`
+			AmendmentIndex int              `json:"amendment_index"`
+			Path           string           `json:"path"`
+			MarkerInserted bool             `json:"marker_inserted"`
+			SectionCreated bool             `json:"section_created"`
+			NextSteps      []nextsteps.Step `json:"next_steps,omitempty"`
+		}{res.ADRID, res.AmendmentIndex, res.Rel, res.MarkerInserted, res.SectionCreated, steps}
 		_ = json.NewEncoder(os.Stdout).Encode(out)
 	} else {
 		fmt.Fprintf(os.Stdout, "amended %s  %s  (entry %d)\n", res.ADRID, res.Rel, res.AmendmentIndex)
@@ -130,7 +135,10 @@ func cmdAmend(args []string) int {
 		if res.SectionCreated {
 			fmt.Fprintln(os.Stdout, "  ## Amendments section created")
 		}
-		fmt.Fprintln(os.Stdout, "  tip: run `docops refresh` to rebuild .index.json + STATE.md")
+		if !*quiet {
+			fmt.Fprintln(os.Stdout)
+			nextsteps.Render(os.Stdout, steps)
+		}
 	}
 
 	if !*noOpen && *asJSON == false {

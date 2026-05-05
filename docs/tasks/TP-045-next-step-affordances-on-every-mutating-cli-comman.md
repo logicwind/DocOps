@@ -1,8 +1,8 @@
 ---
 title: Next-step affordances on every mutating CLI command
-status: backlog
+status: done
 priority: p2
-assignee: unassigned
+assignee: claude
 requires: [ADR-0033]
 depends_on: []
 ---

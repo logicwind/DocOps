@@ -10,6 +10,7 @@ import (
 	"github.com/logicwind/docops/internal/config"
 	"github.com/logicwind/docops/internal/index"
 	"github.com/logicwind/docops/internal/loader"
+	"github.com/logicwind/docops/internal/nextsteps"
 	"github.com/logicwind/docops/internal/state"
 	"github.com/logicwind/docops/internal/validator"
 )
@@ -24,16 +25,20 @@ func cmdState(args []string) int {
 	// Manual flag parsing to avoid flag package's stderr noise on --help.
 	toStdout := false
 	asJSON := false
+	quiet := false
 	for _, a := range args {
 		switch a {
 		case "--stdout":
 			toStdout = true
 		case "--json":
 			asJSON = true
+		case "--quiet":
+			quiet = true
 		case "--help", "-h":
-			fmt.Fprintln(os.Stderr, "usage: docops state [--stdout] [--json]")
+			fmt.Fprintln(os.Stderr, "usage: docops state [--stdout] [--json] [--quiet]")
 			fmt.Fprintln(os.Stderr, "  --stdout  print STATE.md to stdout instead of writing the file")
 			fmt.Fprintln(os.Stderr, "  --json    emit structured JSON to stdout; no file write")
+			fmt.Fprintln(os.Stderr, "  --quiet   suppress the closing next-step block")
 			return 0
 		}
 	}
@@ -113,5 +118,9 @@ func cmdState(args []string) int {
 		return 2
 	}
 	fmt.Fprintf(os.Stderr, "docops state: wrote %s\n", cfg.Paths.State)
+	if !quiet {
+		fmt.Fprintln(os.Stdout)
+		nextsteps.Render(os.Stdout, nextsteps.ForState(nextsteps.Outcome{}))
+	}
 	return 0
 }
