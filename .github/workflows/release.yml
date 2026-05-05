@@ -23,7 +23,12 @@ jobs:
       # docops update-check fetches VERSION via raw.githubusercontent.com,
       # so a mismatch silently breaks "is upgrade available" for everyone
       # who already has the previous release. Fail loud here instead.
+      #
+      # Prerelease tags (vX.Y.Z-beta.N etc.) intentionally do NOT touch the
+      # VERSION file — that file tracks latest stable. Skip the check when
+      # the tag has a SemVer prerelease component. See ADR-0032 / make beta.
       - name: Verify VERSION matches tag
+        if: ${{ !contains(github.ref_name, '-') }}
         run: |
           tag_version="${GITHUB_REF#refs/tags/v}"
           file_version=$(tr -d '[:space:]' < VERSION)

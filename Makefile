@@ -8,7 +8,7 @@ LDFLAGS := -s -w \
   -X $(PKG)/internal/version.Commit=$(COMMIT) \
   -X $(PKG)/internal/version.Date=$(DATE)
 
-.PHONY: build install test lint clean tidy release-snapshot release publish
+.PHONY: build install test lint clean tidy release-snapshot release publish beta
 
 build:
 	@mkdir -p bin
@@ -89,3 +89,42 @@ release:
 	echo; \
 	echo "v$(VERSION) tagged and pushed. Watch the release workflow:"; \
 	echo "  gh run watch"
+
+# make beta VERSION=X.Y.Z-(alpha|beta|rc).N
+#   Cuts a prerelease tag from the current branch. Does NOT bump VERSION
+#   (that file tracks latest stable; prereleases must not move it). CI's
+#   release workflow detects the prerelease tag, lets goreleaser route the
+#   formula write to docops@beta / docops-beta only — stable users see
+#   nothing. See ADR-0032. Pass DRY_RUN=1 to preview.
+beta:
+	@if [ -z "$(VERSION)" ] || [ "$(VERSION)" = "dev" ]; then \
+		echo "usage: make beta VERSION=X.Y.Z-(alpha|beta|rc).N [DRY_RUN=1]"; exit 2; \
+	fi
+	@echo "$(VERSION)" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+-(alpha|beta|rc)\.[0-9]+$$' || \
+		(echo "VERSION must match X.Y.Z-(alpha|beta|rc).N (got $(VERSION))" && exit 2)
+	@if ! git diff-index --quiet HEAD --; then \
+		echo "tracked files have uncommitted changes; commit or stash first"; exit 2; \
+	fi
+	@if git rev-parse "v$(VERSION)" >/dev/null 2>&1; then \
+		echo "tag v$(VERSION) already exists locally"; exit 2; \
+	fi
+	@if git ls-remote --exit-code --tags origin "refs/tags/v$(VERSION)" >/dev/null 2>&1; then \
+		echo "tag v$(VERSION) already exists on origin"; exit 2; \
+	fi
+	@set -e; \
+	branch=$$(git rev-parse --abbrev-ref HEAD); \
+	if [ -n "$(DRY_RUN)" ]; then \
+		echo "[dry-run] branch:        $$branch"; \
+		echo "[dry-run] would tag:     v$(VERSION) (annotated)"; \
+		echo "[dry-run] would push:    v$(VERSION) to origin"; \
+		echo "[dry-run] VERSION file:  unchanged (stable channel)"; \
+		echo; \
+		echo "[dry-run] re-run without DRY_RUN=1 to cut the prerelease."; \
+		exit 0; \
+	fi; \
+	git tag -a "v$(VERSION)" -m "v$(VERSION) (prerelease)"; \
+	git push origin "v$(VERSION)"; \
+	echo; \
+	echo "v$(VERSION) tagged and pushed from $$branch."; \
+	echo "Watch the release workflow:  gh run watch"; \
+	echo "Then:  brew upgrade logicwind/tap/docops@beta  (or scoop update docops-beta)"

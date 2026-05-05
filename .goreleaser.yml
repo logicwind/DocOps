@@ -55,11 +55,28 @@ changelog:
       - "^test:"
       - "^chore:"
 
+# GitHub release notes. The auto-generated commit list (above) lands as the
+# body; this header points readers at the human-written CHANGELOG entry, and
+# the prerelease flag flips on `-beta.N`/`-rc.N`/`-alpha.N` tags so the
+# release shows the "Pre-release" badge on github.com.
+release:
+  prerelease: auto
+  header: |
+    For the human-written summary of this release, see
+    [CHANGELOG.md](https://github.com/logicwind/DocOps/blob/main/CHANGELOG.md).
+
+    Install: `brew install logicwind/tap/docops` (stable) or
+    `brew install logicwind/tap/docops@beta` (prereleases). See the
+    [Install section](https://github.com/logicwind/DocOps#install) for
+    Scoop and direct download.
+
 # Homebrew tap — `logicwind/homebrew-tap` (org-wide, Vercel/HashiCorp/Fly.io
 # convention). Repo exists, token wired via HOMEBREW_TAP_GITHUB_TOKEN in the
 # release workflow. Legacy per-tool tap (`logicwind/homebrew-docops`) was
 # archived on 2026-04-23 after the pre-launch migration.
-# Install: `brew install logicwind/tap/docops`.
+# Install: `brew install logicwind/tap/docops` (stable) or
+# `brew install logicwind/tap/docops@beta` (prereleases). Channel routing is
+# driven by templated `skip_upload` keyed on `.Prerelease` — see ADR-0032.
 brews:
   - name: docops
     ids: [docops]
@@ -72,13 +89,27 @@ brews:
     description: "Typed project-state substrate for LLM-first software development"
     homepage: "https://github.com/logicwind/DocOps"
     license: MIT
-    skip_upload: false
+    skip_upload: '{{ if .Prerelease }}true{{ else }}false{{ end }}'
+    test: |
+      system "#{bin}/docops --version"
+  - name: docops@beta
+    ids: [docops]
+    repository:
+      owner: logicwind
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    description: "Typed project-state substrate for LLM-first software development (beta channel)"
+    homepage: "https://github.com/logicwind/DocOps"
+    license: MIT
+    skip_upload: '{{ if .Prerelease }}false{{ else }}true{{ end }}'
     test: |
       system "#{bin}/docops --version"
 
 # Scoop bucket — `logicwind/scoop-bucket` (org-wide, paired with the
 # homebrew-tap). Same token (aliased as SCOOP_TAP_GITHUB_TOKEN in the
 # release workflow). Legacy `logicwind/scoop-docops` archived 2026-04-23.
+# Stable manifest is `docops.json`; beta is `docops-beta.json` (Scoop has no
+# `@channel` convention, so the parallel name uses `-beta`).
 scoops:
   - name: docops
     ids: [docops]
@@ -91,4 +122,14 @@ scoops:
     description: "Typed project-state substrate for LLM-first software development"
     homepage: "https://github.com/logicwind/DocOps"
     license: MIT
-    skip_upload: false
+    skip_upload: '{{ if .Prerelease }}true{{ else }}false{{ end }}'
+  - name: docops-beta
+    ids: [docops]
+    repository:
+      owner: logicwind
+      name: scoop-bucket
+      token: "{{ .Env.SCOOP_TAP_GITHUB_TOKEN }}"
+    description: "Typed project-state substrate for LLM-first software development (beta channel)"
+    homepage: "https://github.com/logicwind/DocOps"
+    license: MIT
+    skip_upload: '{{ if .Prerelease }}false{{ else }}true{{ end }}'

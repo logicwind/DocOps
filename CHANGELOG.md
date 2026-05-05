@@ -2,6 +2,25 @@
 
 All notable changes to docops are recorded here. Dates are UTC.
 
+## Unreleased
+
+### Added — Beta release channel (ADR-0032, TP-042)
+
+Opt-in prerelease channel published as a parallel Homebrew formula and Scoop
+manifest in the existing `logicwind/homebrew-tap` and `logicwind/scoop-bucket`
+repos. Channel routing is driven by templated `skip_upload` in
+`.goreleaser.yml` keyed on the SemVer prerelease bit — stable releases bump
+only `Formula/docops.rb` / `bucket/docops.json`; prerelease tags
+(`vX.Y.Z-beta.N`, `-alpha.N`, `-rc.N`) bump only `Formula/docops@beta.rb` /
+`bucket/docops-beta.json`.
+
+```sh
+brew install logicwind/tap/docops@beta   # macOS / Linux
+scoop install docops-beta                # Windows
+```
+
+Scoop has no `@channel` convention, so the parallel manifest uses `-beta`.
+
 ## v0.6.0 — 2026-04-30
 
 ### Added — Amendments as first-class decision metadata (ADR-0025)

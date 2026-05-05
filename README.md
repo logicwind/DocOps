@@ -68,6 +68,17 @@ scoop bucket add logicwind https://github.com/logicwind/scoop-bucket
 scoop install docops
 ```
 
+### Beta channel
+
+Opt-in prereleases (`vX.Y.Z-beta.N`, `-alpha.N`, `-rc.N`) ship to a parallel formula / manifest in the same tap and bucket. Stable installs are unaffected.
+
+```sh
+brew install logicwind/tap/docops@beta   # macOS / Linux
+scoop install docops-beta                # Windows (after `scoop bucket add logicwind ...`)
+```
+
+See [ADR-0032](docs/decisions/ADR-0032-beta-release-channel-via-beta-tap-formula.md) for the channel design.
+
 ### Direct download
 
 Grab the archive for your platform from [GitHub Releases](https://github.com/logicwind/DocOps/releases), extract, and put `docops` on your PATH.
@@ -194,13 +205,20 @@ This repository is the DocOps **source**, and it dog-foods its own convention. T
 
 ### Release
 
-From a clean `main`:
+Two channels: **stable** for everyone, **beta** for opt-in testers and your own dogfooding. Full runbook in [`CTX-005`](docs/context/CTX-005-release-runbook-stable-and-beta-channels.md).
 
 ```sh
-make release VERSION=0.4.1
+# fast loop — tweak source, test in another project on this machine
+make install
+
+# dogfood — cut a prerelease from any branch
+make beta VERSION=0.6.1-beta.1
+
+# promote — once the beta has held up, cut stable from clean main
+make release VERSION=0.6.1
 ```
 
-This bumps the `VERSION` file, commits, creates an annotated tag, and pushes. The tag triggers `.github/workflows/release.yml`, which runs goreleaser to build the matrix, attach artifacts to the GitHub Release, and update the Homebrew/Scoop stubs.
+Tag pushes trigger `.github/workflows/release.yml`, which runs goreleaser to build the matrix, attach artifacts to the GitHub Release, and update the Homebrew/Scoop stubs. Prerelease tags route to `docops@beta` / `docops-beta` only; stable tags route to `docops` / `docops`.
 
 Dry-run: `make release VERSION=0.4.1 DRY_RUN=1`. Local snapshot (no tag, no push): `make release-snapshot`.
 

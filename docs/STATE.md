@@ -4,9 +4,9 @@
 
 ## Counts
 
-- Context: 4 active · 0 superseded
-- ADRs: 29 accepted · 4 draft · 0 superseded (32 `coverage: required`, 1 `coverage: not-needed`)
-- Tasks: 7 backlog · 0 active · 0 blocked · 38 done
+- Context: 5 active · 0 superseded
+- ADRs: 30 accepted · 3 draft · 0 superseded (32 `coverage: required`, 1 `coverage: not-needed`)
+- Tasks: 6 backlog · 1 active · 0 blocked · 38 done
 
 ## Needs attention
 
@@ -14,11 +14,12 @@
 
 ## Active work
 
-- (none)
+- TP-042 (nix, p2) Ship @beta brew + docops-beta scoop release channel — requires: ADR-0032
 
 ## Recent activity
 
 - 2026-05-05 de1daeb feat(cli): brownfield detection + next-step affordances (TP-043, TP-045)
+- 2026-05-05 6008df8 feat(skills): /docops:onboard — brownfield bootstrap (TP-044)
 - 2026-05-05 2328e4b docs(onboarding): ADR-0033 + TP-043/044/045 — onboarding ergonomics
 - 2026-05-04 40b7bcb docs(release): ADR-0032 + TP-042 — defer @beta tap-formula channel
 - 2026-04-30 f8b8d3d docs: ADR-0029/30 + accept ADR-0025; title-naming guidance for new-adr

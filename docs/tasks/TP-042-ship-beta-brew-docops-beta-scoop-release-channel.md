@@ -1,8 +1,8 @@
 ---
 title: Ship @beta brew + docops-beta scoop release channel
-status: backlog
+status: active
 priority: p2
-assignee: unassigned
+assignee: nix
 requires: [ADR-0032]
 depends_on: []
 ---

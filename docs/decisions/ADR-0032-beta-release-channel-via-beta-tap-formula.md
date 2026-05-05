@@ -1,6 +1,6 @@
 ---
-title: Beta release channel via @beta tap-formula (deferred)
-status: draft
+title: Beta release channel via @beta tap-formula
+status: accepted
 coverage: required
 date: "2026-05-04"
 supersedes: []
