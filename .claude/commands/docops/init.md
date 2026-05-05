@@ -34,9 +34,14 @@ Optional positional `[dir]` (defaults to cwd). Optional flags:
    docops init --yes            # CI / non-interactive
    ```
 
-2. After init, run `docops validate` to confirm everything parses, then
-   `/docops:new-ctx` or `/docops:new-adr` to start capturing state.
+2. After init, the closing block routes by detection:
+   - **Brownfield** (existing code detected): suggest the user run
+     `/docops:onboard` to bootstrap CTX + ADRs from the codebase.
+     See [onboard](onboard.md).
+   - **Greenfield** (empty repo): suggest `docops new ctx --type brief`
+     and `/docops:plan` to capture the project brief and first ADR.
 
 ## Confirm
-List of files/folders written, whether the pre-commit hook landed, and
-the next step (validate + first CTX/ADR).
+List of files/folders written, whether the pre-commit hook landed,
+which mode (brownfield/greenfield) the closing block routed to, and
+the concrete next step (`/docops:onboard` or `docops new ctx`).

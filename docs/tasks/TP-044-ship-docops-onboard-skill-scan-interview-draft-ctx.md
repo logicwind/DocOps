@@ -1,8 +1,8 @@
 ---
 title: Ship /docops:onboard skill — scan + interview + draft CTX/ADRs
-status: backlog
+status: done
 priority: p2
-assignee: unassigned
+assignee: claude
 requires: [ADR-0033]
 depends_on: []
 ---

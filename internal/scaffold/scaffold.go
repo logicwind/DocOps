@@ -221,6 +221,7 @@ func LoadShippedSkills() (map[string][]byte, error) {
 func SlashDeliverableCmds() map[string]bool {
 	return map[string]bool{
 		"init":     true,
+		"onboard":  true,
 		"progress": true,
 		"next":     true,
 		"do":       true,

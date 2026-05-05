@@ -40,6 +40,7 @@ Filename is the ID. There is no `id:` field.
 | Replace a published ADR with a new decision | [supersede](cookbook/supersede.md) |
 | Tighten / expand an ADR's scope without flipping the call | [revise](cookbook/revise.md) |
 | Bootstrap or upgrade docops | [init](cookbook/init.md), [upgrade](cookbook/upgrade.md) |
+| Bootstrap CTX + ADRs from an existing codebase | [onboard](cookbook/onboard.md) |
 
 ## Changing a published ADR — pick the lane first
 
