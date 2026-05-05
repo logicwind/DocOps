@@ -20,6 +20,7 @@
 
 - 2026-05-05 de1daeb feat(cli): brownfield detection + next-step affordances (TP-043, TP-045)
 - 2026-05-05 6008df8 feat(skills): /docops:onboard — brownfield bootstrap (TP-044)
+- 2026-05-05 524ea85 feat(release): ship @beta channel + make beta + runbook (TP-042)
 - 2026-05-05 2328e4b docs(onboarding): ADR-0033 + TP-043/044/045 — onboarding ergonomics
 - 2026-05-04 40b7bcb docs(release): ADR-0032 + TP-042 — defer @beta tap-formula channel
 - 2026-04-30 f8b8d3d docs: ADR-0029/30 + accept ADR-0025; title-naming guidance for new-adr

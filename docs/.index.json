@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-05T05:06:26Z",
+  "generated_at": "2026-05-05T12:03:16Z",
   "version": 1,
   "docs": [
     {
@@ -19,7 +19,7 @@
       "summary": "DocOps needs a minimal vocabulary that maps cleanly to how software gets built with LLMs. Existing tools fall into two traps: - Blurring task / decision / requirement boundaries (Backlog.md, Markplane…",
       "word_count": 296,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0003",
@@ -57,7 +57,7 @@
       "summary": "Over-specified frontmatter rots fast: fields go unfilled, authors skip the doc because the ceremony feels heavy, and LLMs waste context on fields that are rarely queried. Under-specified frontmatter f…",
       "word_count": 379,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0005",
@@ -110,7 +110,7 @@
       "summary": "Many doc systems carry an `id:` field in frontmatter separate from the filename. This creates two sources of truth and a rename-drift problem: the file moves, the ID stays, references break or are con…",
       "word_count": 204,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "TP-002",
@@ -145,7 +145,7 @@
       "summary": "Existing task systems (Jira, Linear, Backlog.md, GSD plans, BMAD stories) permit tasks to be created without a structural link to the decision or stakeholder intent they advance. In practice this mean…",
       "word_count": 296,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0008",
@@ -193,7 +193,7 @@
       "summary": "Human-written frontmatter wants to be minimal (ADR-0002). Agents querying the repo want richer structure: reverse edges, resolved references, staleness, summaries, etc. Putting all of that into source…",
       "word_count": 310,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0002",
@@ -251,7 +251,7 @@
       "summary": "ADR tools conventionally have one edge type: `supersedes`. That is not enough to express the relationships a real project has — tasks relate to decisions differently than decisions relate to each othe…",
       "word_count": 346,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0005",
@@ -306,7 +306,7 @@
       "summary": "Agents landing cold in a DocOps repo need a compact, high-signal summary of current state before they start loading individual docs. `.index.json` is machine-optimal; humans and LLMs both also want a …",
       "word_count": 315,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0008",
@@ -342,7 +342,7 @@
       "summary": "Not every ADR will have tasks created for it promptly; not every CTX will translate into an ADR. Without a forcing function, gaps accumulate silently and \"implementation: accepted but nothing built\" b…",
       "word_count": 375,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0004",
@@ -396,7 +396,7 @@
       "summary": "Some ADRs genuinely need no implementation tasks. Examples: - Recording an external constraint (\"we are required by law to do X\"). - Documenting an already-finished decision retrospectively. - Recordi…",
       "word_count": 244,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0008",
@@ -432,7 +432,7 @@
       "summary": "The Zund project's existing ADRs carry an `implementation:` field (values: `done | partial | in-progress | not-started`). In practice this field drifts — people forget to update it after merging a tas…",
       "word_count": 304,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0002",
@@ -477,7 +477,7 @@
       "summary": "The natural instinct for an \"agent-native\" tool in 2026 is MCP (Model Context Protocol): structured types, discoverable tools, persistent connection. But for a monorepo where the agent is already runn…",
       "word_count": 312,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0012",
@@ -546,7 +546,7 @@
       "summary": "DocOps must work in any codebase — Python, Go, Rust, Ruby, mixed, nothing-installed-yet. Requiring the user to install Bun, Node, or any ecosystem-specific runtime creates adoption friction and biases…",
       "word_count": 588,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0019",
@@ -602,7 +602,7 @@
       "summary": "Claude Code, Cursor, and similar agent tools have native concepts for \"skills\" or \"slash commands\" — markdown files that package a specific capability into a discoverable slash-command. GStack uses th…",
       "word_count": 366,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0014",
@@ -682,7 +682,7 @@
       "summary": "The LLM-development tooling space in 2026 is crowded. Adjacent tools (GSD, GStack, BMAD, Spec Kit, Kiro, Agent OS, Backlog.md, Markplane) cover overlapping territory with different philosophies. DocOp…",
       "word_count": 351,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0011",
@@ -729,7 +729,7 @@
       "summary": "AGENTS.md has become the de-facto standard in 2025–26 for \"agent instructions at repo root\" — adopted by Copilot, Codex, Cursor, Jules/Gemini, Factory, Amp, Windsurf, Zed, RooCode, and (via Linux Foun…",
       "word_count": 312,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0013",
@@ -776,7 +776,7 @@
       "summary": "This repository is the DocOps source code AND a DocOps-managed project (dog-food). Both layers want to live in the same repo but must not be conflated. Without an explicit convention:",
       "word_count": 385,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0021",
@@ -814,7 +814,7 @@
       "summary": "Agents working in a DocOps repo routinely ask \"has this been discussed before?\", \"what did we decide about rate limiting?\", \"are there any tasks touching auth?\". The current command set (`validate`, `…",
       "word_count": 586,
       "last_touched": "2026-04-22T08:19:55Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0018",
@@ -852,7 +852,7 @@
       "summary": "ADR-0005 established the two-layer split: source frontmatter stays minimal; derived fields live in a committed `docs/.index.json` regenerated by `docops index`. The ADR's \"consequences\" note already h…",
       "word_count": 704,
       "last_touched": "2026-04-22T08:19:55Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0017",
@@ -1280,7 +1280,7 @@
       "summary": "Agents and humans browsing a DocOps repository today see markdown files in a terminal or file tree. Raw markdown is functional but lacks the cross-referencing, navigation, and readability of rendered …",
       "word_count": 1864,
       "last_touched": "2026-04-24T09:03:28Z",
-      "age_days": 10,
+      "age_days": 11,
       "referenced_by": [
         {
           "id": "TP-030",
@@ -1338,7 +1338,7 @@
       "summary": "TP-023 (commit `379ee51`) moved `/docops:*` from skills to **slash commands** under `.claude/commands/docops/`. ADR-0022 had already solved multi-tool *skills* via a canonical `.agents/skills/` store …",
       "word_count": 1330,
       "last_touched": "2026-04-25T06:13:00Z",
-      "age_days": 9,
+      "age_days": 10,
       "referenced_by": [
         {
           "id": "ADR-0029",
@@ -1446,7 +1446,7 @@
       "summary": "ADR-0029 (command-surface tiering) declared three audiences — slash, skills, CLI — and assigned skills to the LLM-NL-dispatch tier with the shape \"Many, granular.\" The implication taken at the time wa…",
       "word_count": 668,
       "last_touched": "2026-04-30T09:16:34Z",
-      "age_days": 4,
+      "age_days": 5,
       "referenced_by": [
         {
           "id": "ADR-0033",
@@ -1475,7 +1475,7 @@
       ],
       "summary": "The release pipeline (`.goreleaser.yml`, `logicwind/homebrew-tap`, `logicwind/scoop-bucket`) currently publishes one channel: stable. Tag a SemVer like `v0.6.0`, GoReleaser builds binaries, bumps the …",
       "word_count": 486,
-      "last_touched": "2026-05-05T05:02:19Z",
+      "last_touched": "2026-05-05T05:06:53Z",
       "age_days": 0,
       "referenced_by": [
         {
@@ -1534,7 +1534,7 @@
       "summary": "DocOps is a **typed project-state substrate** for LLM-first software development. It lives inside `docs/` in a git repository and gives coding agents three things they need to plan and execute well:",
       "word_count": 478,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "derived_adrs": [
         "ADR-0027",
         "ADR-0033"
@@ -1551,7 +1551,7 @@
       "summary": "Captures the design dialogue that produced DocOps. Non-linear notes, preserved because the pushbacks are themselves design input.",
       "word_count": 587,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "stale": true
     },
     {
@@ -1564,7 +1564,7 @@
       "summary": "Captured from web research during design. Keeps the \"why we are not rebuilding X\" reasoning available to future agents.",
       "word_count": 660,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "derived_adrs": [
         "ADR-0003",
         "ADR-0014"
@@ -1581,7 +1581,7 @@
       "summary": "Explicit rules the author (Nachiket) placed on the design. These govern what DocOps will and will not do. Future agents should treat violations of these as red flags.",
       "word_count": 515,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "ADR-0014",
@@ -1602,7 +1602,7 @@
       "type": "notes",
       "summary": "Operational runbook for cutting docops releases. Two channels: **stable** (`brew install logicwind/tap/docops`) and **beta** (`brew install logicwind/tap/docops@beta`). Beta is the dogfood channel — b…",
       "word_count": 570,
-      "last_touched": "2026-05-05T05:06:12Z",
+      "last_touched": "2026-05-05T05:06:53Z",
       "age_days": 0,
       "stale": false
     },
@@ -1622,7 +1622,7 @@
       "summary": "Create the initial project structure for the DocOps CLI: source tree, build pipeline, cross-compile configuration, release automation. Produce a \"hello world\" binary that prints a version and exits.",
       "word_count": 277,
       "last_touched": "2026-04-22T06:03:04Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "TP-002",
@@ -1654,7 +1654,7 @@
       "summary": "Implement strict typed schemas matching the final bare-minimum spec in ADR-0002. Output: reusable validators used by every other command and exported as JSON Schema for editor tooling.",
       "word_count": 333,
       "last_touched": "2026-04-22T06:11:11Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "TP-003",
@@ -1706,7 +1706,7 @@
       "summary": "Command that validates all DocOps files in a repo against the schemas and the graph invariants. Exit code 0 on pass, non-zero on fail. Designed for pre-commit hooks and CI.",
       "word_count": 445,
       "last_touched": "2026-04-22T06:24:14Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "TP-004",
@@ -1749,7 +1749,7 @@
       "summary": "...",
       "word_count": 433,
       "last_touched": "2026-04-22T07:30:07Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "TP-005",
@@ -1800,7 +1800,7 @@
       "summary": "Command that reads `.index.json` and writes `docs/STATE.md` — the human- and LLM-readable snapshot described in ADR-0007.",
       "word_count": 393,
       "last_touched": "2026-04-22T08:13:45Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "TP-010",
@@ -1836,7 +1836,7 @@
       "summary": "Command that reports structural coverage gaps computed from `.index.json`. Separate from STATE.md: this is the actionable punch list, not a passive snapshot.",
       "word_count": 441,
       "last_touched": "2026-04-22T08:14:58Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "TP-010",
@@ -1869,7 +1869,7 @@
       "summary": "Command that turns a bare repository into a DocOps-enabled one. Idempotent — safe to run twice.",
       "word_count": 222,
       "last_touched": "2026-04-22T09:33:17Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "TP-010",
@@ -1921,7 +1921,7 @@
       "summary": "Commands that create new CTX, ADR, or Task documents with valid frontmatter, atomic ID allocation, and correct file naming.",
       "word_count": 180,
       "last_touched": "2026-04-22T09:42:49Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "TP-010",
@@ -1956,7 +1956,7 @@
       "summary": "Emit the frontmatter schemas as JSON Schema so editors (VS Code YAML plugin, JetBrains, Zed) can validate in-editor without running the CLI.",
       "word_count": 124,
       "last_touched": "2026-04-22T09:51:55Z",
-      "age_days": 12,
+      "age_days": 13,
       "referenced_by": [
         {
           "id": "TP-018",
@@ -2330,7 +2330,7 @@
       "summary": "\u003e **2026-04-24 closed.** v0.5.1 release (run 24881180704) pushed \u003e `docops.rb` to `logicwind/homebrew-tap` and `docops.json` to \u003e `logicwind/scoop-bucket` end-to-end via goreleaser in 54 s. All \u003e acce…",
       "word_count": 665,
       "last_touched": "2026-04-24T09:03:28Z",
-      "age_days": 10,
+      "age_days": 11,
       "referenced_by": [
         {
           "id": "TP-025",
@@ -2421,7 +2421,7 @@
       "summary": "Applied **Option B**: collapsed the dry-run guard and the real-release commands into a single `\\`-joined shell block. `exit 0` inside the `DRY_RUN=1` branch now aborts the whole sequence; the `echo \u003e …",
       "word_count": 536,
       "last_touched": "2026-04-24T07:48:38Z",
-      "age_days": 10,
+      "age_days": 11,
       "stale": false
     },
     {
@@ -2457,7 +2457,7 @@
       "summary": "Implementation lives in `internal/htmlviewer/` (`spa.go`, `bundle.go`, `emit.go`, `index.html`) and `cmd/docops/cmd_html.go`. `docops html [--output PATH] [--base-url URL] [--json]` emits exactly two …",
       "word_count": 860,
       "last_touched": "2026-04-24T09:03:28Z",
-      "age_days": 10,
+      "age_days": 11,
       "referenced_by": [
         {
           "id": "TP-031",
@@ -2492,7 +2492,7 @@
       "summary": "Implementation lives in `internal/htmlviewer/serve.go` + `cmd/docops/cmd_serve.go`. `docops serve [--port N] [--open] [--json]` listens on `127.0.0.1:8484` by default, serves the embedded SPA plus a f…",
       "word_count": 512,
       "last_touched": "2026-04-24T09:03:28Z",
-      "age_days": 10,
+      "age_days": 11,
       "stale": false
     },
     {
@@ -2590,7 +2590,7 @@
       "summary": "Surface ADR-0025 amendments in the `docops html` / `docops serve` SPA — both on the per-ADR detail page and on the Home view — sourced from `recent_amendments` and per-doc `amendments` in the viewer b…",
       "word_count": 158,
       "last_touched": "2026-04-30T08:22:30Z",
-      "age_days": 4,
+      "age_days": 5,
       "stale": false
     },
     {
@@ -2608,7 +2608,7 @@
       "summary": "A chronological \"Timeline\" tab in the SPA that surfaces project events on a single time axis: ADR transitions, amendments, task closes. Helps humans and LLMs reason about *when* decisions and work hap…",
       "word_count": 241,
       "last_touched": "2026-04-30T08:22:30Z",
-      "age_days": 4,
+      "age_days": 5,
       "stale": false
     },
     {
@@ -2663,7 +2663,7 @@
       "summary": "A \"Board\" tab in the SPA that surfaces `docs/tasks/` as a kanban-style column grid: `backlog` | `active` | `blocked` | `done`. Complements the existing list/graph/timeline views — gives humans (and LL…",
       "word_count": 211,
       "last_touched": "2026-04-30T08:22:30Z",
-      "age_days": 4,
+      "age_days": 5,
       "stale": false
     },
     {
@@ -2682,7 +2682,7 @@
       "summary": "Land the structural shift declared in ADR-0031 and ship the three amendment-family cookbooks (`amend`, `supersede`, `revise`) called for by ADR-0025 + ADR-0029 §Skills tier.",
       "word_count": 287,
       "last_touched": "2026-04-30T09:16:34Z",
-      "age_days": 4,
+      "age_days": 5,
       "stale": false
     },
     {
@@ -2699,8 +2699,8 @@
       ],
       "summary": "Add the opt-in beta channel described in ADR-0032 so testers can run `brew install logicwind/tap/docops@beta` (and `scoop install docops-beta`) without disturbing stable users.",
       "word_count": 233,
-      "last_touched": "2026-05-04T04:24:23Z",
-      "age_days": 1,
+      "last_touched": "2026-05-05T05:06:53Z",
+      "age_days": 0,
       "stale": false
     },
     {
