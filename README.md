@@ -347,39 +347,87 @@ DocOps is a **substrate**, not a framework. It provides typed state — not work
 
 ## Contributing
 
-Issues, feature requests, and pull requests are welcome on [GitHub](https://github.com/logicwind/DocOps/issues). This repo dog-foods DocOps: all changes go through the same `validate` → `index` → `state` cycle.
+Issues, feature requests, and pull requests are welcome on [GitHub](https://github.com/logicwind/DocOps/issues). This repo dog-foods DocOps: every change goes through the same `validate` → `index` → `state` cycle. See [`AGENTS.md`](AGENTS.md) for the orientation guide if you're an agent.
 
-See [`AGENTS.md`](AGENTS.md) for the orientation guide if you're an agent, and the Makefile targets for the local development workflow:
+## Building from source
+
+DocOps is a single static Go binary. Setup → build → run → test takes about a minute on a clean machine.
+
+### Prerequisites
+
+| Tool | Version | Purpose |
+|---|---|---|
+| Go | **1.25+** (per `go.mod`) | Compiler |
+| `make` | any | Driver for the Makefile targets |
+| `git` | any | Required at runtime — DocOps inspects the repo |
+| `goreleaser` | latest | Only needed if you cut releases or run `make release-snapshot` |
+| `gh` | latest | Only needed if you watch release workflows from the CLI |
+
+### Setup
 
 ```sh
-make tidy     # go mod tidy
-make build    # builds bin/docops
-make test     # go test -race ./...
-make lint     # go vet ./...
+git clone https://github.com/logicwind/DocOps.git
+cd DocOps
+make tidy                  # go mod download + go mod tidy
 ```
 
-## Developing on DocOps itself
-
-This repository is the DocOps **source**, and it dog-foods its own convention. The root `AGENTS.md` separates the "meta" layer (this repo's own project management) from the "product" layer (what `docops init` emits into user repos). See [ADR-0016](docs/decisions/ADR-0016-meta-vs-product-separation.md).
-
-### Release
-
-Two channels: **stable** for everyone, **beta** for opt-in testers and your own dogfooding. Full runbook in [`CTX-005`](docs/context/CTX-005-release-runbook-stable-and-beta-channels.md).
+### Build
 
 ```sh
-# fast loop — tweak source, test in another project on this machine
+make build                 # produces ./bin/docops
+./bin/docops version       # smoke test
+```
+
+For a system-wide install onto your `$GOBIN`:
+
+```sh
+make install               # go install ./cmd/docops
+docops version
+```
+
+### Run (dog-food on this very repo)
+
+```sh
+./bin/docops state         # render docs/STATE.md from the current sources
+./bin/docops audit         # gap punch list
+./bin/docops serve --open  # localhost HTML viewer (the headline UX)
+```
+
+### Test & lint
+
+```sh
+make test                  # go test -race ./...
+make lint                  # go vet ./...
+```
+
+The pre-commit hook installed by `docops init` runs `docops validate` on the docs graph — keep it in place.
+
+### Deploy / release
+
+Two channels: **stable** for everyone, **beta** for opt-in testers and your own dogfooding. Tag pushes trigger `.github/workflows/release.yml`, which runs goreleaser to build the matrix, attach artifacts to the GitHub Release, and update the Homebrew/Scoop stubs. Prerelease tags route to `docops@beta` / `docops-beta`; stable tags route to `docops` / `docops`. Full runbook in [`CTX-005`](docs/context/CTX-005-release-runbook-stable-and-beta-channels.md).
+
+```sh
+# fast loop — install your local build for dog-fooding in another project
 make install
 
-# dogfood — cut a prerelease from any branch
-make beta VERSION=0.6.1-beta.1
+# dogfood — cut a prerelease from any branch (no VERSION-file bump)
+make beta VERSION=0.7.1-beta.1
 
-# promote — once the beta has held up, cut stable from clean main
-make release VERSION=0.6.1
+# promote — cut a stable release from a clean main
+make release VERSION=0.7.1
+
+# preview without writing or pushing
+make release VERSION=0.7.1 DRY_RUN=1
+
+# build the goreleaser matrix locally without tagging
+make release-snapshot
 ```
 
-Tag pushes trigger `.github/workflows/release.yml`, which runs goreleaser to build the matrix, attach artifacts to the GitHub Release, and update the Homebrew/Scoop stubs. Prerelease tags route to `docops@beta` / `docops-beta` only; stable tags route to `docops` / `docops`.
+`make publish VERSION=X.Y.Z` is the end-to-end wrapper: syncs `dev` → fast-forwards `main` → previews → confirms → tags → pushes → resyncs `dev`. Pass `YES=1` to skip the prompt and `WATCH=1` to tail the workflow.
 
-Dry-run: `make release VERSION=0.4.1 DRY_RUN=1`. Local snapshot (no tag, no push): `make release-snapshot`.
+## Repo layout (for contributors)
+
+This repository is the DocOps **source**, and it dog-foods its own convention. `AGENTS.md` at the root separates the **meta** layer (this repo's project management — `docs/`, the slash commands you see here) from the **product** layer (what `docops init` emits into user repos via `templates/`). See [ADR-0016](docs/decisions/ADR-0016-meta-vs-product-separation.md).
 
 ## License
 
