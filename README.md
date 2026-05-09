@@ -8,13 +8,13 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/logicwind/docops)](https://goreportcard.com/report/github.com/logicwind/docops)
 [![GitHub Release](https://img.shields.io/github/v/release/logicwind/DocOps?include_prereleases)](https://github.com/logicwind/DocOps/releases)
 
-[Core concepts](#core-concepts) · [Install](#install) · [Onboarding](#onboarding-flow) · [Quickstart](#quickstart) · [Daily workflow](#daily-workflow) · [CLI reference](#cli-reference)
+[Core concepts](#core-concepts) · [Slash commands](#how-youll-use-it-slash-commands-first) · [Install](#install) · [Quickstart](#quickstart) · [Daily workflow](#daily-workflow) · [CLI reference](#cli-reference-the-engine)
 
 </div>
 
 ---
 
-> **DocOps is in active development.** Shipped and stable: `init`, `upgrade`, `update-check`, `validate`, `index`, `state`, `audit`, `refresh`, `schema`, `new`, `get`, `list`, `graph`, `next`, `search`, `html`, `serve`. On the roadmap: `amend`, `review`, `status`. See [`docs/STATE.md`](docs/STATE.md) for what's live and what's coming.
+> **DocOps is in active development.** The primary surface is **slash commands** (`/docops:init`, `/docops:onboard`, `/docops:plan`, `/docops:progress`, `/docops:next`, `/docops:do`) inside agent harnesses (Claude Code, Cursor, Codex). The CLI is the engine underneath; for day-to-day use, the only command you'll typically reach for directly is **`docops serve`** (the HTML viewer). See [`docs/STATE.md`](docs/STATE.md) for what's live and what's coming.
 
 ## Why DocOps?
 
@@ -58,9 +58,62 @@ flowchart LR
 2. **ADR** for the *how* it was decided — frontmatter `status:` tells you if it's `draft`, `accepted`, or `superseded`.
 3. **TP** for the *what* you can pick up — every task lists its `requires:` (citations) and `depends_on:` (other tasks).
 
-**The alignment contract:** a task with no `requires:` field fails `docops validate`. You cannot ship work that isn't traceable to a decision or stakeholder input.
+**The alignment contract:** a task with no `requires:` field fails validation. You cannot ship work that isn't traceable to a decision or stakeholder input.
 
-## How it works
+## How you'll use it (slash commands first)
+
+DocOps is designed to be driven from inside your agent (Claude Code, Cursor, Codex). Six slash commands cover every moment in the loop — you almost never type `docops <verb>` by hand.
+
+| Slash command | When to reach for it | What it does |
+|---|---|---|
+| **`/docops:init`** | First time in a repo | Scaffolds `docs/`, schemas, `AGENTS.md`/`CLAUDE.md` blocks, pre-commit hook |
+| **`/docops:onboard`** | Brownfield repo with existing code | Scans the codebase, asks 3–5 questions, drafts `CTX-001` + 1–3 ADRs from load-bearing decisions |
+| **`/docops:plan`** | You have a CTX (PRD, memo, research) | Drafts one ADR + tasks that cite it (human confirms before write) |
+| **`/docops:progress`** | "Where are we?" | Reads `STATE.md`, runs audit, names the next action |
+| **`/docops:next`** | "What should I pick up?" | Recommends one task using priority, status, dependencies |
+| **`/docops:do`** | You know the intent, not the verb | Routes natural language to the right skill or CLI call |
+
+```mermaid
+flowchart LR
+    subgraph You["You / your agent"]
+        direction TB
+        U1["/docops:init"]
+        U2["/docops:onboard"]
+        U3["/docops:plan"]
+        U4["/docops:progress"]
+        U5["/docops:next"]
+        U6["/docops:do"]
+    end
+
+    subgraph Engine["docops CLI (engine)"]
+        direction TB
+        E1["init · validate · index<br/>state · audit · refresh"]
+        E2["new · get · list · graph<br/>next · search"]
+    end
+
+    subgraph Repo["docs/ (typed files)"]
+        direction TB
+        R1["CTX-*.md · ADR-*.md · TP-*.md"]
+        R2["STATE.md · .index.json<br/><i>(generated)</i>"]
+    end
+
+    You -->|invoke| Engine
+    Engine -->|reads + writes| Repo
+    Repo -->|"docops serve · HTML viewer"| BROWSE(["browse in browser"])
+
+    classDef slash fill:#e7f0ff,stroke:#3b6fd0,color:#0a2c66
+    classDef engine fill:#fff4e0,stroke:#c08a00,color:#5a3d00
+    classDef repo fill:#e6f7ec,stroke:#2f9e5a,color:#0d3d22
+    class U1,U2,U3,U4,U5,U6 slash
+    class E1,E2 engine
+    class R1,R2 repo
+```
+
+The slash commands are **opinionated workflows** that wrap the CLI. The CLI is still there when you need scripting, automation, or a moment that doesn't fit one of the six skills — but reach for slash first.
+
+The one CLI command you *will* use directly: **`docops serve`** — opens a localhost HTML viewer of your project state (sidebar, graph, live reload). Everything else is plumbing.
+
+## Folder layout
 
 ```
 docs/
@@ -71,56 +124,6 @@ docs/
   STATE.md                        ← generated snapshot (don't edit)
 docops.yaml                       ← project config (context types, gap thresholds)
 ```
-
-```mermaid
-flowchart TD
-    subgraph Sources["You write these"]
-        direction LR
-        S1[CTX-*.md]
-        S2[ADR-*.md]
-        S3[TP-*.md]
-    end
-
-    subgraph CLI["docops CLI"]
-        direction LR
-        V["validate<br/><i>schema + graph invariants</i>"]
-        I["index<br/><i>build .index.json graph</i>"]
-        ST["state<br/><i>render STATE.md</i>"]
-        A["audit<br/><i>find structural gaps</i>"]
-    end
-
-    subgraph Outputs["DocOps generates these"]
-        direction LR
-        O1[docs/.index.json]
-        O2[docs/STATE.md]
-        O3[Gap punch list]
-    end
-
-    Sources --> V
-    V --> I --> ST
-    Sources --> A
-    I --> O1
-    ST --> O2
-    A --> O3
-    O2 --> AGENT(["agent / human<br/>picks next task"])
-    AGENT --> Sources
-
-    classDef src fill:#e7f0ff,stroke:#3b6fd0,color:#0a2c66
-    classDef cli fill:#fff4e0,stroke:#c08a00,color:#5a3d00
-    classDef out fill:#e6f7ec,stroke:#2f9e5a,color:#0d3d22
-    class S1,S2,S3 src
-    class V,I,ST,A cli
-    class O1,O2,O3 out
-```
-
-1. **`docops init`** scaffolds folders, schemas, agent skills, and `AGENTS.md`/`CLAUDE.md` into any git repo.
-2. **`docops new`** creates documents with auto-allocated IDs and validated frontmatter.
-3. **`docops validate`** checks schema and graph invariants (citations resolve, no dangling refs, task alignment rule).
-4. **`docops index`** builds the enriched graph; **`docops state`** renders a human-readable snapshot.
-5. **`docops audit`** finds structural gaps: accepted decisions with no tasks, stalled tasks, stale reviews.
-6. **Agents read `STATE.md` → pick a task → read its cited ADRs → code → update status → `docops refresh`.**
-
-The CLI is the query and mutation API. Every read command supports `--json` for scripting. See [ADR-0018](docs/decisions/ADR-0018-cli-as-query-layer.md) for the design rationale.
 
 ## Install
 
@@ -156,25 +159,46 @@ Grab the archive for your platform from [GitHub Releases](https://github.com/log
 
 Docker image (GHCR) and npm convenience shims (`@docops/cli`) are planned for a future release. See [ADR-0012](docs/decisions/ADR-0012-language-agnostic-distribution.md) for the distribution rationale.
 
+## Quickstart
+
+The whole quickstart is slash commands inside your agent. From the root of any git repo:
+
+```
+/docops:init             ← scaffold docs/, schemas, AGENTS.md, hooks
+/docops:onboard          ← (brownfield) bootstrap CTX + ADRs from existing code
+                           — or —
+/docops:plan             ← (greenfield) draft an ADR + tasks from a CTX you wrote
+```
+
+That's it for setup. From here, the daily loop is just two slash commands:
+
+```
+/docops:progress         ← where are we? (STATE + audit + recommended next move)
+/docops:next             ← which task should I pick up?
+```
+
+If you don't know which slash command fits, type `/docops:do <what you want>` and it'll route.
+
+> **Bootstrap detail.** `/docops:init` requires the `docops` binary on your PATH (it shells out to `docops init`). Install it via the [Install](#install) section below — one `brew install` and you're done. After init, the slash commands are wired into `.claude/commands/docops/` and `.cursor/commands/docops/` for that repo.
+
 ## Onboarding flow
 
-DocOps detects whether your repo is **greenfield** (empty) or **brownfield** (existing code) on `init` and routes you accordingly. Either path lands you at the same daily loop.
+DocOps auto-detects greenfield vs brownfield. Either path is one slash command, and both converge on the same daily loop.
 
 ```mermaid
 flowchart TD
-    START(["docops init"]) --> DETECT{"Existing<br/>code in repo?"}
+    START(["/docops:init"]) --> DETECT{"Existing<br/>code in repo?"}
 
-    DETECT -- "No" --> G1["<b>Greenfield path</b>"]
-    G1 --> G2["docops new ctx 'Product vision'<br/>--type brief"]
-    G2 --> G3["/docops:plan<br/><i>agent turns the brief into</i><br/><i>1 ADR + first tasks</i>"]
+    DETECT -- "No (greenfield)" --> G1["You write CTX-001<br/><i>(product vision / brief)</i>"]
+    G1 --> G2["/docops:plan"]
+    G2 --> G3["Agent drafts<br/>1 ADR + first tasks<br/>citing CTX-001"]
 
-    DETECT -- "Yes" --> B1["<b>Brownfield path</b>"]
-    B1 --> B2["/docops:onboard"]
-    B2 --> B3["Agent scans the repo,<br/>asks 3–5 questions"]
-    B3 --> B4["Drafts CTX-001<br/>+ 1–3 ADRs from<br/>load-bearing code"]
+    DETECT -- "Yes (brownfield)" --> B1["/docops:onboard"]
+    B1 --> B2["Agent scans repo,<br/>asks 3–5 questions"]
+    B2 --> B3["Drafts CTX-001<br/>+ 1–3 ADRs from<br/>load-bearing code"]
 
-    G3 --> LOOP(["Daily loop"])
-    B4 --> LOOP
+    G3 --> LOOP(["Daily loop:<br/>/docops:progress<br/>/docops:next"])
+    B3 --> LOOP
 
     classDef start fill:#1f2937,stroke:#111,color:#fff
     classDef green fill:#e6f7ec,stroke:#2f9e5a,color:#0d3d22
@@ -182,64 +206,34 @@ flowchart TD
     classDef decision fill:#e7f0ff,stroke:#3b6fd0,color:#0a2c66
     class START,LOOP start
     class G1,G2,G3 green
-    class B1,B2,B3,B4 brown
+    class B1,B2,B3 brown
     class DETECT decision
 ```
 
-## Quickstart
-
-From the root of any git repo:
-
-```sh
-docops init                                          # scaffold everything (idempotent)
-```
-
-Then follow the path that matches your repo:
-
-```sh
-# Greenfield (empty repo)
-docops new ctx "Product vision" --type brief        # capture stakeholder intent
-# → then run /docops:plan in your agent (Claude Code, Cursor, etc.)
-
-# Brownfield (existing code)
-# → run /docops:onboard in your agent — it drafts CTX-001 + ADRs from the code
-```
-
-After that, the daily loop is the same:
-
-```sh
-docops new adr "Pick a database"                     # capture a decision
-docops new task "Wire up SQLite" --requires ADR-0001 # task citing the decision
-docops refresh                                       # validate + index + state in one pass
-docops audit                                         # find structural gaps
-docops next                                          # ask DocOps what to pick up next
-```
-
-Every mutating command ends with a `→ Next:` block of suggested follow-ups. Add `--quiet` to suppress, or `--json` for programmatic output (suggestions arrive in a `next_steps` array).
-
-`docops init` flags: `--dry-run` (preview), `--force` (re-sync drifted files), `--no-skills` (skip agent skill scaffolding), `--json` (structured output).
-
 ## Daily workflow
 
-The loop you (or your agent) run every session:
+Two slash commands open the session; the rest is reading and coding.
 
 ```mermaid
 flowchart LR
-    A["docops state<br/><i>or read STATE.md</i>"] --> B["docops audit<br/><i>any gaps?</i>"]
-    B --> C["docops next<br/><i>pick a task</i>"]
-    C --> D["Read the task's<br/><b>requires:</b> + <b>depends_on:</b>"]
-    D --> E["Code the change"]
-    E --> F["Update task<br/>status: done"]
-    F --> G["docops refresh"]
-    G --> A
+    A["/docops:progress<br/><i>state + audit + next move</i>"] --> B["/docops:next<br/><i>recommend one task</i>"]
+    B --> C["Read the task's<br/><b>requires:</b> + <b>depends_on:</b><br/><i>(every CTX + ADR cited)</i>"]
+    C --> D["Code the change"]
+    D --> E["Mark task<br/>status: done"]
+    E --> F["docops refresh<br/><i>(or your agent runs it)</i>"]
+    F --> A
 
+    classDef slash fill:#e7f0ff,stroke:#3b6fd0,color:#0a2c66
     classDef step fill:#fff,stroke:#444,color:#111
     classDef code fill:#e6f7ec,stroke:#2f9e5a,color:#0d3d22
-    class A,B,C,D,F,G step
-    class E code
+    class A,B slash
+    class C,E,F step
+    class D code
 ```
 
 The contract: **before coding, you must read every doc the task `requires:`.** That's how the agent (or a new contributor) inherits the *why*, not just the *what*.
+
+To browse the project state in a real UI — sidebar, graph, frontmatter, rendered markdown — run **`docops serve --open`**. That's the one CLI command you'll actually type by hand.
 
 ## Upgrading
 
@@ -251,7 +245,9 @@ docops upgrade --dry-run         # preview first
 
 `docops upgrade` only touches DocOps-owned scaffolding. To also rewrite `docops.yaml` or reinstall the pre-commit hook, use `--config` or `--hook`. Run `docops update-check` to see if a new version is available.
 
-## CLI reference
+## CLI reference (the engine)
+
+> **You probably don't need this section for daily use.** Slash commands cover the moments. The CLI is here for: bootstrap (`docops init` once per repo), browsing (`docops serve`), scripting/CI, and the rare manual edit. Every slash command is a thin wrapper over these verbs — read this when you want to script, not when you want to work.
 
 Grouped by purpose. All commands support `--json` for structured output. Run `docops <command> --help` for details.
 
